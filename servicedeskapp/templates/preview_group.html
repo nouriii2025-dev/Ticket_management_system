@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Incident - New Record</title>
+    <link rel="stylesheet" href="static/new_group.css">
+</head>
+<body>
+ <div class="main-layout">
+  <div class="sidebar">
+     <div class="user-info">
+       <div style="display:flex;align-items:center;gap:7px;">
+         <span style="font-weight:700;">Ticket Creations</span>
+       </div>
+       <div style="margin-top:6px;font-size:13px;">
+         <span>Welcome</span><br/>
+         <span style="color:#e2fefd; font-weight:600;"></span>
+       </div>
+     </div>
+     <nav class="sidebar-nav">
+       <a href="#" class="nav-item">Overview</a>
+       <a href="{% url 'dashboard' %}" class="nav-item active">Tickets</a>
+       <a href="{% url 'user_management' %}" class="nav-item">User Management</a>
+       <a href="#" class="nav-item">Master data</a>
+       <a href="#" class="nav-item">Reports</a>
+     </nav>
+    </div>
+
+<div class="main-content">
+    <section class="view-group-section">
+      <form action="{% url 'preview' %}" method="post">
+        {% csrf_token %}
+        <div class="card">
+          <h2>Create New Group</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Name</label><br>
+              <input type="text" placeholder="enter group name" name="name">
+            </div>
+            <div class="form-group">
+              <label>Group Email</label><br>
+              <input type="text" placeholder="enter email" name="group_email">
+            </div>
+            <div class="form-group">
+              <label>Manager</label><br>
+              <input type="text" placeholder="enter name" name="manager">
+            </div>
+            <div class="form-group">
+              <label>Parent</label><br>
+              <input type="text" placeholder="enter name" name="parent">
+            </div>
+            <div class="form-group full">
+              <label>Description</label><br>
+              <textarea placeholder="Enter the Description here" name="description"></textarea>
+            </div>
+          </div><br>
+
+          <h2>Group Members</h2>
+            <div class="group-member-header">
+            <div class="search-area">
+                <input type="text" placeholder="Search Group Members" />
+                <i class="search-icon">&#128269;</i>
+            </div>
+            <button type="button" class="search-btn">Search</button>
+            <button type="button" class="new-btn">+ New Member</button>
+            </div>
+
+          <ul class="member-list">
+            <!-- <li>
+              <div class="member-left">
+                <input type="checkbox">
+              </div>
+              <button type="button" class="delete-btn">&#128465;</button>
+            </li> -->
+          </ul>
+
+          <div class="button-row">
+            <button type="reset" class="btn reset">Reset</button>
+            <button type="submit" class="btn create">Create New Group</button>
+          </div>
+
+        </div>
+
+        <div id="memberModal" class="modal">
+          <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Add New Member</h3>
+            <input type="text" id="memberName" placeholder="Enter member name">
+            <button type="button" id="addMemberBtn">Add</button>
+          </div>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>
+
+
+<script>
+document.querySelector('.new-btn').addEventListener('click', function() {
+  document.getElementById('memberModal').style.display = 'block';
+});
+
+document.querySelector('.close').addEventListener('click', function() {
+  document.getElementById('memberModal').style.display = 'none';
+});
+
+document.getElementById('addMemberBtn').addEventListener('click', function() {
+  const name = document.getElementById('memberName').value.trim();
+  if (name) {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <div class="member-left">
+        <span>${name}</span>
+        <input type="hidden" name="members[]" value="${name}">
+      </div>
+      <button type="button" class="delete-btn">&#128465;</button>
+    `;
+    // ✅ Ensure added inside the form’s UL
+    document.querySelector('form .member-list').appendChild(li);
+    document.getElementById('memberName').value = '';
+    document.getElementById('memberModal').style.display = 'none';
+  }
+});
+
+document.querySelector('.member-list').addEventListener('click', function(e) {
+  if (e.target.classList.contains('delete-btn')) {
+    e.target.closest('li').remove();
+  }
+});
+</script>
+
+</body>
+</html>

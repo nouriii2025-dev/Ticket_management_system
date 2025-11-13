@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Incidents Table</title>
+<link rel="stylesheet" href="static/parent_incident.css">
+</head>
+<body>
+
+  <div class="main-layout">
+    <div class="sidebar">
+     <div class="user-info">
+       <div style="display:flex;align-items:center;gap:7px;">
+         <!-- <img src="https://img.icons8.com/ios-filled/40/159b9b/user.png" alt="User" style="width:22px;height:22px;" /> -->
+         <span style="font-weight:700;">Ticket Creations</span>
+       </div>
+       <div style="margin-top:6px;font-size:13px;">
+         <span>Welcome</span><br/>
+         <span style="color:#e2fefd; font-weight:600;"></span>
+       </div>
+     </div>
+     <nav class="sidebar-nav">
+       <a href="#" class="nav-item">Overview</a>
+       <a href="{% url 'dashboard' %}" class="nav-item active">Tickets</a>
+       {% if request.session.role == 'admin' %}
+       <li><a href="{% url 'user_management' %}" class="nav-item">User Management</a></li>
+       {% endif %}
+       <a href="#" class="nav-item">Master data</a>
+       <a href="#" class="nav-item">Reports</a>
+     </nav>
+    </div>
+    <div class="main-content">
+      <header class="header">
+        <a href="{% url 'create' %}"><button class="add-ticket-btn">+ Add Ticket</button></a>
+      </header>
+      <div class="content-area">
+            {% if messages %}
+            {% for message in messages %}
+              <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        <h1 class="page-title">Tickets</h1>
+        <div class="search-and-table-container">
+          <div class="ticket-toolbar">
+            <div class="container">
+            <div class="toolbar">
+        <div>
+            <label><input type="checkbox" id="selectAll"> All</label>
+            <select id="columnSelect">
+                <option>Number</option>
+                <option>Short description</option>
+                <option>Assignment group</option>
+                <option>Assigned to</option>
+            </select>
+            <input type="text" id="globalSearch" placeholder="Search">
+        </div>
+     
+    </div>
+
+    <table id="incidentsTable">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="headerCheck"></th>
+                <th data-col="number">Number</th>
+                <th data-col="desc">Short description</th>
+                <th data-col="assignGroup">Assignment group</th>
+                <th data-col="assignedTo">Assigned to</th>
+            </tr>
+      
+            <tr class="search-row">
+                <td></td>
+                <td><input type="text" data-col="number" placeholder="Search"></td>
+                <td><input type="text" data-col="desc" placeholder="Search"></td>
+                <td><input type="text" data-col="assignGroup" placeholder="Search"></td>
+                <td><input type="text" data-col="assignedTo" placeholder="Search"></td>
+               
+            </tr>
+        </thead>
+        <tbody>
+
+             {% for ticket in tickets %}
+            <tr data-number="{{ ticket.number }}">
+                <td><input type="checkbox" class="rowCheck"></td>
+                <td><a href="{% url 'create' %}?parent_incident={{ ticket.number }}">{{ ticket.number }}</a></td>
+                <td>{{ ticket.short_description }}</td>
+                <td>{{ ticket.assignment_group }}</td>
+                <td>{{ ticket.assigned_to }}</td>
+            </tr> 
+            {% endfor %}          
+           
+        </tbody>
+    </table>
+</div>
+
+<script>
+
+const table      = document.getElementById('incidentsTable');
+const rows       = table.querySelectorAll('tbody tr');
+const globalInp  = document.getElementById('globalSearch');
+const colInputs  = table.querySelectorAll('.search-row input');
+
+function filterTable() {
+    const global = globalInp.value.trim().toLowerCase();
+    const filters = {};
+    colInputs.forEach(inp => {
+        if (inp.value.trim()) filters[inp.dataset.col] = inp.value.trim().toLowerCase();
+
+    });
+
+
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        let show = true;
+
+
+        if (global) {
+            const rowText = row.textContent.toLowerCase();
+            if (!rowText.includes(global)) show = false;
+        }
+
+        for (const col in filters) {
+            const idx = [...table.querySelectorAll('th')].findIndex(th => th.dataset.col === col);
+            if (idx === -1) continue;
+            const cellText = cells[idx].textContent.toLowerCase();
+            if (!cellText.includes(filters[col])) show = false;
+        }
+
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+
+globalInp.addEventListener('input', filterTable);
+colInputs.forEach(inp => inp.addEventListener('input', filterTable));
+
+
+const selectAll = document.getElementById('selectAll');
+const headerCheck = document.getElementById('headerCheck');
+const rowChecks = table.querySelectorAll('.rowCheck');
+
+function syncSelectAll() {
+    const checkedCount = [...rowChecks].filter(c => c.checked).length;
+    const totalVisible = [...rows].filter(r => r.style.display !== 'none').length;
+    selectAll.indeterminate = checkedCount > 0 && checkedCount < totalVisible;
+    selectAll.checked = checkedCount === totalVisible && totalVisible > 0;
+}
+selectAll.addEventListener('change', () => {
+    const visibleRows = [...rows].filter(r => r.style.display !== 'none');
+    visibleRows.forEach(r => r.querySelector('.rowCheck').checked = selectAll.checked);
+});
+headerCheck.addEventListener('change', () => selectAll.checked = headerCheck.checked);
+table.addEventListener('change', e => {
+    if (e.target.classList.contains('rowCheck')) syncSelectAll();
+});
+
+
+let sortAsc = true;
+document.querySelector('.sort-arrow').addEventListener('click', () => {
+    const tbody = table.tBodies[0];
+    const arr = Array.from(tbody.rows);
+
+    arr.sort((a, b) => {
+        const aVal = a.dataset.number;
+        const bVal = b.dataset.number;
+        return sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+
+    arr.forEach(r => tbody.appendChild(r));
+    sortAsc = !sortAsc;
+    const arrow = document.querySelector('.sort-arrow span');
+    arrow.textContent = sortAsc ? '▼' : '▲';
+});
+
+
+document.getElementById('actionsMenu').addEventListener('change', function () {
+    const selected = this.value;
+    if (selected === 'Actions on selected rows...') return;
+    const checked = [...rowChecks].filter(c => c.checked);
+    alert(`Action "${selected}" on ${checked.length} row(s)`);
+    this.selectedIndex = 0;  
+});
+
+syncSelectAll();
+</script>
+        </div>
+      </div>
+    </div>
+    </div>
+    </div>
+</body>
+</html>

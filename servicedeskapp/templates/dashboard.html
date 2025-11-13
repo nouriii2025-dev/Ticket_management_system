@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Incidents Table</title>
+<link rel="stylesheet" href="static/dashboard.css">
+</head>
+<body>
+
+  <div class="main-layout">
+    <div class="sidebar">
+     <div class="user-info">
+       <div style="display:flex;align-items:center;gap:7px;">
+         <!-- <img src="https://img.icons8.com/ios-filled/40/159b9b/user.png" alt="User" style="width:22px;height:22px;" /> -->
+         <span style="font-weight:700;">Ticket Creations</span>
+       </div>
+       <div style="margin-top:6px;font-size:13px;">
+         <span>Welcome</span><br/>
+         <span>{{ request.session.name|default:request.session.username }}</span>
+         <span style="color:#e2fefd; font-weight:600;"></span>
+       </div>
+     </div>
+     <nav class="sidebar-nav">
+       <a href="#" class="nav-item">Overview</a>
+       <a href="{% url 'dashboard' %}" class="nav-item active">Tickets</a>
+       {% if request.session.role == 'admin' %}
+       <li><a href="{% url 'user_management' %}" class="nav-item">User Management</a></li>
+       {% endif %}
+       <a href="#" class="nav-item">Master data</a>
+       <a href="#" class="nav-item">Reports</a>
+     </nav>
+    </div>
+    <div class="main-content">
+               <!-- <div style="display: flex; align-items: center; justify-content: flex-start; margin-bottom: 20px;">
+            <span style="font-size: 17px; color:#555;">
+                {{ current_date|date:"l d F, Y" }}
+            </span>
+        </div> -->
+      <div class="content-area">
+                    {% if messages %}
+            {% for message in messages %}
+              <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        <!-- <h1 class="page-title">Tickets</h1> -->
+        <form method="POST" action="{% url 'delete_tickets' %}" onsubmit="return confirm('Are you sure you want to delete the selected tickets?');">
+        {% csrf_token %}
+        <div class="search-and-table-container">
+          <header class="header">
+            {% if request.session.role == 'admin' %}
+            <button type="submit" class="delete-ticket-btn">Delete</button>
+            {% endif %}
+            <a href="{% url 'create' %}"><button type="button" class="add-ticket-btn">+ Add Ticket</button></a>
+          </header>
+          <fieldset class="page-title-fieldset">
+          <legend>Tickets</legend>
+          <div class="ticket-toolbar">
+            <div class="container">
+            <div class="toolbar">
+        <div>
+            <label><input type="checkbox" id="selectAll"> All</label>
+            <select id="columnSelect">
+                <option>Number</option>
+                <option>Opened</option>
+                <option>Created by</option>
+                <option>Short description</option>
+                <option>Caller</option>
+                <option>School name</option>
+                <option>School code</option>
+                <option>Priority</option>
+                <option>State</option>
+                <option>Category</option>
+                <option>Assignment group</option>
+                <option>Assigned to</option>
+                <option>Updated</option>
+                <option>Updated by</option>
+            </select>
+            <input type="text" id="globalSearch" placeholder="Search">
+        </div>
+     
+    </div>
+
+    <table id="incidentsTable">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="headerCheck"></th>
+                <th data-col="number">Number</th>
+                <th data-col="opened">Opened</th>
+                <th data-col="created">Created by</th>
+                <th data-col="desc">Short description</th>
+                <th data-col="caller">Caller</th>
+                <th data-col="school_name">School name</th>
+                <th data-col="school_code">School code</th>
+                <th data-col="priority">Priority</th>
+                <th data-col="state">State</th>
+                <th data-col="category">Category</th>
+                <th data-col="assignGroup">Assignment group</th>
+                <th data-col="assignedTo">Assigned to</th>
+                <th data-col="updated">Updated</th>
+                <th data-col="updatedBy">Updated by</th>
+            </tr>
+      
+            <tr class="search-row">
+                <td></td>
+                <td><input type="text" data-col="number" placeholder="Search"></td>
+                <td><input type="text" data-col="opened" placeholder="Search"></td>
+                <td><input type="text" data-col="created" placeholder="Search"></td>
+                <td><input type="text" data-col="desc" placeholder="Search"></td>
+                <td><input type="text" data-col="caller" placeholder="Search"></td>
+                <td><input type="text" data-col="school_name" placeholder="Search"></td>
+                <td><input type="text" data-col="school_code" placeholder="Search"></td>
+                <td><input type="text" data-col="priority" placeholder="Search"></td>
+                <td><input type="text" data-col="state" placeholder="Search"></td>
+                <td><input type="text" data-col="category" placeholder="Search"></td>
+                <td><input type="text" data-col="assignGroup" placeholder="Search"></td>
+                <td><input type="text" data-col="assignedTo" placeholder="Search"></td>
+                <td><input type="text" data-col="updated" placeholder="Search"></td>
+                <td><input type="text" data-col="updatedBy" placeholder="Search"></td>
+            </tr>
+        </thead>
+        <tbody>
+
+             {% for ticket in tickets %}
+            <tr data-number="{{ ticket.number }}">
+                <td><input type="checkbox" name="selected_tickets" value="{{ ticket.id }}" class="rowCheck"></td>
+                <td><a href="{% url 'update' ticket_id=ticket.id %}">{{ ticket.number }}</a></td>
+                <td>{{ ticket.created_at }}</td>
+                <td>{{ ticket.created_by }}</td>
+                <td>{{ ticket.short_description }}</td>
+                <td>{{ ticket.caller }}</td>
+                <td>{{ ticket.school_name }}</td>
+                <td>{{ ticket.school_code }}</td>
+                <td>{{ ticket.priority }}</td>
+                <td>{{ ticket.state }}</td>
+                <td>{{ ticket.category }}</td>
+                <td>{{ ticket.assignment_group }}</td>
+                <td>{{ ticket.assigned_to }}</td>
+                <td>{{ ticket.updated_at }}</td>
+                <td>{{ ticket.updated_by }}</td>
+            </tr> 
+            {% endfor %}          
+           
+        </tbody>
+    </table>
+   <div class="pagination">
+    <span>
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
+</div>
+      </div>
+        </fieldset>
+      </div>
+    </div>
+    </div>
+    </div>
+
+<script>
+
+const table      = document.getElementById('incidentsTable');
+const rows       = table.querySelectorAll('tbody tr');
+const globalInp  = document.getElementById('globalSearch');
+const colInputs  = table.querySelectorAll('.search-row input');
+
+function filterTable() {
+    const global = globalInp.value.trim().toLowerCase();
+    const filters = {};
+    colInputs.forEach(inp => {
+        if (inp.value.trim()) filters[inp.dataset.col] = inp.value.trim().toLowerCase();
+
+    });
+
+
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        let show = true;
+
+
+        if (global) {
+            const rowText = row.textContent.toLowerCase();
+            if (!rowText.includes(global)) show = false;
+        }
+
+        for (const col in filters) {
+            const idx = [...table.querySelectorAll('th')].findIndex(th => th.dataset.col === col);
+            if (idx === -1) continue;
+            const cellText = cells[idx].textContent.toLowerCase();
+            if (!cellText.includes(filters[col])) show = false;
+        }
+
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+
+globalInp.addEventListener('input', filterTable);
+colInputs.forEach(inp => inp.addEventListener('input', filterTable));
+
+
+const selectAll = document.getElementById('selectAll');
+const headerCheck = document.getElementById('headerCheck');
+const rowChecks = table.querySelectorAll('.rowCheck');
+
+function syncSelectAll() {
+    const checkedCount = [...rowChecks].filter(c => c.checked).length;
+    const totalVisible = [...rows].filter(r => r.style.display !== 'none').length;
+    selectAll.indeterminate = checkedCount > 0 && checkedCount < totalVisible;
+    selectAll.checked = checkedCount === totalVisible && totalVisible > 0;
+}
+selectAll.addEventListener('change', () => {
+    const visibleRows = [...rows].filter(r => r.style.display !== 'none');
+    visibleRows.forEach(r => r.querySelector('.rowCheck').checked = selectAll.checked);
+});
+headerCheck.addEventListener('change', () => selectAll.checked = headerCheck.checked);
+table.addEventListener('change', e => {
+    if (e.target.classList.contains('rowCheck')) syncSelectAll();
+});
+
+
+let sortAsc = true;
+document.querySelector('.sort-arrow').addEventListener('click', () => {
+    const tbody = table.tBodies[0];
+    const arr = Array.from(tbody.rows);
+
+    arr.sort((a, b) => {
+        const aVal = a.dataset.number;
+        const bVal = b.dataset.number;
+        return sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+
+    arr.forEach(r => tbody.appendChild(r));
+    sortAsc = !sortAsc;
+    const arrow = document.querySelector('.sort-arrow span');
+    arrow.textContent = sortAsc ? '▼' : '▲';
+});
+
+
+document.getElementById('actionsMenu').addEventListener('change', function () {
+    const selected = this.value;
+    if (selected === 'Actions on selected rows...') return;
+    const checked = [...rowChecks].filter(c => c.checked);
+    alert(`Action "${selected}" on ${checked.length} row(s)`);
+    this.selectedIndex = 0;  
+});
+
+syncSelectAll();
+</script>
+
+
+</body>
+</html>

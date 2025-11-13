@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="static/resetpass.css">
+</head>
+<body>
+    <form action="{% url 'reset' %}" method="post">
+        {% csrf_token %}
+    {% if messages %}
+    {% for message in messages %}
+        <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+        {{ message }}
+        </div>
+    {% endfor %}
+    {% endif %}
+    <h1>Reset Password</h1>
+    <label for="email">Email</label>
+    <input type="email" placeholder="Enter your email id" name="email">
+
+    <label for="password">New Password</label>
+    <input type="password" placeholder="Enter new password" name="new_password">
+
+    <label for="confirm_password">Confirm password</label>
+    <input type="password" placeholder="Confirm new password" name="confirm_password">
+
+    <button type="submit">Reset</button>
+
+    </form>
+</body>
+</html>

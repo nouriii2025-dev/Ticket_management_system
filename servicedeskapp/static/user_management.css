@@ -1,0 +1,187 @@
+body {
+    background-color: #f5f6fb;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #333;
+    font-size: 14px;
+}
+.main-layout {
+    display: flex;
+    height: calc(100vh - 20px);
+    padding: 10px;
+}
+.sidebar {
+    background-color: #159b9b;
+    width: 230px;
+    padding: 0;
+    color: #f7f7fb;
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+.user-info {
+    background-color: #0d8383;
+    border-radius: 8px;
+    padding: 15px 18px;
+    margin: 15px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    position: relative;
+}
+.user-info img {
+    background: #fff;
+    padding: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+.user-info > div:first-child {
+    font-size: 16px;
+    font-weight: 600;
+}
+.user-info > div:last-child {
+    font-size: 12px;
+    margin-top: 5px;
+}
+.user-info > div:last-child span:last-child {
+    color: #e2fefd;
+    font-weight: 500;
+}
+.sidebar-nav {
+    padding: 5px 10px;
+}
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    color: #f7f7fb;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+    border-radius: 8px;
+    margin: 4px 0;
+}
+.nav-item::before {
+    content: '▪';
+    font-size: 18px;
+    margin-right: 10px;
+}
+.nav-item.active, 
+.nav-item:hover {
+    background: #e7f8fa;
+    color: #159b9b;
+    font-weight: 600;
+}
+
+/* Content Area */
+.content-area {
+  margin-top: 10px;
+  margin-left: 10px;
+}
+
+/* User Management Table */
+.user-management {
+  background: #fff;
+  padding: 20px;
+  border-radius: 15px;
+  width: 112%;
+}
+
+.create-user {
+    background: #00a0a0;
+    color: #fff;
+    justify-content: flex-end;
+    border: none;
+    border-radius: 7px;
+    padding: 8px 22px;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: 0 2px 5px rgba(53, 71, 125, 0.07);
+    transition: background 0.2s;
+}
+
+.create-user:hover {
+    background: #017c7c;
+}
+
+.btn.create-user {
+    background-color: #009688;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn.create-user:hover {
+    background-color: #00796b;
+}
+
+.create-user-container {
+    display: flex;
+    justify-content: flex-end; /* pushes button to the right */
+    margin-bottom: 15px;       /* adds some space below */
+}
+
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #f5f6fe;
+  text-align: left;
+}
+
+th, td {
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+}
+
+.role {
+  padding: 4px 12px;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 13px;
+}
+
+.role.admin {
+  background: #009b9b;
+}
+
+.role.user {
+  background: #999;
+}
+
+.actions img {
+  margin-right: 10px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.actions img:hover {
+  opacity: 1;
+}
+
+.user-fieldset {
+    border: 2px solid #159b9b;     /* main border color */
+    border-radius: 10px;           /* smooth corners */
+    padding: 25px 30px;            /* space inside */
+    margin-top: 20px;
+    background-color: #ffffff;     /* white background */
+}
+
+.user-fieldset legend {
+    font-size: 20px;
+    font-weight: 600;
+    color: #159b9b;               /* theme color for title */
+    padding: 0 15px;              /* spacing around text */
+}

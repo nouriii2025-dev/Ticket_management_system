@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Group List Dashboard</title>
+  <!-- <link href="https://fonts.googleapis.com/css?family=Roboto:400,500" rel="stylesheet"> -->
+  <link rel="stylesheet" href="static/assigned_group.css">
+</head>
+<body>
+<div class="main-layout">
+  <div class="sidebar">
+     <div class="user-info">
+       <div style="display:flex;align-items:center;gap:7px;">
+         <!-- <img src="https://img.icons8.com/ios-filled/40/159b9b/user.png" alt="User" style="width:22px;height:22px;" /> -->
+         <span style="font-weight:700;">Ticket Creations</span>
+       </div>
+       <div style="margin-top:6px;font-size:13px;">
+         <span>Welcome</span><br/>
+         <span style="color:#e2fefd; font-weight:600;"></span>
+       </div>
+     </div>
+     <nav class="sidebar-nav">
+       <a href="#" class="nav-item">Overview</a>
+       <a href="{% url 'dashboard' %}" class="nav-item active">Tickets</a>
+        {% if request.session.role == 'admin' %}
+       <li><a href="{% url 'user_management' %}" class="nav-item">User Management</a></li>
+       {% endif %}
+       <a href="#" class="nav-item">Master data</a>
+       <a href="#" class="nav-item">Reports</a>
+     </nav>
+    </div>
+
+     <div class="content-area">
+           {% if messages %}
+            {% for message in messages %}
+              <div style="background-color:#62ef80; color:#0d6720; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        <div class="group-header">
+       {% if request.session.role == 'admin' %}
+      <a href="{% url 'new_group' %}"><button class="new-group">+ New Group</button></a>
+      {% endif %}
+      </div>
+       <!-- <div class="group-list-container"> -->
+         <fieldset class="group-list-fieldset">
+            <legend>Group List</legend>
+     
+      <div class="search-bar">
+        <form action="{% url 'assigned' %}" method="get">
+        <input type="text" placeholder="Search groups" name="q" value="{{ request.GET.q}}">
+        <button>Search</button>
+        </form>
+      </div>
+      {% for group in add %}
+      <div class="group-items">
+        <!-- <a href="{% url 'create' %}?assignment_group={{ group.name }}" class="group-left"> -->
+          {% if source_page == 'update' and ticket_id %}
+            <a href="{% url 'update' ticket_id %}?assignment_group={{ group.name }}" class="group-left">
+          {% else %}
+            <a href="{% url 'create' %}?assignment_group={{ group.name }}" class="group-left">
+          {% endif %}
+
+          <span class="dot"></span>
+          <span class="group-name">{{ group.name }}</span>
+        </a>
+        <div class="group-actions">
+          {% if request.session.role == 'admin' %}
+        <a href="{% url 'preview' %}" class="icon preview" title="Preview">👁️</a>
+        <a href="{% url 'edit_group' group.id %}" class="icon edit" title="Edit"><img src="https://img.icons8.com/ios-glyphs/18/edit.png" alt="Edit"></a>
+        <a href="{% url 'delete_group' group.id %}" class="icon delete" title="Delete"><img src="https://img.icons8.com/ios-glyphs/18/trash.png" alt="Delete"></a>
+        {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+         </fieldset>
+
+  </div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="static/signup.css">
+
+</head>
+<body>
+
+    <form action="{% url 'signup' %}" method="post">
+        {% csrf_token %}
+        {% if messages %}
+            {% for message in messages %}
+              <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+    <h1>Sign Up</h1>
+    <label for="name">Name</label>
+    <input type="text" placeholder="Enter your name" name="name">
+
+    <label for="usename">Username</label>
+    <input type="text" placeholder="Enter username" name="username">
+
+    <label for="email">Email</label>
+    <input type="email" placeholder="Enter your email id" name="email">
+
+    <label for="password">Password</label>
+    <input type="password" placeholder="Enter new password" name="password">
+
+    <label for="confirm_password">Confirm password</label>
+    <input type="password" placeholder="Confirm new password" name="confirm_password">
+
+    <button type="submit">Sign Up</button>
+    Already have an accound?<a href="{% url 'login' %}"> Login now</a>
+    </form>
+</body>
+</html>

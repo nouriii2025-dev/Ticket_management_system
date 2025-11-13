@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Incident - New Record</title>
+    <link rel="stylesheet" href="static/new_group.css">
+</head>
+<body>
+ <div class="main-layout">
+  <div class="sidebar">
+     <div class="user-info">
+       <div style="display:flex;align-items:center;gap:7px;">
+         <span style="font-weight:700;">Ticket Creations</span>
+       </div>
+       <div style="margin-top:6px;font-size:13px;">
+         <span>Welcome</span><br/>
+         <span style="color:#e2fefd; font-weight:600;"></span>
+       </div>
+     </div>
+     <nav class="sidebar-nav">
+       <a href="#" class="nav-item">Overview</a>
+       <a href="{% url 'dashboard' %}" class="nav-item active">Tickets</a>
+       <a href="{% url 'user_management' %}" class="nav-item">User Management</a>
+       <a href="#" class="nav-item">Master data</a>
+       <a href="#" class="nav-item">Reports</a>
+     </nav>
+    </div>
+
+<div class="main-content">
+    <section class="view-group-section">
+      <form action="{% url 'new_group' %}" method="post">
+        {% csrf_token %}
+        <div class="card">
+               {% if messages %}
+            {% for message in messages %}
+              <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+          <fieldset class="new-group-fieldset">
+            <legend>Create New Group</legend>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Name<span class="required">*</span></label><br>
+              <input type="text" placeholder="Enter group name" name="name" required>
+            </div>
+            <div class="form-group">
+              <label>Group Email<span class="required">*</span></label><br>
+              <input type="text" placeholder="Enter email" name="group_email" required>
+            </div>
+            <div class="form-group">
+              <label>Manager<span class="required">*</span></label><br>
+              <input type="text" placeholder="Enter name" name="manager" required>
+            </div>
+            <div class="form-group">
+              <label>Parent</label><br>
+              <input type="text" placeholder="Enter name" name="parent">
+            </div>
+            <div class="form-group full">
+              <label>Description</label><br>
+              <textarea placeholder="Enter description here..." name="description"></textarea>
+            </div>
+          </div><br>
+
+           <h2>Group Members</h2>
+            <div class="group-member-header">
+            <div class="search-area">
+                <input type="text" placeholder="Search group members">
+                <i class="search-icon">&#128269;</i>
+            </div>
+            <button type="button" class="search-btn">Search</button>
+            <button type="button" class="new-btn">+ New Member</button>
+            </div>
+
+           <ul class="member-list">
+          </ul> 
+
+          </fieldset>
+            <div class="button-row">
+            <button type="reset" class="btn reset">Reset</button>
+            <button type="submit" class="btn create">Create New Group</button>
+          </div>
+        </div>
+
+        <div id="memberModal" class="modal">
+          <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Select Members</h3>
+            <div class="search-bar">
+              <input type="text" id="memberSearch" placeholder="Search members...">
+            </div>
+             <div class="checkbox-container">
+              {% for user in users %}
+              <div class="checkbox-item">
+                <input type="checkbox" id="user{{ user.id }}" value="{{ user.name }}">
+                <label for="user{{ user.id }}">{{ user.name }}</label>
+              </div>
+              {% empty %}
+              <p>No users found</p>
+              {% endfor %}
+             </div>
+
+
+            <div class="modal-footer">
+              <button type="button" id="addMemberBtn" class="btn-add">Add</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>
+
+<!-- 
+<script>
+document.querySelector('.new-btn').addEventListener('click', function() {
+  document.getElementById('memberModal').style.display = 'block';
+});
+
+document.querySelector('.close').addEventListener('click', function() {
+  document.getElementById('memberModal').style.display = 'none';
+});
+
+document.getElementById('addMemberBtn').addEventListener('click', function() {
+  const name = document.getElementById('memberName').value.trim();
+  if (name) {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <div class="member-left">
+        <span>${name}</span>
+        <input type="hidden" name="members[]" value="${name}">
+      </div>
+      <button type="button" class="delete-btn">&#128465;</button>
+    `;
+    // ✅ Ensure added inside the form’s UL
+    document.querySelector('form .member-list').appendChild(li);
+    document.getElementById('memberName').value = '';
+    document.getElementById('memberModal').style.display = 'none';
+  }
+});
+
+document.querySelector('.member-list').addEventListener('click', function(e) {
+  if (e.target.classList.contains('delete-btn')) {
+    e.target.closest('li').remove();
+  }
+});
+</script> -->
+<script>
+  // Show modal
+  document.querySelector('.new-btn').addEventListener('click', function() {
+    document.getElementById('memberModal').style.display = 'block';
+  });
+
+  // Close modal
+  document.querySelector('.close').addEventListener('click', function() {
+    document.getElementById('memberModal').style.display = 'none';
+  });
+
+  // Add selected members
+  document.getElementById('addMemberBtn').addEventListener('click', function() {
+    const checkboxes = document.querySelectorAll('#memberModal input[type="checkbox"]:checked');
+    const memberList = document.querySelector('.member-list');
+
+    checkboxes.forEach(cb => {
+      const name = cb.value.trim();
+      // Check if already added
+      const exists = Array.from(memberList.querySelectorAll('input[name="members[]"]'))
+                          .some(input => input.value === name);
+      if (!exists && name) {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <div class="member-left">
+            <span>${name}</span>
+            <input type="hidden" name="members[]" value="${name}">
+          </div>
+          <button type="button" class="delete-btn">&#128465;</button>
+        `;
+        memberList.appendChild(li);
+      }
+    });
+
+    // Close modal after adding
+    document.getElementById('memberModal').style.display = 'none';
+
+    // Uncheck all checkboxes
+    document.querySelectorAll('#memberModal input[type="checkbox"]').forEach(cb => cb.checked = false);
+  });
+
+  // Delete member from list
+  document.querySelector('.member-list').addEventListener('click', function(e) {
+    if (e.target.classList.contains('delete-btn')) {
+      e.target.closest('li').remove();
+    }
+  });
+</script>
+<script>
+ 
+  document.getElementById('memberSearch').addEventListener('keyup', function() {
+    const searchTerm = this.value.toLowerCase();
+    const checkboxes = document.querySelectorAll('.checkbox-item');
+
+    checkboxes.forEach(item => {
+      const label = item.querySelector('label').textContent.toLowerCase();
+      item.style.display = label.includes(searchTerm) ? 'flex' : 'none';
+    });
+  });
+</script>
+
+</body>
+</html>

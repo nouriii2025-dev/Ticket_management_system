@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Incident - New Record</title>
+    <link rel="stylesheet" href="static/create_ticket.css">
+</head>
+<body>
+ <div class="main-layout">
+  <div class="sidebar">
+     <div class="user-info">
+       <div style="display:flex;align-items:center;gap:7px;">
+         <!-- <img src="https://img.icons8.com/ios-filled/40/159b9b/user.png" alt="User" style="width:22px;height:22px;" /> -->
+         <span style="font-weight:700;">Ticket Creations</span>
+       </div>
+       <div style="margin-top:6px;font-size:13px;">
+         <span>Welcome</span><br/>
+         <span style="color:#e2fefd; font-weight:600;"></span>
+       </div>
+     </div>
+     <nav class="sidebar-nav">
+       <a href="#" class="nav-item">Overview</a>
+       <a href="{% url 'dashboard' %}" class="nav-item active">Tickets</a>
+        {% if request.session.role == 'admin' %}
+       <li><a href="{% url 'user_management' %}" class="nav-item">User Management</a></li>
+       {% endif %}
+       <a href="#" class="nav-item">Master data</a>
+       <a href="#" class="nav-item">Reports</a>
+     </nav>
+    </div>
+    <div class="main-content">
+            {% if messages %}
+            {% for message in messages %}
+              <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+          <div class="action-buttons-top">
+                <a href="{% url 'dashboard' %}"><button class="action-btn-top submit">Update</button></a>
+                <button class="action-btn-top resolve">Resolve</button>
+            </div>
+          <fieldset class="ticket-fieldset">
+        <legend>Update Ticket</legend>
+        <form class="incident-form" action="{% url 'update' ticket_id=tickets.id %}" method="post">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="form-group">
+                    <label>School Name<span class="required">*</span></label>
+                    <input type="text" placeholder="Enter school name" name="school_name" value="{{ tickets.school_name }}" required>
+                </div>
+                <div class="form-group">
+                    <label>School Code</label>
+                    <input type="text" placeholder="Enter code" name="school_code" value="{{ tickets.school_code }}">
+                </div>
+                <div class="form-group">
+                    <label>Caller<span class="required">*</span></label>
+                    <input type="text" placeholder="Enter name" name="caller" value="{{ tickets.caller }}" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                     <div class="form-group">
+                    <label>Number</label>
+                    <input type="text" value="{{ tickets.number }}" readonly class="form-control readonly-input">
+                    <input type="hidden" name="number" value="{{ tickets.number }}">
+                </div>
+                </div>
+                <div class="form-group">
+                    <label>Category<span class="required">*</span></label>
+                    <select name="category" required>
+                        <option value="">Select category</option>
+                        <option value="inquiry/help" {% if tickets.category == 'inquiry/help' %}selected{% endif %}>Inquiry / Help</option>
+                        <option value="software" {% if tickets.category == 'software' %}selected{% endif %}>Software</option>
+                        <option value="hardware" {% if tickets.category == 'hardware' %}selected{% endif %}>Hardware</option>
+                        <option value="network" {% if tickets.category == 'network' %}selected{% endif %}>Network</option>
+                        <option value="database" {% if tickets.category == 'database' %}selected{% endif %}>Database</option>
+                        <option value="other" {% if tickets.category == 'other' %}selected{% endif %}>Other</option> 
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Subcategory</label>
+                    <select name="sub_category">
+                        <option value="">Select sub-category</option>
+                        <option value="anti-virus" {% if tickets.sub_category == 'anti-virus' %}selected{% endif %}>Anti-virus</option>
+                        <option value="email" {% if tickets.sub_category == 'email' %}selected{% endif %}>Email</option>
+                        <option value="internal application" {% if tickets.sub_category == 'internal application' %}selected{% endif %}>Internal Application</option>
+                        <option value="other" {% if tickets.sub_category == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Channel</label>
+                    <select name="channel">
+                        <option value="">Select channel</option>
+                        <option value="email" {% if tickets.channel == 'email' %}selected{% endif %}>Email</option>
+                        <option value="phone" {% if tickets.channel == 'phone' %}selected{% endif %}>Phone</option>
+                        <option value="self-service" {% if tickets.channel == 'self-service' %}selected{% endif %}>Self-service</option>
+                        <option value="virtual agent" {% if tickets.channel == 'virtual agent' %}selected{% endif %}>Virtual Agent</option>
+                        <option value="chat" {% if tickets.channel == 'chat' %}selected{% endif %}>Chat</option>
+                        <option value="walk-in" {% if tickets.channel == 'walk-in' %}selected{% endif %}>Walk-in</option>
+                        <option value="other" {% if tickets.channel == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>State<span class="required">*</span></label>
+                    <select name="state" required>
+                        <option value="">Select state</option>
+                        <option value="new" {% if tickets.state == 'new' %}selected{% endif %} disabled>New</option>
+                        <option value="in progress" {% if tickets.state == 'in progress' %}selected{% endif %}>In Progress</option>
+                        <option value="on hold" {% if tickets.state == 'on hold' %}selected{% endif %}>On Hold</option>
+                        <option value="resolved" {% if tickets.state == 'resolved' %}selected{% endif %}>Resolved</option>
+                        <option value="closed" {% if tickets.state == 'closed' %}selected{% endif %}>Closed</option>
+                        <option value="cancelled" {% if tickets.state == 'cancelled' %}selected{% endif %}>Cancelled</option>
+
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Impact</label>
+                    <select name="impact">
+                        <option value="">Select impact</option>
+                        <option value="low" {% if tickets.impact == 'low' %}selected{% endif %}>Low</option>
+                        <option value="medium" {% if tickets.impact == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="high" {% if tickets.impact == 'high' %}selected{% endif %}>High</option>
+
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Urgency<span class="required">*</span></label>
+                    <select name="urgency" required>
+                        <option value="">Select urgency</option>
+                       <option value="low" {% if tickets.urgency == 'low' %}selected{% endif %}>Low</option>
+                        <option value="medium" {% if tickets.urgency == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="high" {% if tickets.urgency == 'high' %}selected{% endif %}>High</option>
+
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select name="priority">
+                        <option value="">Select priority</option>
+                       <option value="planning" {% if tickets.priority == 'planning' %}selected{% endif %}>Planning</option>
+                        <option value="moderate" {% if tickets.priority == 'moderate' %}selected{% endif %}>Moderate</option>
+                        <option value="high" {% if tickets.priority == 'high' %}selected{% endif %}>High</option>
+
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Assigned Group<span class="required">*</span></label>
+                    <!-- <input type="text" placeholder="enter name" name="assignment_group" value="{{ tickets.assignment_group }}"> -->
+                     <a href="{% url 'assigned' %}?source_page=update&ticket_id={{ tickets.id }}" class="fake-input">
+                    <!-- {{ tickets.assignment_group|default:"Enter name" }} -->
+                      {{ selected_group|default:"Enter name" }}
+                </a>
+                <input type="hidden" name="assignment_group" value="{{ selected_group }}" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Assigned To<span class="required">*</span></label>
+                    <input type="text" placeholder="Enter name" name="assigned_to" value="{{ tickets.assigned_to }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Created by</label>
+                    <input type="text" name="created_by" value="{{ tickets.created_by }}" readonly>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Updated By<span class="required">*</span></label>
+                    <input type="text" placeholder="Enter name" name="updated_by" value="{{ request.session.username }}" required readonly>
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Short Description<span class="required">*</span></label>
+                    <input type="text" placeholder="Brief summary of the issue" name="short_description" value="{{ tickets.short_description }}" required>
+                </div>
+            </div>
+            <div class="form-row desc">
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" placeholder="Enter Description here...">{{ tickets.description }}</textarea>
+                </div>
+            </div>
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button type="button" class="tab-btn active" onclick="showTab(event, 'notes')">Notes</button>
+                    <button type="button" class="tab-btn" onclick="showTab(event, 'related-records')">Related Records</button>
+                    <button type="button" class="tab-btn" onclick="showTab(event, 'resolution-info')">Resolution Information</button>
+                </div>
+                <div id="notes" class="tab-content show">
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Additional Comments <span class="customer-visible">(Customer Visible)</span></label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <input type="text" name="additional_comments" placeholder="" value="{{ tickets.additional_comments }}">
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Work Notes</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <textarea name="work_notes" placeholder="">{{ tickets.work_notes }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div id="related-records" class="tab-content">
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Parent Incident</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <input type="text" name="parent_incident" placeholder="" />
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Problem</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <input type="text" name="problem" placeholder="" />
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Change Request</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <input type="text" name="change_request" placeholder="" />
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Caused by Change</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <input type="text" name="caused_by_change" placeholder="" />
+                        </div>
+                    </div>
+                </div>
+                <div id="resolution-info" class="tab-content">
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Knowledge</label>
+                        </div>
+                        <div class="form-group notes-input" style="align-items: flex-start;">
+                            <input type="checkbox" name="knowledge">
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Resolved By</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <input type="text" name="resolved_by" placeholder="">
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Resolution Code</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <select name="resolution_code">
+                                <option>-- None --</option>
+                                <option>Fixed</option>
+                                <option>Won't Fix</option>
+                                <option>Duplicate</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Resolved</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <input type="date" name="resolved_date">
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Resolution Notes</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <textarea name="resolution_notes" placeholder="Enter resolution details..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h3 style="margin-top: 20px;">Activities: {{ activities.count }}</h3>
+
+{% for activity in activities %}
+<div class="activity-card">
+    <div class="activity-header">
+        <span class="user-circle">{{ activity.user|first|upper }}</span>
+        <strong>{{ activity.user }}</strong>
+        <span class="activity-meta">{{ activity.action }} • {{ activity.created_at|date:"d-M-Y h:i A" }}</span>
+    </div>
+    <div class="activity-body">
+        {% for change in activity.changes.all %}
+            <div style="margin-bottom: 5px;">
+                <span style="font-weight: bold;">Field: {{ change.field_name }}</span><br>
+                
+                <span style="color:#fbc02d;">From:</span> 
+                <span style="color:#385775;">{{ change.old_value }}</span>
+                
+                <span style="color:#159b9b; margin-left:10px;">To:</span> 
+                <span style="color:#1a8c8c;">{{ change.new_value }}</span>
+            </div>
+        {% endfor %}
+        </div>
+</div>
+{% endfor %}
+          </fieldset>
+            <div class="action-buttons">
+                <a href="{% url 'dashboard' %}"><button class="action-btn submit">Update</button></a>
+                <button class="action-btn resolve">Resolve</button>
+            </div>
+        </form>
+
+ </div>
+ 
+ <script>
+ function showTab(evt, tabName) {
+    var i, tabcontent, tabbtns;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].classList.remove("show");
+    }
+    tabbtns = document.getElementsByClassName("tab-btn");
+    for (i = 0; i < tabbtns.length; i++) {
+      tabbtns[i].classList.remove("active");
+    }
+    document.getElementById(tabName).classList.add("show");
+    evt.currentTarget.classList.add("active");
+  }
+ </script>
+
+</body>
+</html>

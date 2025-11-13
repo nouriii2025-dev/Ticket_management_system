@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Incident - New Record</title>
+    <link rel="stylesheet" href="static/create_ticket.css">
+</head>
+<body>
+ <div class="main-layout">
+  <div class="sidebar">
+     <div class="user-info">
+       <div style="display:flex;align-items:center;gap:7px;">
+         <!-- <img src="https://img.icons8.com/ios-filled/40/159b9b/user.png" alt="User" style="width:22px;height:22px;" /> -->
+         <span style="font-weight:700;">Ticket Creations</span>
+       </div>
+       <div style="margin-top:6px;font-size:13px;">
+         <span>Welcome</span><br/>
+         <span style="color:#e2fefd; font-weight:600;"></span>
+       </div>
+     </div>
+     <nav class="sidebar-nav">
+       <a href="#" class="nav-item">Overview</a>
+       <a href="{% url 'dashboard' %}" class="nav-item active">Tickets</a>
+        {% if request.session.role == 'admin' %}
+       <li><a href="{% url 'user_management' %}" class="nav-item">User Management</a></li>
+       {% endif %}
+       <a href="#" class="nav-item">Master data</a>
+       <a href="#" class="nav-item">Reports</a>
+     </nav>
+    </div>
+    <div class="main-content">
+             {% if messages %}
+            {% for message in messages %}
+              <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+           <div class="action-buttons-top">
+                <a href="{% url 'dashboard' %}"><button type="submit" class="action-btn-top submit">Submit</button></a>
+                <button class="action-btn-top resolve">Resolve</button>
+            </div>
+          <fieldset class="ticket-fieldset">
+        <!-- <h2 class="add-ticket-title">Add Tickets</h2> -->
+         <legend>Add Ticket</legend>
+        <form class="incident-form" action="{% url 'create' %}" method="post">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="form-group">
+                    <label>School Name <span class="required">*</span></label>
+                    <input type="text" name="school_name" placeholder="Enter school name" required>
+                </div>
+                <div class="form-group">
+                    <label>School Code</label>
+                    <input type="text" name="school_code" placeholder="Enter school code">
+                </div>
+                <div class="form-group">
+                    <label>Caller <span class="required">*</span></label>
+                    <input type="text" name="caller" placeholder="Enter caller" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                     <div class="form-group">
+                    <label>Number</label>
+                    <input type="text" value="{{ next_number }}" readonly class="form-control readonly-input">
+                    <input type="hidden" name="number" value="{{ next_number }}">
+                </div>
+                </div>
+                <div class="form-group">
+                    <label>Category<span class="required">*</span></label>
+                    <select name="category" required>
+                        <option value="">Select category</option>
+                        <option value="inquiry/help">Inquiry / Help</option>
+                        <option value="software">Software</option>
+                        <option value="hardware">Hardware</option>
+                        <option value="network">Network</option>
+                        <option value="database">Database</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Subcategory</label>
+                    <select name="sub_category">
+                        <option value="">Select subcategory</option>
+                        <option value="anti-virus">Anti-virus</option>
+                        <option value="email">Email</option>
+                        <option value="internal application">Internal Application</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Channel</label>
+                    <select name="channel">
+                        <option value="">Select channel</option>
+                        <option value="email">Email</option>
+                        <option value="phone">Phone</option>
+                        <option value="self-service">Self-service</option>
+                        <option value="virtual agent">Virtual Agent</option>
+                        <option value="chat">Chat</option>
+                        <option value="walk-in">Walk-in</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>State<span class="required">*</span></label>
+                    <select name="state" required>
+                        <option value="">Select state</option>
+                        <option value="new" selected>New</option>
+                        <option value="in progress" disabled>In Progress</option>
+                        <option value="on hold" disabled>On Hold</option>
+                        <option value="resolved" disabled>Resolved</option>
+                        <option value="closed" disabled>Closed</option>
+                        <option value="cancelled" disabled>Cancelled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Impact</label>
+                    <select name="impact">
+                        <option value="">Select impact</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Urgency<span class="required">*</span></label>
+                    <select name="urgency" required>
+                        <option value="">Select urgency</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select name="priority">
+                        <option value="">Select priority</option>
+                        <option value="planning">Planning</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Assigned Group<span class="required">*</span></label>
+                    <a href="{% url 'assigned' %}?source_page=create" class="fake-input">
+                        {% if selected_group %}
+                        {{ selected_group }}
+                        {% else %}
+                        Select assignment group
+                        {% endif %}
+                    </a>
+                    <input type="hidden" name="assignment_group" value="{{ selected_group }}" required>            
+                 </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Assigned To<span class="required">*</span></label>
+                    <select name="assigned_to" required>
+                        <option value="">Select</option>
+                        {% if group_members %}
+                        {% for member in group_members %}
+                        <option value="{{ member.name }}">{{ member.name }}</option>
+                        {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                 <div class="form-group">
+                    <label>Created by</label>
+                    <input type="text" name="created_by" value="{{ request.session.username }}" readonly>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Updated By</label>
+                    <input type="text" name="updated_by" readonly>
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Short Description<span class="required">*</span></label>
+                    <input type="text" name="short_description" placeholder="Brief summary of the issue" required>
+                </div>
+            </div>
+            <div class="form-row desc">
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" placeholder="Enter description here..."></textarea>
+                </div>
+            </div>
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button type="button" class="tab-btn active" onclick="showTab(event, 'notes')">Notes</button>
+                    <button type="button" class="tab-btn" onclick="showTab(event, 'related-records')">Related Records</button>
+                    <button type="button" class="tab-btn" onclick="showTab(event, 'resolution-info')">Resolution Information</button>
+                </div>
+                <div id="notes" class="tab-content show">
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Additional Comments <span class="customer-visible">(Customer Visible)</span></label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <input type="text" name="additional_comments" placeholder="" >
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Work Notes</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <textarea name="work_notes" placeholder=""></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div id="related-records" class="tab-content">
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Parent Incident</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <input type="text" name="parent_incident" placeholder="" value="{{ parent_incident|default:'' }}">
+                            <a href="{% url 'parent_incident' %}">🔍</a>
+            
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Problem</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <input type="text" name="problem" placeholder="">
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Change Request</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <input type="text" name="change_request" placeholder="" />
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Caused by Change</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <input type="text" name="caused_by_change" placeholder="" />
+                        </div>
+                    </div>
+                </div>
+                <div id="resolution-info" class="tab-content">
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Knowledge</label>
+                        </div>
+                        <div class="form-group notes-input" style="align-items: flex-start;">
+                            <input type="checkbox" name="knowledge">
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Resolved By</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <input type="text" name="resolved_by" placeholder="">
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Resolution Code</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <select name="resolution_code">
+                                <option>-- None --</option>
+                                <option>Fixed</option>
+                                <option>Won't Fix</option>
+                                <option>Duplicate</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Resolved</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <input type="date" name="resolved_date">
+                        </div>
+                    </div>
+                    <div class="notes-row">
+                        <div class="form-group notes-label">
+                            <label>Resolution Notes</label>
+                        </div>
+                        <div class="form-group notes-input">
+                            <textarea name="resolution_notes" placeholder="Enter resolution details..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+            <div class="action-buttons">
+                <button type="submit" class="action-btn submit">Submit</button>
+                <button class="action-btn resolve">Resolve</button>
+            </div>
+        </form>
+    </div>
+ </div>
+ <script>
+ function showTab(evt, tabName) {
+    var i, tabcontent, tabbtns;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].classList.remove("show");
+    }
+    tabbtns = document.getElementsByClassName("tab-btn");
+    for (i = 0; i < tabbtns.length; i++) {
+      tabbtns[i].classList.remove("active");
+    }
+    document.getElementById(tabName).classList.add("show");
+    evt.currentTarget.classList.add("active");
+  }
+ </script>
+
+<script>
+  // Save form data including hidden fields before leaving the page
+  window.addEventListener("beforeunload", function() {
+    const form = document.querySelector("form.incident-form");
+    if (!form) return;
+    const data = {};
+    new FormData(form).forEach((value, key) => {
+      data[key] = value;
+    });
+    localStorage.setItem("ticketFormData", JSON.stringify(data));
+  });
+
+  // On page load, restore saved form data only when coming from assignment group
+  window.addEventListener("load", function() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // 🧹 If it's a brand new Add Ticket (no assignment_group param), clear old data
+    if (!urlParams.has("assignment_group")) {
+      localStorage.removeItem("ticketFormData");
+      return; // stop restoring — start clean
+    }
+
+    // ✅ If user came back from selecting a group, restore saved fields
+    const savedData = localStorage.getItem("ticketFormData");
+    if (savedData) {
+      const data = JSON.parse(savedData);
+
+      Object.keys(data).forEach(key => {
+        if (key === "assignment_group") return; // don't override backend group
+        const field = document.querySelector(`[name="${key}"]`);
+        if (field) {
+          if (field.type === "checkbox") {
+            field.checked = data[key] === "on";
+          } else {
+            field.value = data[key];
+          }
+        }
+      });
+
+      // ✅ Restore hidden assignment_group if backend didn't set one
+      const hiddenGroup = document.querySelector('input[name="assignment_group"]');
+      if (hiddenGroup && data['assignment_group'] && !hiddenGroup.value) {
+        hiddenGroup.value = data['assignment_group'];
+      }
+
+      // remove stored data after restoring
+      localStorage.removeItem("ticketFormData");
+    }
+  });
+
+  // Clear saved data when the form is successfully submitted
+  document.querySelector("form.incident-form").addEventListener("submit", function() {
+    const assignGroupVal = document.querySelector('input[name="assignment_group"]').value;
+    console.log("Submitting assignment_group:", assignGroupVal);
+    localStorage.removeItem("ticketFormData");
+  });
+</script>
+
+
+</body>
+</html>
+
+

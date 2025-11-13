@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="static/login.css">
+</head>
+<body>
+    <form action="{% url 'login' %}" method="post">
+        {% csrf_token %}
+        {% if messages %}
+            {% for message in messages %}
+              <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+    <h1>Login</h1>
+    <!-- <label for="email">Email</label>
+    <input type="text" placeholder="enter email" name="email"> -->
+    <label for="email">Username</label>
+    <input type="text" placeholder="enter username" name="username">
+    <label for="password">Password</label>
+    <input type="password" placeholder="enter password" name="password">
+        <a href="{% url 'reset' %}">Forgot password</a>
+
+    <button type="submit">Sign In</button>
+    Don't have an accound?<a href="{% url 'signup' %}"> Register now</a>
+
+    </form>
+</body>
+</html>
