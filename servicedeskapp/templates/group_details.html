@@ -17,17 +17,18 @@
        </div>
        <div style="margin-top:6px;font-size:13px;">
          <span>Welcome</span><br/>
-          <span>{{ request.session.name|default:request.session.username }}</span>
+                  <span>{{ request.session.name|default:request.session.username }}</span>
          <span style="color:#e2fefd; font-weight:600;"></span>
        </div>
      </div>
      <nav class="sidebar-nav">
        <a href="#" class="nav-item">Overview</a>
-       <a href="{% url 'dashboard' %}" class="nav-item active">Tickets</a>
+       <a href="{% url 'dashboard' %}" class="nav-item">Tickets</a>
         {% if request.session.role == 'admin' %}
        <li><a href="{% url 'user_management' %}" class="nav-item">User Management</a></li>
        <li><a href="{% url 'masterdata_overview' %}" class="nav-item">Master data</a></li>
        {% endif %}
+
        <a href="#" class="nav-item">Reports</a>
      </nav>
     </div>

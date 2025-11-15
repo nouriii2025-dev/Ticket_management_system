@@ -25,8 +25,8 @@
        <a href="{% url 'dashboard' %}" class="nav-item active">Tickets</a>
        {% if request.session.role == 'admin' %}
        <li><a href="{% url 'user_management' %}" class="nav-item">User Management</a></li>
+       <li><a href="{% url 'masterdata_overview' %}" class="nav-item">Master data</a></li>
        {% endif %}
-       <a href="#" class="nav-item">Master data</a>
        <a href="#" class="nav-item">Reports</a>
      </nav>
     </div>
@@ -39,7 +39,7 @@
       <div class="content-area">
                     {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+              <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
                 {{ message }}
               </div>
             {% endfor %}

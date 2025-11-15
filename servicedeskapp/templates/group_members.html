@@ -11,11 +11,11 @@
   <div class="sidebar">
      <div class="user-info">
        <div style="display:flex;align-items:center;gap:7px;">
-         <!-- <img src="https://img.icons8.com/ios-filled/40/159b9b/user.png" alt="User" style="width:22px;height:22px;" /> -->
          <span style="font-weight:700;">Ticket Creations</span>
        </div>
        <div style="margin-top:6px;font-size:13px;">
          <span>Welcome</span><br/>
+                  <span>{{ request.session.name|default:request.session.username }}</span>
          <span style="color:#e2fefd; font-weight:600;"></span>
        </div>
      </div>
@@ -24,55 +24,59 @@
        <a href="{% url 'dashboard' %}" class="nav-item active">Tickets</a>
         {% if request.session.role == 'admin' %}
        <li><a href="{% url 'user_management' %}" class="nav-item">User Management</a></li>
+       <li><a href="{% url 'masterdata_overview' %}" class="nav-item">Master data</a></li>
        {% endif %}
-       <a href="#" class="nav-item">Master data</a>
        <a href="#" class="nav-item">Reports</a>
      </nav>
     </div>
     <div class="main-content">
+        <form action="{% url 'group_members' %}" method="post">
+    {% csrf_token %}
       <div class="container">
         <div class="collection">
           <label for="collection-search">Collection</label>
           <input type="search" id="collection-search" class="search-box" placeholder="Search..." />
           <select id="collection" size="50">
-            <option>Abdul Mannan</option>
-            <option>Abhijith PS</option>
-            <option>Abhijith Raju</option>
-            <option>Abhishek Prasad</option>
-            <option>Abhitha</option>
-            <option>Abijith Ps</option>
-            <option>Abin Mathew</option>
-            <option>Adarsh C</option>
-            <option>Adarsh NP</option>
-            <option>Ajal Rajan</option>
-            <option>AJAY DAS</option>
-            <option>Ajay Y</option>
-            <option>Akhila Akhi</option>
-            <option>Akshay</option>
-            <option>Alen Joseph</option>
-            <option>Alwin Peter</option>
-            <option>Amal</option>
+            {% for user in users %}
+            <option value="{{ user.id }}">{{ user.name }}</option>
+             {% endfor %}
           </select>
         </div>
         <div class="middle-buttons">
           <button type="button" id="btn-add" title="Add">&gt;</button>
           <button type="button" id="btn-remove" title="Remove">&lt;</button>
         </div>
-        <div class="group-members">
-          <label>Group Members List<br/><small>Hardware</small></label>
-          <select id="group-members" size="15" multiple>
-            <option></option>
-            <option></option>
+        <!-- <div class="group-members">
+          <label>Group Members List<br/></label>
+          <select id="group-members" name="members" size="50" multiple>
+             {% if selected_members %}
+            {% for member in selected_members %}
+              <option value="{{ member }}">{{ member }}</option>
+            {% endfor %}
+          {% endif %} 
           </select>
-        </div>
+        </div> -->
+      <div class="group-members">
+          <label>Group Members List<br/></label>
+          <select id="group-members" name="members" size="50" multiple>
+              {% for member in initial_selected_members %}
+                <option value="{{ member.id }}" selected>{{ member.name }}</option> 
+              {% endfor %}
+          </select>
+      </div>
+
       </div>
 
       <div class="buttons">
-        <button class="cancel" type="button">Cancel</button>
-        <button class="save" type="button">Save</button>
+        <a href="{% url 'new_group' %}"><button class="cancel" type="button">Cancel</button></a>
+        <button class="save" type="submit">Save</button>
       </div>
+  </form> 
+
       </div>
  </div>
+
+
 <script>
   // Search Functionality
   const searchInput = document.getElementById('collection-search');
@@ -99,10 +103,11 @@
   addBtn.addEventListener('click', function() {
     Array.from(collectionSelect.selectedOptions).forEach(option => {
       // Prevent duplicates
-      if (![...groupSelect.options].some(o => o.text === option.text)) {
-        groupSelect.add(new Option(option.text));
+      if (![...groupSelect.options].some(o => o.value === option.value)) {
+        // ✅ This line ensures the member’s ID is sent with the form
+        groupSelect.add(new Option(option.text, option.value));
       }
-      option.selected = false; // Optional: clear selection after move
+      option.selected = false; 
     });
   });
 
@@ -113,6 +118,25 @@
   });
 </script>
 
+<script>
+    // ... existing search and move functionality ...
+
+    // **NEW CODE: Select all members on save**
+    document.querySelector('.save').addEventListener('click', function(event) {
+        // Prevent default submit initially
+        event.preventDefault(); 
+        
+        const groupSelect = document.getElementById('group-members');
+        // Select all options in the Group Members List before submitting
+        Array.from(groupSelect.options).forEach(option => {
+            option.selected = true;
+        });
+
+        // Now submit the form
+        document.querySelector('form').submit();
+    });
+</script>
+
+
 </body>
 </html>
-

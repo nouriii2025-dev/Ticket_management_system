@@ -59,7 +59,13 @@ Priority_Choices=[
     ('moderate','Moderate'),
     ('high','High'),
 ]
-
+Caller_Category_Choices=[
+    ('principal','Principal'),
+    ('teacher','Teacher'),
+    ('parent','Parent'),
+    ('office staff','Office staff'),
+    ('other','Other'),
+]
 
 class Create_Ticket(models.Model):
     category=models.CharField(max_length=100,choices=Category_Choices,blank=True,null=True)
@@ -67,6 +73,7 @@ class Create_Ticket(models.Model):
     sub_category=models.CharField(max_length=100,blank=True,null=True,choices=Sub_category_Choices)
     state=models.CharField(max_length=100,choices=State_Choices,null=True,blank=True,default='')
     caller=models.CharField(max_length=100)
+    caller_category=models.CharField(max_length=100,choices=Caller_Category_Choices,blank=True,null=True)
     impact=models.CharField(max_length=100,choices=Impact_Choices,default='low')
     number = models.CharField(max_length=50,blank=True,null=True)
     school_name=models.CharField(max_length=100,blank=True,null=True)
@@ -125,11 +132,11 @@ phone_validator = RegexValidator(
     message="Phone number must be exactly 10 digits and contain only numbers."
 )
 
-Role_Choices={
+Role_Choices=[
     ('user','User'),
     ('admin','Admin'),
     ('other','Other'),
-}  
+] 
 class User_Management(models.Model):
     name=models.CharField(max_length=100,null=True,blank=True)
     username=models.CharField(max_length=100,null=True,blank=True)
@@ -141,4 +148,13 @@ class User_Management(models.Model):
     password=models.CharField(max_length=300,null=True,blank=True)
     def __str__(self):
         return self.name or "Unnamed User"
+
+   
+class Master_Data(models.Model):
+    name=models.CharField(max_length=100,null=True,blank=True)
+    code=models.CharField(max_length=100,null=True,blank=True)
+    email=models.EmailField(max_length=100,null=True,blank=True)
+    phone=models.CharField(validators=[phone_validator],max_length=10,null=True,blank=True)
+    def __str__(self):
+        return self.name
 

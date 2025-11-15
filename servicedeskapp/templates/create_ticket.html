@@ -15,6 +15,7 @@
        </div>
        <div style="margin-top:6px;font-size:13px;">
          <span>Welcome</span><br/>
+                  <span>{{ request.session.name|default:request.session.username }}</span>
          <span style="color:#e2fefd; font-weight:600;"></span>
        </div>
      </div>
@@ -23,8 +24,8 @@
        <a href="{% url 'dashboard' %}" class="nav-item active">Tickets</a>
         {% if request.session.role == 'admin' %}
        <li><a href="{% url 'user_management' %}" class="nav-item">User Management</a></li>
+       <li><a href="{% url 'masterdata_overview' %}" class="nav-item">Master data</a></li>
        {% endif %}
-       <a href="#" class="nav-item">Master data</a>
        <a href="#" class="nav-item">Reports</a>
      </nav>
     </div>
@@ -36,6 +37,8 @@
               </div>
             {% endfor %}
           {% endif %}
+            <form class="incident-form" action="{% url 'create' %}" method="post">
+            {% csrf_token %}
            <div class="action-buttons-top">
                 <a href="{% url 'dashboard' %}"><button type="submit" class="action-btn-top submit">Submit</button></a>
                 <button class="action-btn-top resolve">Resolve</button>
@@ -43,8 +46,6 @@
           <fieldset class="ticket-fieldset">
         <!-- <h2 class="add-ticket-title">Add Tickets</h2> -->
          <legend>Add Ticket</legend>
-        <form class="incident-form" action="{% url 'create' %}" method="post">
-            {% csrf_token %}
             <div class="form-row">
                 <div class="form-group">
                     <label>School Name <span class="required">*</span></label>
@@ -80,12 +81,13 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Subcategory</label>
-                    <select name="sub_category">
-                        <option value="">Select subcategory</option>
-                        <option value="anti-virus">Anti-virus</option>
-                        <option value="email">Email</option>
-                        <option value="internal application">Internal Application</option>
+                    <label>Caller category</label>
+                    <select name="caller_category">
+                        <option value="">Select category</option>
+                        <option value="principal">Principal</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="parent">Parent</option>
+                        <option value="ofiice staff">Office staff</option>
                         <option value="other">Other</option>
                     </select>
                 </div>
@@ -116,13 +118,14 @@
                         <option value="cancelled" disabled>Cancelled</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Impact</label>
-                    <select name="impact">
-                        <option value="">Select impact</option>
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
+                  <div class="form-group">
+                    <label>Subcategory</label>
+                    <select name="sub_category">
+                        <option value="">Select subcategory</option>
+                        <option value="anti-virus">Anti-virus</option>
+                        <option value="email">Email</option>
+                        <option value="internal application">Internal Application</option>
+                        <option value="other">Other</option>
                     </select>
                 </div>
             </div>
@@ -145,6 +148,17 @@
                         <option value="high">High</option>
                     </select>
                 </div>
+                 <div class="form-group">
+                    <label>Impact</label>
+                    <select name="impact">
+                        <option value="">Select impact</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
                 <div class="form-group">
                     <label>Assigned Group<span class="required">*</span></label>
                     <a href="{% url 'assigned' %}?source_page=create" class="fake-input">
@@ -156,8 +170,6 @@
                     </a>
                     <input type="hidden" name="assignment_group" value="{{ selected_group }}" required>            
                  </div>
-            </div>
-            <div class="form-row">
                 <div class="form-group">
                     <label>Assigned To<span class="required">*</span></label>
                     <select name="assigned_to" required>

@@ -10,6 +10,9 @@ from django.core.paginator import Paginator
 from datetime import datetime
 from django.db.models import Max
 import re
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 
 def sign_up(request):
     if request.method=='POST':
@@ -173,6 +176,7 @@ def create_ticket(request):
         sub_category=request.POST.get('sub_category')
         state=request.POST.get('state')
         caller=request.POST.get('caller')
+        caller_category=request.POST.get('caller_category')
         impact=request.POST.get('impact')
         school_name=request.POST.get('school_name')
         urgency=request.POST.get('urgency')
@@ -224,6 +228,7 @@ def create_ticket(request):
             sub_category=sub_category,
             state=state,
             caller=caller,
+            caller_category=caller_category,
             impact=impact,
             school_name=school_name,
             urgency=urgency,
@@ -238,7 +243,8 @@ def create_ticket(request):
             additional_comments=additional_comments,
             work_notes=work_notes,
             number=number)
-        return redirect('dashboard')
+        messages.success(request,'Ticket Added')
+        return redirect('dashboard')    
     else:
         selected_group=request.GET.get('assignment_group','')
         # next_num = 10001 + ticket_count                #count only the rows in the table thus identifying the next number
@@ -272,6 +278,7 @@ def update_ticket(request, ticket_id):
             'sub_category': single_ticket.sub_category,
             'state': single_ticket.state,
             'caller': single_ticket.caller,
+            'caller_category':single_ticket.caller_category,
             'impact': single_ticket.impact,
             'school_name': single_ticket.school_name,
             'urgency': single_ticket.urgency,
@@ -291,6 +298,7 @@ def update_ticket(request, ticket_id):
         single_ticket.sub_category = request.POST.get('sub_category')
         single_ticket.state = request.POST.get('state')
         single_ticket.caller = request.POST.get('caller')
+        single_ticket.caller_category = request.POST.get('caller_category')
         single_ticket.impact = request.POST.get('impact')
         single_ticket.school_name = request.POST.get('school_name')
         single_ticket.urgency = request.POST.get('urgency')
@@ -305,7 +313,7 @@ def update_ticket(request, ticket_id):
         single_ticket.work_notes = request.POST.get('work_notes')
         single_ticket.save() 
 
-        fields_to_check=['category', 'channel', 'sub_category', 'state', 'caller', 'impact', 
+        fields_to_check=['category', 'channel', 'sub_category', 'state', 'caller','caller_category', 'impact', 
             'school_name', 'urgency', 'school_code', 'priority', 'assignment_group', 
              'assigned_to', 'short_description', 'description', 
             'additional_comments', 'work_notes']
@@ -336,6 +344,7 @@ def update_ticket(request, ticket_id):
                     old_value=change['old_value'],
                     new_value=change['new_value']
                 )   
+        messages.success(request,'Updated Successfully')
         return redirect('dashboard') 
     else:
         activities=single_ticket.activities.all().order_by('-created_at').prefetch_related('changes')
@@ -365,22 +374,29 @@ def assigned_group(request):
 
 @admin_required
 def new_group(request):
-    if request.method=='POST':
-        name=request.POST.get('name')
-        group_email=request.POST.get('group_email')
-        manager=request.POST.get('manager')
-        parent=request.POST.get('parent')
-        description=request.POST.get('description')
-        group=Assignment_Group.objects.create(
-            name=name,group_email=group_email,manager=manager,
-            parent=parent,description=description)
-        member_names=request.POST.getlist('members[]')
-        for name in member_names:
-            if name.strip():
-                Group_Members.objects.create(group=group,name=name)
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        group_email = request.POST.get('group_email')
+        manager = request.POST.get('manager')
+        parent = request.POST.get('parent')
+        description = request.POST.get('description')
+        group = Assignment_Group.objects.create(
+            name=name, group_email=group_email, manager=manager,
+            parent=parent, description=description)
+        member_ids = request.POST.getlist('members') 
+        for user_id in member_ids:
+            if user_id.strip():
+                try:
+                    user_member = User_Management.objects.get(id=user_id)
+                    Group_Members.objects.create(group=group, name=user_member.name)
+                except User_Management.DoesNotExist:
+                    pass
+        if 'selected_members' in request.session:
+            del request.session['selected_members']
         return redirect('assigned')
-    users=User_Management.objects.filter(role__iexact='user')
-    return render(request,'new_group.html',{'users':users})
+    selected_member_ids = request.session.get('selected_members', [])
+    selected_members = User_Management.objects.filter(id__in=selected_member_ids)
+    return render(request, 'new_group.html', {'selected_members': selected_members})
 
 @admin_required
 def edit_group(request,group_id):
@@ -407,11 +423,9 @@ def edit_group(request,group_id):
             Group_Members.objects.create(group=single_group,name=name)
         messages.success(request,"Updated Successfully")
         return redirect('assigned')
-    users=User_Management.objects.filter(role__iexact='user')
     context={
         'group':single_group,
-        'members':members,
-        'users':users
+        'members':members
     }
     return render(request,'edit_group.html',context)
 
@@ -464,6 +478,8 @@ def edit_user(request,user_id):
         single_user.role=request.POST.get('role')
         password=request.POST.get('password')
         confirm_password=request.POST.get('confirm_password')
+        if not single_user.phone.isdigit() or len(single_user.phone) != 10:
+            return render(request, 'edit_user.html', {'error': 'Phone number must be 10 digits.'})
         if password!=confirm_password:
             messages.error(request,"passwords don't match")
             return redirect('edit_user',user_id=single_user.id)
@@ -508,6 +524,86 @@ def parent_incident(request):
     }
     return render(request,'parent_incident.html',context)
 
+
 def group_members(request):
-    return render(request,'group_members.html')
+    users=User_Management.objects.filter(role__iexact='user')    
+    if request.method == 'POST':
+        selected_members_ids = request.POST.getlist('members') 
+        request.session['selected_members'] = selected_members_ids 
+        return redirect('new_group')
+    initial_member_ids = request.session.get('selected_members', [])
+    available_users = users.exclude(id__in=initial_member_ids)
+    selected_members = User_Management.objects.filter(id__in=initial_member_ids)
+    context={
+        'users': available_users,
+        'initial_selected_members': selected_members 
+    }
+    return render(request, 'group_members.html',context)
+
+@admin_required
+def master_data(request):
+    data=Master_Data.objects.all()
+    context={
+        'data':data
+    }
+    return render(request,'master_data.html',context)
+
+@admin_required
+def master_data_add(request):
+    if request.method=='POST':
+        name=request.POST.get('name')
+        code=request.POST.get('code')
+        email=request.POST.get('email')
+        phone=request.POST.get('phone')
+        if not phone.isdigit() or len(phone) != 10:
+            return render(request, 'master_data_add.html', {'error': 'Phone number must be 10 digits.'})
+        Master_Data.objects.create(name=name,code=code,email=email,phone=phone)
+        messages.success(request,'Details Added')
+        return redirect('master_data')
+    return render(request,'master_data_add.html')
+
+@admin_required
+def master_data_edit(request,master_id):
+    single_master_data=get_object_or_404(Master_Data,id=master_id)
+    if request.method=='POST':
+        single_master_data.name=request.POST.get('name')
+        single_master_data.code=request.POST.get('code')
+        single_master_data.email=request.POST.get('email')
+        single_master_data.phone=request.POST.get('phone')
+        if not single_master_data.phone.isdigit() or len(single_master_data.phone) != 10:
+            return render(request, 'master_data_edit.html', {'error': 'Phone number must be 10 digits.'})
+        single_master_data.save()
+        messages.success(request,'Updated Successfully')
+        return redirect('master_data')
+    context={
+        'single_data':single_master_data
+    }
+    return render(request,'master_data_edit.html',context)
+
+@admin_required
+def master_data_delete(request,master_id):
+    master=get_object_or_404(Master_Data,id=master_id)
+    master.delete()
+    return redirect('master_data')
+
+@admin_required
+def masterdata_overview(request):
+    return render(request,'masterdata_overview.html')
+
+@admin_required
+def group_details(request):
+    search=request.GET.get('q','')
+    if search:
+        add=Assignment_Group.objects.filter(name__icontains=search)
+    else:    
+        add=Assignment_Group.objects.all()
+    source_page = request.GET.get('source_page')
+    ticket_id = request.GET.get('ticket_id')
+    context={
+        'add':add,
+        'source_page':source_page,
+        'ticket_id':ticket_id,
+    }
+    return render(request,'group_details.html',context)
+
 

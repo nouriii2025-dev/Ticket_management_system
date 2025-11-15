@@ -15,6 +15,7 @@
        </div>
        <div style="margin-top:6px;font-size:13px;">
          <span>Welcome</span><br/>
+                  <span>{{ request.session.name|default:request.session.username }}</span>
          <span style="color:#e2fefd; font-weight:600;"></span>
        </div>
      </div>
@@ -23,27 +24,28 @@
        <a href="{% url 'dashboard' %}" class="nav-item active">Tickets</a>
         {% if request.session.role == 'admin' %}
        <li><a href="{% url 'user_management' %}" class="nav-item">User Management</a></li>
+       <li><a href="{% url 'masterdata_overview' %}" class="nav-item">Master data</a></li>
        {% endif %}
-       <a href="#" class="nav-item">Master data</a>
        <a href="#" class="nav-item">Reports</a>
      </nav>
     </div>
     <div class="main-content">
             {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+              <div style="background-color:#cfffcc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
                 {{ message }}
               </div>
             {% endfor %}
           {% endif %}
+          <form class="incident-form" action="{% url 'update' ticket_id=tickets.id %}" method="post">
+            {% csrf_token %}
           <div class="action-buttons-top">
                 <a href="{% url 'dashboard' %}"><button class="action-btn-top submit">Update</button></a>
                 <button class="action-btn-top resolve">Resolve</button>
             </div>
           <fieldset class="ticket-fieldset">
         <legend>Update Ticket</legend>
-        <form class="incident-form" action="{% url 'update' ticket_id=tickets.id %}" method="post">
-            {% csrf_token %}
+        
             <div class="form-row">
                 <div class="form-group">
                     <label>School Name<span class="required">*</span></label>
@@ -79,13 +81,14 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Subcategory</label>
-                    <select name="sub_category">
-                        <option value="">Select sub-category</option>
-                        <option value="anti-virus" {% if tickets.sub_category == 'anti-virus' %}selected{% endif %}>Anti-virus</option>
-                        <option value="email" {% if tickets.sub_category == 'email' %}selected{% endif %}>Email</option>
-                        <option value="internal application" {% if tickets.sub_category == 'internal application' %}selected{% endif %}>Internal Application</option>
-                        <option value="other" {% if tickets.sub_category == 'other' %}selected{% endif %}>Other</option>
+                    <label>Caller category</label>
+                    <select name="caller_category">
+                        <option value="">Select category</option>
+                        <option value="principal" {% if tickets.caller_category == 'principal' %}selected{% endif %}>Principal</option>
+                        <option value="teacher" {% if tickets.caller_category == 'teacher' %}selected{% endif %}>Teacher</option>
+                        <option value="parent" {% if tickets.caller_category == 'parent' %}selected{% endif %}>Parent</option>
+                        <option value="office staff" {% if tickets.caller_category == 'office staff' %}selected{% endif %}>Office staff</option>
+                        <option value="other" {% if tickets.caller_category == 'other' %}selected{% endif %}>Other</option>
                     </select>
                 </div>
             </div>
@@ -116,14 +119,14 @@
 
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Impact</label>
-                    <select name="impact">
-                        <option value="">Select impact</option>
-                        <option value="low" {% if tickets.impact == 'low' %}selected{% endif %}>Low</option>
-                        <option value="medium" {% if tickets.impact == 'medium' %}selected{% endif %}>Medium</option>
-                        <option value="high" {% if tickets.impact == 'high' %}selected{% endif %}>High</option>
-
+                  <div class="form-group">
+                    <label>Subcategory</label>
+                    <select name="sub_category">
+                        <option value="">Select sub-category</option>
+                        <option value="anti-virus" {% if tickets.sub_category == 'anti-virus' %}selected{% endif %}>Anti-virus</option>
+                        <option value="email" {% if tickets.sub_category == 'email' %}selected{% endif %}>Email</option>
+                        <option value="internal application" {% if tickets.sub_category == 'internal application' %}selected{% endif %}>Internal Application</option>
+                        <option value="other" {% if tickets.sub_category == 'other' %}selected{% endif %}>Other</option>
                     </select>
                 </div>
             </div>
@@ -148,7 +151,19 @@
 
                     </select>
                 </div>
-                <div class="form-group">
+               <div class="form-group">
+                    <label>Impact</label>
+                    <select name="impact">
+                        <option value="">Select impact</option>
+                        <option value="low" {% if tickets.impact == 'low' %}selected{% endif %}>Low</option>
+                        <option value="medium" {% if tickets.impact == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="high" {% if tickets.impact == 'high' %}selected{% endif %}>High</option>
+
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                  <div class="form-group">
                     <label>Assigned Group<span class="required">*</span></label>
                     <!-- <input type="text" placeholder="enter name" name="assignment_group" value="{{ tickets.assignment_group }}"> -->
                      <a href="{% url 'assigned' %}?source_page=update&ticket_id={{ tickets.id }}" class="fake-input">
@@ -157,8 +172,6 @@
                 </a>
                 <input type="hidden" name="assignment_group" value="{{ selected_group }}" required>
                 </div>
-            </div>
-            <div class="form-row">
                 <div class="form-group">
                     <label>Assigned To<span class="required">*</span></label>
                     <input type="text" placeholder="Enter name" name="assigned_to" value="{{ tickets.assigned_to }}" required>

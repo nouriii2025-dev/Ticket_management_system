@@ -14,6 +14,7 @@
        </div>
        <div style="margin-top:6px;font-size:13px;">
          <span>Welcome</span><br/>
+                  <span>{{ request.session.name|default:request.session.username }}</span>
          <span style="color:#e2fefd; font-weight:600;"></span>
        </div>
      </div>
@@ -21,7 +22,7 @@
        <a href="#" class="nav-item">Overview</a>
        <a href="{% url 'dashboard' %}" class="nav-item">Tickets</a>
        <a href="{% url 'user_management' %}" class="nav-item active">User Management</a>
-       <a href="#" class="nav-item">Master data</a>
+       <a href="{% url 'masterdata_overview' %}" class="nav-item">Master data</a>
        <a href="#" class="nav-item">Reports</a>
      </nav>
     </div>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Incident - New Record</title>
+    <title>Add details- Master Data</title>
     <link rel="stylesheet" href="static/create_user.css">
 </head>
 <body>
@@ -21,8 +21,8 @@
      <nav class="sidebar-nav">
        <a href="#" class="nav-item">Overview</a>
        <a href="{% url 'dashboard' %}" class="nav-item">Tickets</a>
-       <a href="{% url 'user_management' %}" class="nav-item active">User Management</a>
-       <a href="{% url 'masterdata_overview' %}" class="nav-item">Master data</a>
+       <a href="{% url 'user_management' %}" class="nav-item">User Management</a>
+       <a href="{% url 'masterdata_overview' %}" class="nav-item active">Master data</a>
        <a href="#" class="nav-item">Reports</a>
      </nav>
     </div>
@@ -30,7 +30,7 @@
 
     <div class="main-content">
         <div class="content-area">
-            <form action="{% url 'create_user' %}" method="post">
+            <form method="post">
                 {% csrf_token %}
         <div class="create-user">
           {% if messages %}
@@ -41,46 +41,31 @@
             {% endfor %}
           {% endif %}
           <fieldset class="create-user-fieldset">
-            <legend>Create User</legend>
+            <legend>Add Details</legend>
            <div class="form-row">
             <div class="form-field-group">
                 <label for="name">Name<span class="required">*</span></label>
-                <input type="text" placeholder="Enter your name" name="name" required>
+                <input type="text" placeholder="Enter school name" name="name" value="{{ single_data.name }}" required>
             </div>
             <div class="form-field-group">
-                <label for="name">Username<span class="required">*</span></label>
-                <input type="text" placeholder="Enter username" name="username" required>
+                <label for="name">Code<span class="required">*</span></label>
+                <input type="text" placeholder="Enter school code" name="code" value="{{ single_data.code }}" required>
             </div>
             <div class="form-field-group">
                 <label for="email">Email id<span class="required">*</span></label>
-                <input type="email" placeholder="Enter your email id" name="email" required>
+                <input type="email" placeholder="Enter school email id" name="email" value="{{ single_data.email }}" required>
             </div>
              <div class="form-field-group">
                 <label for="phone">Phone<span class="required">*</span></label>
-                <input type="text" name="phone" pattern="\d{10}" maxlength="10" title="Enter a 10-digit phone number" required>
-
-          </div>
-            <div class="form-field-group">
-            <label>Role<span class="required">*</span></label>
-            <select name="role" required>
-                <option value="">Select role</option>
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-                <option value="other">Other</option>
-            </select>
-            </div>
-            <div class="form-field-group">
-            <label for="password">Password<span class="required">*</span></label>
-            <input type="password" placeholder="Enter the password" name="password" required>
-            </div>
-            <div class="form-field-group">
-            <label for="confirm_password">Confirm Password</label>
-            <input type="password" placeholder="Enter the password again" name="confirm_password">
-            </div>
+                <input type="text" name="phone" pattern="\d{10}" maxlength="10" title="Enter a 10-digit phone number" 
+                placeholder="Enter school number" value="{{ single_data.phone }}" required>
+              </div>
+        
+      
             </fieldset>
           <div class="form-buttons">
             <button type="reset" class="reset-btn">Reset</button>
-            <a href="{% url 'user_management' %}"><button type="submit" class="create-btn">Create</button></a>
+            <a href="{% url 'master_data' %}"><button type="submit" class="create-btn">Submit</button></a>
           </div>
         </div>
         </div>
