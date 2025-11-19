@@ -23,7 +23,7 @@
        <a href="#" class="nav-item">Overview</a>
        <a href="{% url 'dashboard' %}" class="nav-item active">Tickets</a>
        <a href="{% url 'user_management' %}" class="nav-item">User Management</a>
-       <a href="{% url 'masterdata_overview' %}" class="nav-item">Master data</a>
+       <a href="{% url 'master_data' %}" class="nav-item">Master data</a>
        <a href="#" class="nav-item">Reports</a>
      </nav>
     </div>
@@ -74,7 +74,7 @@
               </form>
             </div>
             <button type="button" class="search-btn">Search</button>
-            <button type="button" class="new-btn">+ New Member</button>
+            <a href="{% url 'group_members' %}"><button type="button" class="new-btn">+ New Member</button></a>
             </div>
 
           <ul class="member-list">

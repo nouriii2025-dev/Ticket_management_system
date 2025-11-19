@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Incident - New Record</title>
-    <link rel="stylesheet" href="static/create_ticket.css">
+    <link rel="stylesheet" href="static/master_data.css">
 </head>
 <body>
  <div class="main-layout">
@@ -25,15 +25,40 @@
         {% if request.session.role == 'admin' %}
        <li><a href="{% url 'user_management' %}" class="nav-item">User Management</a></li>
        {% endif %}
-       <a href="{% url 'masterdata_overview' %}" class="nav-item active">Master data</a>
+       <a href="{% url 'master_data' %}" class="nav-item active">Master data</a>
        <a href="#" class="nav-item">Reports</a>
      </nav>
     </div>
-    <div class="main-content">
-        <a href="{% url 'master_data' %}"><button type="button" class="submit-btn">School Details</button></a>
-        <button type="button" class="submit-btn">Caller Details</button>
+    <!-- <div class="main-content">
+        <a href="{% url 'school_details' %}"><button type="button" class="submit-btn">School Details</button></a>
+  
         <a href="{% url 'group_details' %}"><button type="button" class="submit-btn">Group Details</button></a>
-    </div>
+         <div class="tab-container">
+          <a href="{% url 'school_details' %}"><div class="tab school">
+              School Details
+          </div></a>
+          <a href="{% url 'group_details' %}"><div class="tab group">
+              Group Details
+          </div></a>
+      </div>
+
+    </div> -->
+
+    <div class="main-content">
+  <div class="button-card-group">
+    <a href="{% url 'school_details' %}" class="card-btn">
+      <div class="card-btn-content">
+        <span>School Details</span>
+      </div>
+    </a>
+    <a href="{% url 'group_details' %}" class="card-btn">
+      <div class="card-btn-content">
+        <span>Group Details</span>
+      </div>
+    </a>
+  </div>
+</div>
+
  </div>
 </body>
 </html>

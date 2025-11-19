@@ -26,7 +26,7 @@
        <a href="{% url 'dashboard' %}" class="nav-item">Tickets</a>
         {% if request.session.role == 'admin' %}
        <li><a href="{% url 'user_management' %}" class="nav-item">User Management</a></li>
-       <li><a href="{% url 'masterdata_overview' %}" class="nav-item">Master data</a></li>
+       <li><a href="{% url 'master_data' %}" class="nav-item active">Master data</a></li>
        {% endif %}
 
        <a href="#" class="nav-item">Reports</a>
@@ -51,10 +51,8 @@
             <legend>Group List</legend>
      
       <div class="search-bar">
-        <form action="{% url 'assigned' %}" method="get">
-        <input type="text" placeholder="Search groups" name="q" value="{{ request.GET.q}}">
+        <input type="text" id="searchInput" placeholder="Search groups..." onkeyup="searchGroups()">
         <button>Search</button>
-        </form>
       </div>
       {% for group in add %}
       <div class="group-items">
@@ -80,7 +78,26 @@
          </fieldset>
 
   </div>
-
   </div>
+
+
+<script>
+function searchGroups() {
+    let input = document.getElementById("searchInput").value.toLowerCase();
+    let items = document.querySelectorAll(".group-items");
+
+    items.forEach(item => {
+        let groupName = item.querySelector(".group-name").textContent.toLowerCase();
+
+        if (groupName.includes(input)) {
+            item.style.display = "flex";   
+        } 
+        else {
+            item.style.display = "none";   
+        }
+    });
+}
+</script>
+
 </body>
 </html>

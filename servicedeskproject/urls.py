@@ -31,13 +31,14 @@ urlpatterns = [
 
     path('group_members',views.group_members,name='group_members'),
 
+    path('school_details',views.school_details,name='school_details'),
+    path('school_add',views.school_add,name='school_add'),
+    path('school_edit<int:master_id>',views.school_edit,name='school_edit'),
+    path('school_delete<int:master_id>',views.school_delete,name='school_delete'),
     path('master_data',views.master_data,name='master_data'),
-    path('master_data_add',views.master_data_add,name='master_data_add'),
-    path('master_data_edit<int:master_id>',views.master_data_edit,name='master_data_edit'),
-    path('master_data_delete<int:master_id>',views.master_data_delete,name='master_data_delete'),
-    path('masterdata_overview',views.masterdata_overview,name='masterdata_overview'),
-
     path('group_details',views.group_details,name='group_details'),
+    
+    path('school_autofill',views.school_autofill,name='school_autofill'),
 
     #rest api
      path('auth/signup/', apiviews.sign_up_api, name='api_signup'),

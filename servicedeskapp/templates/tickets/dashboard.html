@@ -25,7 +25,7 @@
        <a href="{% url 'dashboard' %}" class="nav-item active">Tickets</a>
        {% if request.session.role == 'admin' %}
        <li><a href="{% url 'user_management' %}" class="nav-item">User Management</a></li>
-       <li><a href="{% url 'masterdata_overview' %}" class="nav-item">Master data</a></li>
+       <li><a href="{% url 'master_data' %}" class="nav-item">Master data</a></li>
        {% endif %}
        <a href="#" class="nav-item">Reports</a>
      </nav>

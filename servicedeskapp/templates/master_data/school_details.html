@@ -2,37 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Incident - New Record</title>
-    <link rel="stylesheet" href="static/user_management.css">
+    <title>Master Data</title>
+    <link rel="stylesheet" href="static/school_details.css">
 </head>
 <body>
 <div class="main-layout">
   <div class="sidebar">
      <div class="user-info">
        <div style="display:flex;align-items:center;gap:7px;">
-         <!-- <img src="https://img.icons8.com/ios-filled/40/159b9b/user.png" alt="User" style="width:22px;height:22px;" /> -->
          <span style="font-weight:700;">Ticket Creations</span>
        </div>
        <div style="margin-top:6px;font-size:13px;">
          <span>Welcome</span><br/>
-                  <span>{{ request.session.name|default:request.session.username }}</span>
+         <span>{{ request.session.name|default:request.session.username }}</span>
          <span style="color:#e2fefd; font-weight:600;"></span>
        </div>
      </div>
      <nav class="sidebar-nav">
        <a href="#" class="nav-item">Overview</a>
        <a href="{% url 'dashboard' %}" class="nav-item">Tickets</a>
-       <a href="{% url 'user_management' %}" class="nav-item active">User Management</a>
-       <a href="{% url 'masterdata_overview' %}" class="nav-item">Master data</a>
+       <a href="{% url 'user_management' %}" class="nav-item">User Management</a>
+       <a href="{% url 'master_data' %}" class="nav-item active">Master data</a>
        <a href="#" class="nav-item">Reports</a>
      </nav>
     </div>
 
     <div class="main-content">
-      <div class="content-area">
-        <form action="{% url 'user_management' %}" method="post">
+        <form action="{% url 'school_details' %}" method="post">
             {% csrf_token %}
         <div class="user-management">
+
           {% if messages %}
             {% for message in messages %}
               <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
@@ -41,39 +40,33 @@
             {% endfor %}
           {% endif %}
           <div class="create-user-container">
-            <a href="{% url 'create_user' %}">
-              <button type="button" class="create-user">+ Create User</button></a>
+                <a href="{% url 'school_add' %}">
+              <button type="button" class="create-user">+ Add details</button></a>
           </div>
            <fieldset class="user-fieldset">
-            <legend>User Management</legend>
+            <legend>School Details</legend>
    
           <table>
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Username</th>
+                <th>Code</th>
                 <th>Email</th>
                 <th>Phone</th>
-                <th>Role</th>
-                <th>Created</th>
-                <th>Last Login</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-                {% for user in add %}
+                {% for datas in data %}
               <tr>
-                <td>{{ user.name }}</td>
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.phone }}</td>
-                <td>{{ user.role }}</td>
-                <td>{{ user.created_at }}</td>
-                <td>{{ user.last_login }}</td>
+                <td>{{ datas.name }}</td>
+                <td>{{ datas.code }}</td>
+                <td>{{ datas.email }}</td>
+                <td>{{ datas.phone }}</td>
                 <td class="actions">
-                  <a href="{% url 'edit_user' user.id %}">
+                  <a href="{% url 'school_edit' datas.id %}">
                   <img src="https://img.icons8.com/ios-glyphs/18/edit.png" alt="Edit"></a>
-                  <a href="{% url 'delete_user' user.id %}">
+                  <a href="{% url 'school_delete' datas.id %}">
                   <img src="https://img.icons8.com/ios-glyphs/18/trash.png" alt="Delete"></a>
                 </td>
               </tr>

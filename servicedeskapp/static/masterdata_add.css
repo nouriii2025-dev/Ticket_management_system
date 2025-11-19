@@ -75,99 +75,6 @@ body {
     font-weight: 600;
 }
 
-/* .main-content {
-  flex: 1;
-  padding: 20px 30px;
-}
-
-.content-area {
-  margin-top: 20px;
-}
-
-.create-user {
-  background: #f5f6fe;
-  padding: 20px;
-  border-radius: 15px;
-  margin-bottom: 20px;
-  background: #fff;
-  padding: 20px;
-  border-radius: 15px;
-  width: auto;
-
-}
-
-.create-user h2 {
-  margin-bottom: 15px;
-}
-
-.form-row {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.form-field-group{
-    display: flex;
-    flex: 1;
-    align-items: center;
-    flex-direction: row;
-    margin-bottom: 0;
-}
-
-.form-field-group label{
-    font-size: 14px;
-    margin-bottom: 0;
-    margin-right: 8px;
-    white-space: nowrap;
-    min-width: 60px;
-}
-
-.form-row input,
-.form-row select {
-    width: auto;
-    flex: 1;
-    padding: 6px 10px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    background: #fff;
-    font-size: 14px;
-    box-sizing: border-box;
-}
-
-.form-row select {
-
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    padding-right: 25px;  
-}
-
-.form-buttons {
-  text-align: right;
-  margin-top: 10px;
-}
-
-.reset-btn,
-.create-btn {
-  border: none;
-  padding: 8px 20px;
-  border-radius: 20px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.reset-btn {
-  border: 1px solid #009b9b;
-  color: #009b9b;
-  background: transparent;
-  margin-right: 10px;
-}
-
-.create-btn {
-  background: #009b9b;
-  color: #fff;
-}  */
 
 
 
@@ -360,3 +267,4 @@ body {
     color: #159b9b;               /* theme color for title */
     padding: 0 15px;              /* spacing around text */
 }
+

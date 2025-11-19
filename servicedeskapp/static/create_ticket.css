@@ -471,3 +471,19 @@ textarea {
     color: #159b9b;               /* theme color for title */
     padding: 0 15px;              /* spacing around text */
 }
+.autocomplete-items {
+    border: 1px solid #ddd;
+    max-height: 150px;
+    overflow-y: auto;
+    position: absolute;
+    background: #fff;
+    z-index: 10;
+}
+.autocomplete-item {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+.autocomplete-item:hover {
+    background: #e2f4ff;
+}
+

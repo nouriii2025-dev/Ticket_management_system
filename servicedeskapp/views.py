@@ -13,6 +13,9 @@ import re
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.conf import settings
 
 def sign_up(request):
     if request.method=='POST':
@@ -139,7 +142,7 @@ def dashboard(request):
         'tickets_json': tickets_json,
         'page_obj': page_obj,
     }
-    return render(request, 'dashboard.html', context)
+    return render(request, 'tickets/dashboard.html', context)
 
 
 def delete_tickets(request):
@@ -170,6 +173,7 @@ def create_ticket(request):
         next_num = 10001 
 
     next_number = f'INC{next_num:07d}'
+    group_members=[]
     if request.method=='POST':
         category=request.POST.get('category')
         channel=request.POST.get('channel')
@@ -223,6 +227,24 @@ def create_ticket(request):
                 'selected_group': assignment_group
             })
         
+        try:
+            school = Master_Data.objects.get(name=school_name)
+            school_email = school.email
+        except Master_Data.DoesNotExist:
+            school = None
+            school_email = None
+
+        if not school:
+            messages.error(request,"School not found. Please enter a valid school.")
+            return render(request, 'tickets/create_ticket.html', {
+                'next_number': next_number,
+                'selected_group': assignment_group,
+                'group_members':group_members,
+            })
+
+        if not school_email:
+            messages.warning(request," This school does not have an email configured. Notification will not be sent.")
+        
         Create_Ticket.objects.create(category=category,
             channel=channel,
             sub_category=sub_category,
@@ -243,7 +265,29 @@ def create_ticket(request):
             additional_comments=additional_comments,
             work_notes=work_notes,
             number=number)
-        messages.success(request,'Ticket Added')
+        
+        try:
+            school = Master_Data.objects.get(name=school_name)
+            school_email = school.email
+        except Master_Data.DoesNotExist:
+            school_email = None
+
+        if school_email:
+            subject = f"New Ticket Created: {number}"
+            message = (
+                f"A new ticket has been created for your school {school_name}.\n\n"
+                f"Ticket Number: {number}\n"
+                f"Short Description: {short_description}\n\n"
+                "Please check the ticketing system for more details."
+            )
+            from_email = settings.DEFAULT_FROM_EMAIL
+            recipient_list = [school_email]
+            try:
+                send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+            except Exception as e:
+                print(f"Email sending failed: {e}")
+        
+        messages.success(request,'Ticket added and notified ')
         return redirect('dashboard')    
     else:
         selected_group=request.GET.get('assignment_group','')
@@ -262,7 +306,7 @@ def create_ticket(request):
             'group_members':group_members,
             'parent_incident':parent_incident,
         }
-    return render(request,'create_ticket.html',context)
+    return render(request,'tickets/create_ticket.html',context)
 
 
 def update_ticket(request, ticket_id):
@@ -353,16 +397,17 @@ def update_ticket(request, ticket_id):
         'activities': activities,
         'selected_group':selected_group,
         }
-    return render(request, 'update_ticket.html', context)
+    return render(request, 'tickets/update_ticket.html', context)
 
 
-#GROUP LISTING, ADDING NEW GROUP, EDITING AND DELETING
+#--------------------GROUP LISTING, ADDING NEW GROUP, EDITING AND DELETING---------------------------------
+
 def assigned_group(request):
-    search=request.GET.get('q','')
-    if search:
-        add=Assignment_Group.objects.filter(name__icontains=search)
-    else:    
-        add=Assignment_Group.objects.all()
+    # search=request.GET.get('q','')           #search functionality with django
+    # if search:
+    #     add=Assignment_Group.objects.filter(name__icontains=search)
+    # else:    
+    add=Assignment_Group.objects.all()
     source_page = request.GET.get('source_page')
     ticket_id = request.GET.get('ticket_id')
     context={
@@ -370,7 +415,7 @@ def assigned_group(request):
         'source_page':source_page,
         'ticket_id':ticket_id,
     }
-    return render(request,'assigned_group.html',context)
+    return render(request,'tickets/assigned_group.html',context)
 
 @admin_required
 def new_group(request):
@@ -396,7 +441,7 @@ def new_group(request):
         return redirect('assigned')
     selected_member_ids = request.session.get('selected_members', [])
     selected_members = User_Management.objects.filter(id__in=selected_member_ids)
-    return render(request, 'new_group.html', {'selected_members': selected_members})
+    return render(request, 'tickets/new_group.html', {'selected_members': selected_members})
 
 @admin_required
 def edit_group(request,group_id):
@@ -427,7 +472,7 @@ def edit_group(request,group_id):
         'group':single_group,
         'members':members
     }
-    return render(request,'edit_group.html',context)
+    return render(request,'tickets/edit_group.html',context)
 
 @admin_required
 def delete_group(request,group_id):
@@ -437,14 +482,15 @@ def delete_group(request,group_id):
 
 @admin_required
 def preview(request):
-    return render(request,'preview_group.html')
+    return render(request,'tickets/preview_group.html')
 
 
-#USER LISTING, ADDING USER, EDIT AND DELETE
+#---------------------------USER LISTING, ADDING USER, EDIT AND DELETE-----------------------------
+
 @admin_required
 def user_management(request):
     add=User_Management.objects.all()
-    return render(request,'user_management.html',{'add':add})
+    return render(request,'user_management/user_management.html',{'add':add})
 
 @admin_required
 def create_user(request):
@@ -465,7 +511,7 @@ def create_user(request):
         User_Management.objects.create(name=name,username=username,email=email,phone=phone,role=role,password=hashed_password)
         messages.success(request,"User created successfully")
         return redirect('user_management')
-    return render(request,'create_user.html')
+    return render(request,'user_management/create_user.html')
 
 @admin_required
 def edit_user(request,user_id):
@@ -491,7 +537,7 @@ def edit_user(request,user_id):
     context={
             's_user': single_user
         }
-    return render(request,'edit_user.html',context)
+    return render(request,'user_management/edit_user.html',context)
 
 @admin_required
 def delete_user(request,user_id):
@@ -526,30 +572,39 @@ def parent_incident(request):
 
 
 def group_members(request):
-    users=User_Management.objects.filter(role__iexact='user')    
+    users=User_Management.objects.filter(role__iexact='user')   
+    source_page = request.GET.get('source_page')
+    group_id = request.GET.get('group_id') 
     if request.method == 'POST':
         selected_members_ids = request.POST.getlist('members') 
         request.session['selected_members'] = selected_members_ids 
-        return redirect('new_group')
+        if source_page=='edit_group' and group_id:
+            return redirect('edit_group',group_id)
+        else:
+            return redirect('new_group')
     initial_member_ids = request.session.get('selected_members', [])
     available_users = users.exclude(id__in=initial_member_ids)
     selected_members = User_Management.objects.filter(id__in=initial_member_ids)
     context={
         'users': available_users,
-        'initial_selected_members': selected_members 
+        'initial_selected_members': selected_members,
+        'source_page':source_page,
+        'group_id':group_id
     }
-    return render(request, 'group_members.html',context)
+    return render(request, 'tickets/group_members.html',context)
+
+#----------------------------------MASTER DATA---------------------------------------------------
 
 @admin_required
-def master_data(request):
+def school_details(request):
     data=Master_Data.objects.all()
     context={
         'data':data
     }
-    return render(request,'master_data.html',context)
+    return render(request,'master_data/school_details.html',context)
 
 @admin_required
-def master_data_add(request):
+def school_add(request):
     if request.method=='POST':
         name=request.POST.get('name')
         code=request.POST.get('code')
@@ -559,11 +614,11 @@ def master_data_add(request):
             return render(request, 'master_data_add.html', {'error': 'Phone number must be 10 digits.'})
         Master_Data.objects.create(name=name,code=code,email=email,phone=phone)
         messages.success(request,'Details Added')
-        return redirect('master_data')
-    return render(request,'master_data_add.html')
+        return redirect('school_details')
+    return render(request,'master_data/school_add.html')
 
 @admin_required
-def master_data_edit(request,master_id):
+def school_edit(request,master_id):
     single_master_data=get_object_or_404(Master_Data,id=master_id)
     if request.method=='POST':
         single_master_data.name=request.POST.get('name')
@@ -574,21 +629,21 @@ def master_data_edit(request,master_id):
             return render(request, 'master_data_edit.html', {'error': 'Phone number must be 10 digits.'})
         single_master_data.save()
         messages.success(request,'Updated Successfully')
-        return redirect('master_data')
+        return redirect('school_details')
     context={
         'single_data':single_master_data
     }
-    return render(request,'master_data_edit.html',context)
+    return render(request,'master_data/school_edit.html',context)
 
 @admin_required
-def master_data_delete(request,master_id):
+def school_delete(request,master_id):
     master=get_object_or_404(Master_Data,id=master_id)
     master.delete()
-    return redirect('master_data')
+    return redirect('school_details')
 
 @admin_required
-def masterdata_overview(request):
-    return render(request,'masterdata_overview.html')
+def master_data(request):
+    return render(request,'master_data/master_data.html')
 
 @admin_required
 def group_details(request):
@@ -604,6 +659,16 @@ def group_details(request):
         'source_page':source_page,
         'ticket_id':ticket_id,
     }
-    return render(request,'group_details.html',context)
+    return render(request,'master_data/group_details.html',context)
 
+
+
+def school_autofill(request):
+    q = request.GET.get('q', '')
+    if q:
+        # Filter schools by name (case insensitive)
+        schools = Master_Data.objects.filter(name__icontains=q).values('name', 'code')[:10]
+    else:
+        schools = Master_Data.objects.all().values('name', 'code')[:10]
+    return JsonResponse(list(schools), safe=False)
 
