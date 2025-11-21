@@ -19,7 +19,7 @@ urlpatterns = [
     path('new_group',views.new_group,name='new_group'),
     path('edit_group/<int:group_id>/',views.edit_group,name='edit_group'),
     path('delete_group<int:group_id>',views.delete_group,name='delete_group'),
-    path('preview',views.preview,name='preview'),
+    # path('preview',views.preview,name='preview'),
 
     path('user_management',views.user_management,name='user_management'),
     path('create_user',views.create_user,name='create_user'),
@@ -39,6 +39,7 @@ urlpatterns = [
     path('group_details',views.group_details,name='group_details'),
     
     path('school_autofill',views.school_autofill,name='school_autofill'),
+    path('new',views.new,name='new'),
 
     #rest api
      path('auth/signup/', apiviews.sign_up_api, name='api_signup'),

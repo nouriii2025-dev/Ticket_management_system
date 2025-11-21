@@ -32,6 +32,9 @@
     <div class="main-content">
         <form action="{% url 'group_members' %}" method="post">
     {% csrf_token %}
+        <input type="hidden" name="source_page" value="{{ source_page }}">
+        <input type="hidden" name="group_id" value="{{ group_id }}">
+
       <div class="container">
         <div class="collection">
           <label for="collection-search">Collection</label>
@@ -46,16 +49,6 @@
           <button type="button" id="btn-add" title="Add">&gt;</button>
           <button type="button" id="btn-remove" title="Remove">&lt;</button>
         </div>
-        <!-- <div class="group-members">
-          <label>Group Members List<br/></label>
-          <select id="group-members" name="members" size="50" multiple>
-             {% if selected_members %}
-            {% for member in selected_members %}
-              <option value="{{ member }}">{{ member }}</option>
-            {% endfor %}
-          {% endif %} 
-          </select>
-        </div> -->
       <div class="group-members">
           <label>Group Members List<br/></label>
           <select id="group-members" name="members" size="50" multiple>
@@ -68,7 +61,11 @@
       </div>
 
       <div class="buttons">
-        <a href="{% url 'new_group' %}"><button class="cancel" type="button">Cancel</button></a>
+        {% if source_page == 'edit_group' %}
+          <a href="{% url 'edit_group' group_id %}"><button class="cancel" type="button">Cancel</button></a>
+        {% else %}
+          <a href="{% url 'new_group' %}"><button class="cancel" type="button">Cancel</button></a>
+        {% endif %}
         <button class="save" type="submit">Save</button>
       </div>
   </form> 
@@ -76,67 +73,60 @@
       </div>
  </div>
 
-
 <script>
-  // Search Functionality
-  const searchInput = document.getElementById('collection-search');
-  const collectionSelect = document.getElementById('collection');
-  const originalList = Array.from(collectionSelect.options).map(option => option.text);
+// ------------------ SEARCH FIXED --------------------
+const searchInput = document.getElementById('collection-search');
+const collectionSelect = document.getElementById('collection');
 
-  searchInput.addEventListener('input', function() {
+// Store BOTH id + name
+const originalList = Array.from(collectionSelect.options).map(option => ({
+    text: option.text,
+    value: option.value
+}));
+
+searchInput.addEventListener('input', function () {
     const query = this.value.toLowerCase();
     collectionSelect.innerHTML = '';
-    originalList.forEach(name => {
-      if (name.toLowerCase().includes(query)) {
-        const option = document.createElement('option');
-        option.text = name;
-        collectionSelect.appendChild(option);
-      }
+
+    originalList.forEach(item => {
+        if (item.text.toLowerCase().includes(query)) {
+            const opt = document.createElement('option');
+            opt.text = item.text;
+            opt.value = item.value; // VERY IMPORTANT
+            collectionSelect.appendChild(opt);
+        }
     });
-  });
+});
 
-  // Move Functionality
-  const addBtn = document.getElementById('btn-add');
-  const removeBtn = document.getElementById('btn-remove');
-  const groupSelect = document.getElementById('group-members');
+// ------------------ ADD/REMOVE --------------------
+const addBtn = document.getElementById('btn-add');
+const removeBtn = document.getElementById('btn-remove');
+const groupSelect = document.getElementById('group-members');
 
-  addBtn.addEventListener('click', function() {
+addBtn.addEventListener('click', function () {
     Array.from(collectionSelect.selectedOptions).forEach(option => {
-      // Prevent duplicates
-      if (![...groupSelect.options].some(o => o.value === option.value)) {
-        // ✅ This line ensures the member’s ID is sent with the form
-        groupSelect.add(new Option(option.text, option.value));
-      }
-      option.selected = false; 
+        if (![...groupSelect.options].some(o => o.value === option.value)) {
+            groupSelect.add(new Option(option.text, option.value));
+        }
+        option.selected = false;
     });
-  });
+});
 
-  removeBtn.addEventListener('click', function() {
+removeBtn.addEventListener('click', function () {
     Array.from(groupSelect.selectedOptions).forEach(option => {
-      groupSelect.remove(option.index);
+        groupSelect.remove(option.index);
     });
-  });
+});
+
+// ------------------ SAVE BUTTON --------------------
+document.querySelector('.save').addEventListener('click', function (event) {
+    event.preventDefault();
+    Array.from(groupSelect.options).forEach(option => option.selected = true);
+    const form = this.closest('form'); // ensure correct form
+    form.submit();
+});
+
 </script>
-
-<script>
-    // ... existing search and move functionality ...
-
-    // **NEW CODE: Select all members on save**
-    document.querySelector('.save').addEventListener('click', function(event) {
-        // Prevent default submit initially
-        event.preventDefault(); 
-        
-        const groupSelect = document.getElementById('group-members');
-        // Select all options in the Group Members List before submitting
-        Array.from(groupSelect.options).forEach(option => {
-            option.selected = true;
-        });
-
-        // Now submit the form
-        document.querySelector('form').submit();
-    });
-</script>
-
 
 </body>
 </html>

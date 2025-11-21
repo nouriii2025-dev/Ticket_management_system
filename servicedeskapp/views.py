@@ -16,6 +16,8 @@ from rest_framework import status
 from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils import timezone
+
 
 def sign_up(request):
     if request.method=='POST':
@@ -106,10 +108,12 @@ def logout(request):
 
 def dashboard(request):
     all_tickets = Create_Ticket.objects.all().order_by('-created_at')
+    for ticket in all_tickets:
+        school=Master_Data.objects.filter(name=ticket.school_name).first()
+        ticket.school_email=school.email if school else None
     paginator = Paginator(all_tickets, 8) 
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
-    # current_date=datetime.now
     fields_to_serialize = (
         'number',
         'short_description',
@@ -275,10 +279,15 @@ def create_ticket(request):
         if school_email:
             subject = f"New Ticket Created: {number}"
             message = (
+                f"Dear Sir/Madam,\n\n"
                 f"A new ticket has been created for your school {school_name}.\n\n"
                 f"Ticket Number: {number}\n"
                 f"Short Description: {short_description}\n\n"
-                "Please check the ticketing system for more details."
+                "Our team is actively looking into the issue and will keep you updated.\n"
+                "If you need any further assistance, kindly reach out to our support team.\n\n"
+                "Regards,\n"
+                "IT Support Team\n"
+                "Edship Technologies"
             )
             from_email = settings.DEFAULT_FROM_EMAIL
             recipient_list = [school_email]
@@ -329,7 +338,6 @@ def update_ticket(request, ticket_id):
             'school_code': single_ticket.school_code,
             'priority': single_ticket.priority,
             'assignment_group': single_ticket.assignment_group,
-            # 'updated_by': single_ticket.updated_by,
             'assigned_to': single_ticket.assigned_to,
             'short_description': single_ticket.short_description,
             'description': single_ticket.description,
@@ -340,7 +348,14 @@ def update_ticket(request, ticket_id):
         single_ticket.category = request.POST.get('category')
         single_ticket.channel = request.POST.get('channel')
         single_ticket.sub_category = request.POST.get('sub_category')
-        single_ticket.state = request.POST.get('state')
+
+        action=request.POST.get('action')
+        if action=="resolve":
+            single_ticket.state="resolved"
+            single_ticket.resolved_by=request.session.get('username')
+        else:
+            single_ticket.state = request.POST.get('state')
+
         single_ticket.caller = request.POST.get('caller')
         single_ticket.caller_category = request.POST.get('caller_category')
         single_ticket.impact = request.POST.get('impact')
@@ -379,6 +394,7 @@ def update_ticket(request, ticket_id):
             activity_record=Activity.objects.create(
                 ticket=single_ticket,
                 user=single_ticket.updated_by,
+                # action="Field changes"
                 action="Field changes"
             )   
             for change in field_changes:
@@ -388,8 +404,31 @@ def update_ticket(request, ticket_id):
                     old_value=change['old_value'],
                     new_value=change['new_value']
                 )   
-        messages.success(request,'Updated Successfully')
-        return redirect('dashboard') 
+        if action == "resolve":
+            single_ticket.resolved_date = timezone.now()
+            try:
+                school = Master_Data.objects.get(name=single_ticket.school_name)
+                single_ticket.school_email = school.email
+            except Master_Data.DoesNotExist:
+                single_ticket.school_email = None
+            if single_ticket.school_email:
+                subject = f"Your ticket {single_ticket.number} has been resolved"
+                message = (
+                    f"Dear Sir/Madam,\n\n"
+                    f"We are happy to inform you that your reported issue has been successfully resolved.\n\n"
+                    f"Ticket No.: {single_ticket.number}\n"
+                    f"Short Description: {single_ticket.short_description}\n\n"
+                    "If the issue reoccurs or you need further assistance, kindly inform us.\n\n"
+                    "Regards,\n"
+                    "IT Support Team\n"
+                    "Edship Technologies\n"
+                )
+
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [single_ticket.school_email])
+            messages.success(request, "Ticket resolved and email notification sent.")
+        else:
+            messages.success(request, "Ticket updated successfully.")
+        return redirect('update', ticket_id=single_ticket.id) 
     else:
         activities=single_ticket.activities.all().order_by('-created_at').prefetch_related('changes')
         context = {
@@ -403,10 +442,6 @@ def update_ticket(request, ticket_id):
 #--------------------GROUP LISTING, ADDING NEW GROUP, EDITING AND DELETING---------------------------------
 
 def assigned_group(request):
-    # search=request.GET.get('q','')           #search functionality with django
-    # if search:
-    #     add=Assignment_Group.objects.filter(name__icontains=search)
-    # else:    
     add=Assignment_Group.objects.all()
     source_page = request.GET.get('source_page')
     ticket_id = request.GET.get('ticket_id')
@@ -419,70 +454,118 @@ def assigned_group(request):
 
 @admin_required
 def new_group(request):
+    saved_form=request.session.get('group_form',{})
     if request.method == 'POST':
-        name = request.POST.get('name')
-        group_email = request.POST.get('group_email')
-        manager = request.POST.get('manager')
-        parent = request.POST.get('parent')
-        description = request.POST.get('description')
-        group = Assignment_Group.objects.create(
-            name=name, group_email=group_email, manager=manager,
-            parent=parent, description=description)
-        member_ids = request.POST.getlist('members') 
-        for user_id in member_ids:
-            if user_id.strip():
-                try:
-                    user_member = User_Management.objects.get(id=user_id)
-                    Group_Members.objects.create(group=group, name=user_member.name)
-                except User_Management.DoesNotExist:
-                    pass
-        if 'selected_members' in request.session:
-            del request.session['selected_members']
-        return redirect('assigned')
-    selected_member_ids = request.session.get('selected_members', [])
-    selected_members = User_Management.objects.filter(id__in=selected_member_ids)
-    return render(request, 'tickets/new_group.html', {'selected_members': selected_members})
+        if 'new_member' in request.POST:
+            request.session['group_form']={
+                'name': request.POST.get('name', ''),
+                'group_email': request.POST.get('group_email', ''),
+                'manager': request.POST.get('manager', ''),
+                'parent': request.POST.get('parent', ''),
+                'description': request.POST.get('description', ''),
+            }
+            return redirect('group_members')
+        if 'create_group' in request.POST:
+            name = request.POST.get('name')
+            group_email = request.POST.get('group_email')
+            manager = request.POST.get('manager')
+            parent = request.POST.get('parent')
+            description = request.POST.get('description')
+            group = Assignment_Group.objects.create(
+                name=name, group_email=group_email,
+                manager=manager, parent=parent,
+                description=description
+            )
+            member_ids = request.POST.getlist('members')
+            for user_id in member_ids:
+                if user_id:
+                    user = User_Management.objects.get(id=user_id)
+                    Group_Members.objects.create(group=group, user=user)
+            request.session.pop('selected_members', None)
+            request.session.pop('group_form',None)
+            messages.success(request, "Group Created Successfully")
+            return redirect('assigned')
+    selected_ids = request.session.get('selected_members', [])
+    selected_members = User_Management.objects.filter(id__in=selected_ids)
+    return render(request, "tickets/new_group.html", {
+        "selected_members": selected_members,
+        'saved_form':saved_form,
+    })
+
 
 @admin_required
-def edit_group(request,group_id):
-    single_group=get_object_or_404(Assignment_Group,id=group_id)
-    members=single_group.members.all()
-    search=request.GET.get('q','')
-    if search:
-        members=members.filter(name__icontains=search)
-    if request.method=='POST':
-        single_group.name=request.POST.get('name')
-        single_group.group_email=request.POST.get('group_email')
-        single_group.manager=request.POST.get('manager')
-        single_group.parent=request.POST.get('parent')
-        single_group.description=request.POST.get('description')
+def edit_group(request, group_id):
+    single_group = get_object_or_404(Assignment_Group, id=group_id)
+    if request.method == 'POST':
+        single_group.name = request.POST.get('name')
+        single_group.group_email = request.POST.get('group_email')
+        single_group.manager = request.POST.get('manager')
+        single_group.parent = request.POST.get('parent')
+        single_group.description = request.POST.get('description')
         single_group.save()
-        member_names=request.POST.getlist('members[]')
-        submitted_members=[name.strip() for name in member_names if name.strip()]
-        existing_members=list(single_group.members.values_list('name',flat=True))
-        delete=set(existing_members)-set(submitted_members)
-        add=set(submitted_members)-set(existing_members)
-        if delete:
-            Group_Members.objects.filter(group=single_group,name__in=delete).delete()
-        for name in add:
-            Group_Members.objects.create(group=single_group,name=name)
-        messages.success(request,"Updated Successfully")
+        submitted_ids = list(map(int, request.POST.getlist('members')))
+        existing_ids = list(single_group.members.values_list('user_id', flat=True))
+        Group_Members.objects.filter(group=single_group).exclude(user_id__in=submitted_ids).delete()
+        for user_id in submitted_ids:
+            if user_id not in existing_ids:
+                user = User_Management.objects.get(id=user_id)
+                Group_Members.objects.create(group=single_group, user=user)
+        request.session.pop('selected_members', None)
+        messages.success(request, "Group Updated Successfully")
         return redirect('assigned')
-    context={
-        'group':single_group,
-        'members':members
-    }
-    return render(request,'tickets/edit_group.html',context)
+    members = single_group.members.select_related('user')
+    return render(request, "tickets/edit_group.html", {
+        "group": single_group,
+        "members": members
+    })
+
+@admin_required
+def group_members(request):
+    users = User_Management.objects.filter(role__iexact='user')
+    if request.method == 'POST':
+        selected_ids = request.POST.getlist('members')
+        selected_ids = list(map(int, selected_ids)) 
+        source_page = request.POST.get('source_page')
+        group_id = request.POST.get('group_id')
+        if source_page == 'edit_group' and group_id and group_id != 'None':
+            group_id = int(group_id)
+            group = Assignment_Group.objects.get(id=group_id)
+            Group_Members.objects.filter(group=group).exclude(user_id__in=selected_ids).delete()
+            existing_ids = list(group.members.values_list('user_id', flat=True))
+            for uid in selected_ids:
+                if uid not in existing_ids:
+                    user = User_Management.objects.get(id=uid)
+                    Group_Members.objects.create(group=group, user=user)
+            request.session.pop('selected_members', None)
+            return redirect('edit_group', group_id=group_id)
+        request.session['selected_members'] = selected_ids
+        return redirect('new_group')
+    source_page = request.GET.get('source_page')
+    group_id = request.GET.get('group_id')
+    session_members = request.session.get('selected_members', [])
+    if source_page == 'edit_group' and group_id and group_id != 'None':
+        group_id = int(group_id)
+        group = Assignment_Group.objects.get(id=group_id)
+        if not session_members:
+            session_members = list(group.members.values_list('user_id', flat=True))
+            request.session['selected_members'] = session_members
+    initial_member_ids = session_members or []
+    available_users = users.exclude(id__in=initial_member_ids)
+    selected_members = User_Management.objects.filter(id__in=initial_member_ids)
+    return render(request, "tickets/group_members.html", {
+        "users": available_users,
+        "initial_selected_members": selected_members,
+        "source_page": source_page,
+        "group_id": group_id
+    })
+
+
 
 @admin_required
 def delete_group(request,group_id):
     d_group=get_object_or_404(Assignment_Group,id=group_id)
     d_group.delete()
     return redirect('assigned')
-
-@admin_required
-def preview(request):
-    return render(request,'tickets/preview_group.html')
 
 
 #---------------------------USER LISTING, ADDING USER, EDIT AND DELETE-----------------------------
@@ -571,28 +654,6 @@ def parent_incident(request):
     return render(request,'parent_incident.html',context)
 
 
-def group_members(request):
-    users=User_Management.objects.filter(role__iexact='user')   
-    source_page = request.GET.get('source_page')
-    group_id = request.GET.get('group_id') 
-    if request.method == 'POST':
-        selected_members_ids = request.POST.getlist('members') 
-        request.session['selected_members'] = selected_members_ids 
-        if source_page=='edit_group' and group_id:
-            return redirect('edit_group',group_id)
-        else:
-            return redirect('new_group')
-    initial_member_ids = request.session.get('selected_members', [])
-    available_users = users.exclude(id__in=initial_member_ids)
-    selected_members = User_Management.objects.filter(id__in=initial_member_ids)
-    context={
-        'users': available_users,
-        'initial_selected_members': selected_members,
-        'source_page':source_page,
-        'group_id':group_id
-    }
-    return render(request, 'tickets/group_members.html',context)
-
 #----------------------------------MASTER DATA---------------------------------------------------
 
 @admin_required
@@ -672,3 +733,5 @@ def school_autofill(request):
         schools = Master_Data.objects.all().values('name', 'code')[:10]
     return JsonResponse(list(schools), safe=False)
 
+def new(request):
+    return render(request,'new.html')

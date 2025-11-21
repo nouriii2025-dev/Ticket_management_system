@@ -104,10 +104,10 @@ class Assignment_Group(models.Model):
         return self.name
 
 class Group_Members(models.Model):
-    group=models.ForeignKey(Assignment_Group,on_delete=models.CASCADE,related_name='members')
-    name=models.CharField(max_length=100,null=True,blank=True)
+    group = models.ForeignKey(Assignment_Group, on_delete=models.CASCADE, related_name='members')
+    user = models.ForeignKey('User_Management', on_delete=models.CASCADE, null=True, blank=True)
     def __str__(self):
-        return self.name
+        return self.user.name if self.user else "Unknown User"
 
 #actvity tracking    
 class Activity(models.Model):

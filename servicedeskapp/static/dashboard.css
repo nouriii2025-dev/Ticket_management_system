@@ -88,7 +88,9 @@ body {
   /* padding: 0 28px 28px 28px; */
   display: flex;
   flex-direction: column;
+
 } 
+
 
 .header {
   padding: 25px 0 0 0;
@@ -311,3 +313,12 @@ a:hover { text-decoration: underline; }
   font-weight: bold;
 }
 
+.actions img {
+  margin-right: 10px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.actions img:hover {
+  opacity: 1;
+}

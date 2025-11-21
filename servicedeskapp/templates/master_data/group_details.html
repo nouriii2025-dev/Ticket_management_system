@@ -68,7 +68,6 @@
         </a>
         <div class="group-actions">
           {% if request.session.role == 'admin' %}
-        <a href="{% url 'preview' %}" class="icon preview" title="Preview">👁️</a>
         <a href="{% url 'edit_group' group.id %}" class="icon edit" title="Edit"><img src="https://img.icons8.com/ios-glyphs/18/edit.png" alt="Edit"></a>
         <a href="{% url 'delete_group' group.id %}" class="icon delete" title="Delete"><img src="https://img.icons8.com/ios-glyphs/18/trash.png" alt="Delete"></a>
         {% endif %}

@@ -44,23 +44,23 @@
           <div class="form-grid">
             <div class="form-group">
               <label>Name<span class="required">*</span></label><br>
-              <input type="text" placeholder="Enter group name" name="name" required>
+              <input type="text" placeholder="Enter group name" name="name" value="{{ saved_form.name|default:'' }}" required>
             </div>
             <div class="form-group">
               <label>Group Email<span class="required">*</span></label><br>
-              <input type="text" placeholder="Enter email" name="group_email" required>
+              <input type="email" placeholder="Enter email" name="group_email" value="{{ saved_form.group_email|default:'' }}" required>
             </div>
             <div class="form-group">
               <label>Manager<span class="required">*</span></label><br>
-              <input type="text" placeholder="Enter name" name="manager" required>
+              <input type="text" placeholder="Enter name" name="manager" value="{{ saved_form.manager|default:'' }}" required>
             </div>
             <div class="form-group">
               <label>Parent</label><br>
-              <input type="text" placeholder="Enter name" name="parent">
+              <input type="text" placeholder="Enter name" name="parent" value="{{ saved_form.parent|default:'' }}">
             </div>
             <div class="form-group full">
               <label>Description</label><br>
-              <textarea placeholder="Enter description here..." name="description"></textarea>
+              <textarea placeholder="Enter description here..." name="description">{{ saved_form.description|default:'' }}</textarea>
             </div>
           </div><br>
 
@@ -71,13 +71,17 @@
                 <i class="search-icon">&#128269;</i>
             </div>
             <button type="button" class="search-btn">Search</button>
-            <a href="{% url 'group_members' %}"><button type="button" class="new-btn">+ New Member</button></a>
+             <!-- <a href="{% url 'group_members' %}?source_page=new_group"> -->
+            <button type="submit" name="new_member" value="1" class="new-btn">+ New Member</button>
+            </a>
             </div>
 
             <ul class="member-list">
           {% if selected_members %}
             {% for member in selected_members %}
-              <li>{{ member.name }} <button type="button" class="delete-btn">&#128465;</button></li>
+              <li>{{ member.name }}   
+                <button type="button" class="delete-btn">&#128465;</button>
+              </li>
               <input type="hidden" name="members" value="{{ member.id }}">
             {% endfor %}
           {% else %}
@@ -89,9 +93,34 @@
           </fieldset>
             <div class="button-row">
             <button type="reset" class="btn reset">Reset</button>
-            <button type="submit" class="btn create">Create New Group</button>
+            <button type="submit" name="create_group" value="1" class="btn create">Create New Group</button>
           </div>
         </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Select all delete buttons inside the member list
+    const deleteButtons = document.querySelectorAll(".delete-btn");
+
+    deleteButtons.forEach(btn => {
+        btn.addEventListener("click", function (e) {
+            e.preventDefault();   // stop form submit
+            e.stopPropagation();  // stop triggering parent clicks
+
+            let li = this.parentElement;      // <li> element
+            let hiddenInput = li.nextElementSibling;   // hidden input belongs to same member
+
+            // Remove both
+            if (hiddenInput && hiddenInput.name === "members") {
+                hiddenInput.remove();
+            }
+            li.remove();
+        });
+    });
+});
+</script>
+
 
 </body>
 </html>

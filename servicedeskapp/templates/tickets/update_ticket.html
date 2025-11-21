@@ -31,7 +31,7 @@
     <div class="main-content">
             {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#cfffcc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+              <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
                 {{ message }}
               </div>
             {% endfor %}
@@ -40,7 +40,7 @@
             {% csrf_token %}
           <div class="action-buttons-top">
                 <a href="{% url 'dashboard' %}"><button class="action-btn-top submit">Update</button></a>
-                <button class="action-btn-top resolve">Resolve</button>
+                <button type="submit" name="action" value="resolve" class="action-btn-top resolve">Resolve</button>
             </div>
           <fieldset class="ticket-fieldset">
         <legend>Update Ticket</legend>
@@ -329,11 +329,10 @@
 {% endfor %}
           </fieldset>
             <div class="action-buttons">
-                <a href="{% url 'dashboard' %}"><button class="action-btn submit">Update</button></a>
-                <button class="action-btn resolve">Resolve</button>
+                <a href="{% url 'dashboard' %}"><button type="submit" class="action-btn submit">Update</button></a>
+                <button type="submit" name="action" value="resolve" class="action-btn resolve">Resolve</button>
             </div>
         </form>
-
  </div>
  
  <script>

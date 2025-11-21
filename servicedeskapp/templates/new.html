@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Incidents AG Grid</title>
+  <!-- AG Grid CSS (Quartz theme for look) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-quartz.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    #myGrid {
+      width: 100%;
+      height: 400px;
+      margin: auto;
+    }
+    .incident-link {
+      color: #1756c2;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="myGrid" class="ag-theme-quartz"></div>
+  <script>
+    // Column definitions matching the screenshot
+const columnDefs = [
+  {
+    headerName: "Number",
+    field: "number",
+    cellRenderer: params =>
+      `<a href="#" class="incident-link" onclick="alert('Incident: ${params.value}')">${params.value}</a>`,
+    sortable: true
+  },
+  { headerName: "Short description", field: "description", sortable: true },
+  { headerName: "Caller", field: "caller", sortable: true },
+  { headerName: "Priority", field: "priority", sortable: true },
+  { headerName: "State", field: "state", sortable: true },
+  { headerName: "Category", field: "category", sortable: true },
+  { headerName: "Assignment group", field: "group", sortable: true },
+  { headerName: "Assigned to", field: "assigned", sortable: true },
+  { headerName: "Updated", field: "updated", sortable: true },
+  { headerName: "Updated by", field: "updatedBy", sortable: true }
+];
+
+// The row data as in your screenshot
+const rowData = [
+  {
+    number: "INC0010064", description: "Hello", caller: "Lijo Johns", priority: "5 - Planning",
+    state: "New", category: "Inquiry / Help", group: "(empty)", assigned: "(empty)",
+    updated: "11-Jan-25 10:56:47 AM", updatedBy: "admin"
+  },
+  {
+    number: "INC0010021", description: "Service Desk: Login Issue", caller: "Jyothi Lakshmi", priority: "5 - Planning",
+    state: "New", category: "Software", group: "Hardware", assigned: "(empty)",
+    updated: "27-Oct-25 09:17:26 AM", updatedBy: "Jyothi_L"
+  }
+  // Add more rows here as needed
+];
+
+// AG Grid setup
+const gridOptions = {
+  columnDefs: columnDefs,
+  rowData: rowData,
+  defaultColDef: {
+    resizable: true,
+    minWidth: 120
+  },
+  domLayout: 'autoHeight'
+};
+
+// Initialize grid after DOM is ready
+document.addEventListener('DOMContentLoaded', function () {
+  const gridDiv = document.querySelector('#myGrid');
+  agGrid.createGrid(gridDiv, gridOptions);
+});
+
+  </script>
+</body>
+</html>
+

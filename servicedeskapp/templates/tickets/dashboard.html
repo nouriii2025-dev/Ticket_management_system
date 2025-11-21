@@ -76,6 +76,7 @@
                 <option>Assigned to</option>
                 <option>Updated</option>
                 <option>Updated by</option>
+                <option>Actions</option>
             </select>
             <input type="text" id="globalSearch" placeholder="Search">
         </div>
@@ -100,6 +101,7 @@
                 <th data-col="assignedTo">Assigned to</th>
                 <th data-col="updated">Updated</th>
                 <th data-col="updatedBy">Updated by</th>
+                <th data-col="actions">Actions</th>
             </tr>
       
             <tr class="search-row">
@@ -139,6 +141,17 @@
                 <td>{{ ticket.assigned_to }}</td>
                 <td>{{ ticket.updated_at }}</td>
                 <td>{{ ticket.updated_by }}</td>
+                <td class="actions">
+                    {% if ticket.school_email %}
+                    <a href="mailto:{{ ticket.school_email }}?subject=Regarding%20Ticket%20{{ ticket.number }}
+                    &body=Dear Sir/Madam,%0D%0A%0D%0A
+
+                    Regards,%0D%0AIT%20Support%20Team%0D%0AEdship%20Technologies">
+                    <img src="https://img.icons8.com/ios-glyphs/18/new-post.png" alt="Email"></a>
+                    {% else %}
+                    <img src="https://img.icons8.com/ios-glyphs/18/new-post.png" alt="Email">
+                    {% endif %}
+                </td>
             </tr> 
             {% endfor %}          
            

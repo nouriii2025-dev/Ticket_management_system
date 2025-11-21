@@ -35,7 +35,7 @@
      <div class="content-area">
            {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#62ef80; color:#0d6720; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+              <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
                 {{ message }}
               </div>
             {% endfor %}
@@ -70,7 +70,6 @@
         </a>
         <div class="group-actions">
           {% if request.session.role == 'admin' %}
-        <a href="{% url 'preview' %}" class="icon preview" title="Preview">👁️</a>
         <a href="{% url 'edit_group' group.id %}" class="icon edit" title="Edit"><img src="https://img.icons8.com/ios-glyphs/18/edit.png" alt="Edit"></a>
         <a href="{% url 'delete_group' group.id %}" class="icon delete" title="Delete"><img src="https://img.icons8.com/ios-glyphs/18/trash.png" alt="Delete"></a>
         {% endif %}

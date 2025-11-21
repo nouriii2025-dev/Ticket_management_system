@@ -49,7 +49,7 @@
             </div>
             <div class="form-group">
               <label>Group Email<span class="required">*</span></label><br>
-              <input type="text" placeholder="Enter email" name="group_email" value="{{ group.group_email }}" required>
+              <input type="email" placeholder="Enter email" name="group_email" value="{{ group.group_email }}" required>
             </div>
             <div class="form-group">
               <label>Manager<span class="required">*</span></label><br>
@@ -74,16 +74,26 @@
               </form>
             </div>
             <button type="button" class="search-btn">Search</button>
-            <a href="{% url 'group_members' %}"><button type="button" class="new-btn">+ New Member</button></a>
+            <a href="{% url 'group_members' %}?source_page=edit_group&group_id={{ group.id }}">
+              <button type="button" class="new-btn">+ New Member</button></a>
             </div>
 
-          <ul class="member-list">
+          <!-- <ul class="member-list">
             {% for member in members %}
             <li>
                 <div class="member-list">
                     <span>{{ member.name }}</span>
                     <input type="hidden" name="members[]" value="{{ member.name }}">
                 </div>
+                <button type="button" class="delete-btn">&#128465;</button>
+            </li>
+            {% endfor %}
+          </ul> -->
+          <ul class="member-list">
+            {% for member in members %}
+            <li class="member-item">
+                <span>{{ member.user.name }}</span>
+                <input type="hidden" name="members" value="{{ member.user.id }}" class="member-input">
                 <button type="button" class="delete-btn">&#128465;</button>
             </li>
             {% endfor %}
@@ -101,6 +111,19 @@
   </div>
 </div>
 
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const deleteButtons = document.querySelectorAll(".delete-btn");
+
+    deleteButtons.forEach(btn => {
+        btn.addEventListener("click", function () {
+            let li = this.closest(".member-item");
+            li.remove();  // removes both <li> and hidden input
+        });
+    });
+});
+
+</script>
 
 </body>
 </html>
