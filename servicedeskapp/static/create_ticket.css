@@ -147,7 +147,8 @@ textarea {
     border-radius: 8px;
     box-sizing: border-box;
     font-size: 14px;
-    color: #333;
+    /* color: #333; */
+    border-color: #159b9b;
     background-color: #f5f6fb;
     transition: border-color 0.2s, box-shadow 0.2s;
     -moz-appearance: none;
@@ -163,7 +164,8 @@ textarea:focus {
 }
 input[readonly] {
     background-color: #f0f0f0;
-    color: #666;
+    /* color: #666; */
+    border-color: #159b9b;
     border-style: solid;
 }
 
@@ -180,10 +182,11 @@ input[readonly] {
     border-radius: 8px;
     padding: 10px 35px 10px 12px;
     font-size: 14px;
-    color: #333;
+    border-color: #159b9b;
     width: 100%;
     box-sizing: border-box;
     appearance: none;
+    color: #000 !important;  
     -webkit-appearance: none;
     -moz-appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg fill='%23666' height='22' viewBox='0 0 24 24' width='22' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
@@ -201,7 +204,7 @@ input[name="assigned_to"] {
     border-radius: 8px;
     padding: 10px 35px 10px 12px;
     font-size: 14px;
-    color: #333;
+    border-color: #159b9b;
     width: 100%;
     box-sizing: border-box;
     cursor: pointer;
@@ -232,8 +235,9 @@ input[name="assigned_to"]:focus {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
-    color: #333;
-    background-color: #f5f6fb;
+  border-color: #159b9b;
+  color: #000 !important;
+  background-color: #f5f6fb;
   text-decoration: none;
   font-family: inherit;
   font-size: 14px;
@@ -303,13 +307,14 @@ textarea {
 .customer-visible {
     font-weight: normal;
     font-style: italic;
-    color: #8cc9c9;
+    color: #159b9b;
     font-size: 11px;
 }
 .notes-input textarea, .notes-input input {
     background: #ebedfb;
     border-radius: 6px;
     border: 1px solid #e0e8f2;
+     border-color: #159b9b;
 }
 
 

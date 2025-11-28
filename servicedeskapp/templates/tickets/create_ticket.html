@@ -174,13 +174,14 @@
                     <input type="hidden" name="assignment_group" value="{{ selected_group }}" required>            
                  </div>
                 <div class="form-group">
-                    <label>Assigned To<span class="required">*</span></label>
-                    <select name="assigned_to" required>
+                    <label>Assigned To</label>
+                    <select name="assigned_to">
                         <option value="">Select</option>
                         {% if group_members %}
                         {% for member in group_members %}
-                        <option value="{{ member.name }}">{{ member.name }}</option>
+                        <option value="{{ member.user.name }}">{{ member.user.name }}</option>
                         {% endfor %}
+
                         {% endif %}
                     </select>
                 </div>

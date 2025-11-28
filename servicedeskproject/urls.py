@@ -9,6 +9,7 @@ urlpatterns = [
     path('signup',views.sign_up,name='signup'),
     path('',views.login,name='login'),
     path('reset',views.reset_password,name='reset'),
+    path("reset/confirm/<uidb64>/<token>/", views.reset_confirm, name="reset_confirm"),
     path('logout',views.logout,name='logout'),
 
     path('dashboard',views.dashboard,name='dashboard'),
@@ -39,7 +40,7 @@ urlpatterns = [
     path('group_details',views.group_details,name='group_details'),
     
     path('school_autofill',views.school_autofill,name='school_autofill'),
-    path('new',views.new,name='new'),
+    path('test',views.test_view,name='test'),
 
     #rest api
      path('auth/signup/', apiviews.sign_up_api, name='api_signup'),

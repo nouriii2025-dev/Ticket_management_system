@@ -139,3 +139,4 @@ DEFAULT_FROM_EMAIL = 'emailproj1234@gmail.com'
 SERVER_EMAIL = 'emailproj1234@gmail.com'
 EMAIL_TIMEOUT = 20
 
+PASSWORD_RESET_TIMEOUT = 600   # 10 minutes

@@ -127,8 +127,8 @@ body {
   font-size: 22px;
   font-weight: 600;
   color: #53516b;
-  margin-top: 6px; 
-  margin-bottom: 6px; 
+  margin-top: 6px; /* was 18px */
+  margin-bottom: 6px; /* was 12px */
 }
 .search-and-table-container {
   background: #fff;
@@ -138,7 +138,7 @@ body {
   margin-top: 0;
 }
 
-
+/* Search & filter bar */
 .ticket-toolbar {
   display: flex;
   align-items: center;
@@ -246,6 +246,15 @@ body {
   .main-content { margin: 0; padding: 15px; }
 }
 
+/* Priority color styling */
+td[data-col="priority"], .priority-cell {
+  font-weight: 600;
+}
+td:contains("Critical") { color: #e63434; }
+td:contains("High") { color: #f59c33; }
+td:contains("Medium") { color: #e2a80d; }
+td:contains("Low") { color: #3697d2; }
+
 ::-webkit-scrollbar {
   width: 8px;
   background: #f0fbfa;
@@ -255,23 +264,23 @@ body {
   border-radius: 10px;
 }
 
-
+/* Miscellaneous */
 a { color: #2196f3; text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 .page-title-fieldset {
-    border: 2px solid #159b9b;     
-    border-radius: 10px;           
+    border: 2px solid #159b9b;     /* main border color */
+    border-radius: 10px;           /* smooth corners */
     padding: 5px 10px;           
     margin-top: 20px;
-    background-color: #ffffff;     
+    background-color: #ffffff;     /* white background */
 }
 
 .page-title-fieldset legend {
     font-size: 20px;
     font-weight: 600;
-    color: #159b9b;               
-    padding: 0 15px;              
+    color: #159b9b;               /* theme color for title */
+    padding: 0 15px;              /* spacing around text */
 }
 
 
@@ -351,6 +360,7 @@ hr {
 }
 
 
+/* === FINAL GROUP HEADER – LEFT ALIGNED + CLEAN LOOK === */
 .group-header {
     background: #e8f4fc !important;
     cursor: pointer;
@@ -401,25 +411,26 @@ hr {
     border: none !important;
 }
 
-
+/* Indent the group members slightly so hierarchy is clear */
 .group-member td {
     background-color: #fafcff !important;
-    padding-left: 38px !important;   
+    padding-left: 38px !important;   /* aligns content under the group name */
     border-bottom: 1px solid #f0f7fc;
 }
 
 .group-member td:first-child {
-    padding-left: 48px !important;   
+    padding-left: 48px !important;   /* extra indent for checkbox column */
 }
 
 
+/* === FIX SIDEBAR & TABLE SIZE - PERFECT BALANCE === */
 .main-layout {
     padding: 15px;
-    gap: 20px;                  
+    gap: 20px;                    /* nice space between sidebar and table */
 }
 
 .sidebar {
-    width: 240px !important;      
+    width: 240px !important;      /* back to original comfortable size */
     min-width: 240px;
     border-radius: 14px;
 }
@@ -431,11 +442,15 @@ hr {
     border-radius: 16px;
 }
 
+/* Table: comfortable size, not too big */
 #incidentsTable {
     table-layout: fixed;
+    /* border-spacing: 0 9px; */
     font-size: 14px;
 }
 
+
+/* Column widths - exactly like your screenshot (not too wide) */
 #incidentsTable th:nth-child(1), td:nth-child(1)   { width: 40px; }
 #incidentsTable th:nth-child(2), td:nth-child(2)   { width: 105px; }  /* Number */
 #incidentsTable th:nth-child(3), td:nth-child(3)   { width: 115px; }  /* Opened */
@@ -453,17 +468,19 @@ hr {
 #incidentsTable th:nth-child(15), td:nth-child(15) { width: 100px; }   /* Updated by */
 #incidentsTable th:nth-child(16), td:nth-child(16) { width: 70px; text-align: center; } /* Actions */
 
-
+/* Remove the big padding we added before */
 .search-and-table-container {
     padding: 10px 18px 18px 18px;
     overflow-x: auto;
 }
 
+/* Keep search inputs nice */
 .search-row input {
     padding: 6px 8px;
     font-size: 13px;
-    border-color: #159b9b;
 }
+
+
 /* Modern toolbar that perfectly matches table header style */
 .ticket-toolbar-modern {
     background: #f4fafd;                    /* same as table header */
@@ -523,7 +540,7 @@ hr {
 .toolbar-select,
 .toolbar-search {
     background: #ffffff !important;           /* clean white background */
-    border: 1.5px solid #668296 !important;   /* light but clearly visible border */
+    border: 1.5px solid #159b9b !important;   /* light but clearly visible border */
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -568,6 +585,7 @@ hr {
   flex-wrap: wrap;
 }
 
+
 .incidents-dropdown {
   min-width: 160px;
 }
@@ -585,14 +603,14 @@ hr {
   position: relative;
   font-size: 14px;
   user-select: none;
-  color: #159b9b;
+  color: #2c3e50;
   font-weight: 600;
   cursor: pointer;
 }
 
 .menu-button {
   padding: 8px 15px;
-  background: #e7f8fa;
+  background: #ffffff;
   border-radius: 10px;
   border: 1.5px solid #159b9b;
   display: inline-block;
@@ -619,7 +637,7 @@ hr {
 .menu-item {
   padding: 8px 18px;
   white-space: nowrap;
-  color: #159b9b;
+  color: #2c3e50;
   font-weight: 500;
   border-left: 3px solid transparent;
   transition: background-color 0.2s, border-left-color 0.2s;
@@ -647,7 +665,7 @@ hr {
 .submenu-item {
   padding: 8px 18px;
   white-space: nowrap;
-  color: #159b9b;
+  color: #2c3e50;
   font-weight: 400;
 }
 
@@ -656,10 +674,6 @@ hr {
   font-weight: 600;
 }
 
-/* Hide the search-row inputs initially for cleaner design */
-.search-row {
-  display: none;
-}
 
 
 .select-all-label input[type="checkbox"] {
@@ -674,12 +688,3 @@ hr {
   display: flex;
   gap: 6px;
 }
-
-
-
-
-
-
-
-
-

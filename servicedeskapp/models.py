@@ -144,10 +144,14 @@ class User_Management(models.Model):
     phone=models.CharField(validators=[phone_validator],max_length=10,null=True,blank=True)
     role=models.CharField(max_length=100,choices=Role_Choices,null=True,blank=True,default='user')
     created_at=models.DateTimeField(auto_now_add=True)
-    last_login=models.DateTimeField(auto_now_add=True)
+    last_login=models.DateTimeField(null=True, blank=True)
     password=models.CharField(max_length=300,null=True,blank=True)
     def __str__(self):
         return self.name or "Unnamed User"
+    def get_email_field_name(self):
+        return "email"
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
 
    
 class Master_Data(models.Model):
@@ -157,4 +161,8 @@ class Master_Data(models.Model):
     phone=models.CharField(validators=[phone_validator],max_length=10,null=True,blank=True)
     def __str__(self):
         return self.name
+
+
+
+
 

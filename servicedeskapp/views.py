@@ -17,6 +17,14 @@ from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
+from django.utils.timezone import localtime
+from django.core.mail import send_mail
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.urls import reverse
+from django.utils.http import urlsafe_base64_decode
+
 
 
 def sign_up(request):
@@ -83,24 +91,87 @@ def login(request):
     return render(request, 'login.html')
 
 
-def reset_password(request):
-    if request.method=='POST':
-        email=request.POST.get('email')
-        new_password=request.POST.get('new_password')
-        confirm_password=request.POST.get('confirm_password')
-        if new_password != confirm_password:
-            messages.error(request,"passwords donot match")
-            return redirect('reset')
-        try:
-            sign=Sign_up.objects.get(email=email)
+# def reset_password(request):
+#     if request.method=='POST':
+#         email=request.POST.get('email')
+#         new_password=request.POST.get('new_password')
+#         confirm_password=request.POST.get('confirm_password')
+#         if new_password != confirm_password:
+#             messages.error(request,"passwords donot match")
+#             return redirect('reset')
+#         try:
+#             sign=Sign_up.objects.get(email=email)
 
-            sign.set_password(new_password)
-            sign.save()
-            messages.success(request, "Your password has been successfully updated. Please log in.")
-            return redirect('login')
-        except Sign_up.DoesNotExist:
-            return redirect('reset')
-    return render(request,'resetpass.html')
+#             sign.set_password(new_password)
+#             sign.save()
+#             messages.success(request, "Your password has been successfully updated. Please log in.")
+#             return redirect('login')
+#         except Sign_up.DoesNotExist:
+#             return redirect('reset')
+#     return render(request,'resetpass.html')
+
+token_generator = PasswordResetTokenGenerator()
+
+def reset_password(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+
+        try:
+            user = User_Management.objects.get(email=email)
+        except User_Management.DoesNotExist:
+            messages.error(request, "Email not found.")
+            return redirect("reset")
+
+        # Create UID + Token
+        uidb64 = urlsafe_base64_encode(force_bytes(user.id))
+        token = token_generator.make_token(user)
+
+        # Build the password reset URL
+        reset_url = request.build_absolute_uri(
+            reverse("reset_confirm", kwargs={"uidb64": uidb64, "token": token})
+        )
+
+        # Send email
+        send_mail(
+            subject="Password Reset Instructions",
+            message=f"Click the link below to reset your password (valid for 10 minutes):\n{reset_url}",
+            from_email="your-email@gmail.com",
+            recipient_list=[email],
+            fail_silently=False,
+        )
+
+        messages.success(request, "Reset link sent! Check your email.")
+        return redirect("login")
+
+    return render(request, "resetpass.html")
+
+def reset_confirm(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User_Management.objects.get(pk=uid)
+    except:
+        user = None
+
+    # Validate the token (including expiration time)
+    if user is None or not token_generator.check_token(user, token):
+        return HttpResponse("Reset link is invalid or has expired.")
+
+    # If valid and POST → save password
+    if request.method == "POST":
+        new_pass = request.POST.get("new_password")
+        confirm_pass = request.POST.get("confirm_password")
+
+        if new_pass != confirm_pass:
+            messages.error(request, "Passwords do not match.")
+            return redirect(request.path)
+
+        user.set_password(new_pass)
+        user.save()
+
+        messages.success(request, "Password reset successful. Login now.")
+        return redirect("login")
+
+    return render(request, "reset_confirm.html")
 
 def logout(request):
     return redirect('login')
@@ -138,15 +209,16 @@ def dashboard(request):
         processed_tickets.append(ticket_data)
     tickets_json = json.dumps(processed_tickets)
     context = {
-        # 'tickets': all_tickets, 
-        # 'ticket_count': all_tickets.count(),
-        # 'tickets_json': tickets_json, 
         'tickets': page_obj.object_list, 
         'ticket_count': paginator.count,
         'tickets_json': tickets_json,
         'page_obj': page_obj,
+        'current_username': request.session.get('username'),      
+        'current_user_fullname': request.session.get('name', request.session.get('username')),
     }
     return render(request, 'tickets/dashboard.html', context)
+
+
 
 
 def delete_tickets(request):
@@ -175,9 +247,9 @@ def create_ticket(request):
             next_num = 10001  
     else:
         next_num = 10001 
-
     next_number = f'INC{next_num:07d}'
-    group_members=[]
+    group_members = []
+
     if request.method=='POST':
         category=request.POST.get('category')
         channel=request.POST.get('channel')
@@ -219,14 +291,13 @@ def create_ticket(request):
         'State': state,
         'Urgency': urgency,
         'Assignment Group': assignment_group,
-        'Assigned To': assigned_to,
         'Short Description': short_description,
     }
 
         missing_fields = [field for field, value in required_fields.items() if not value]
         if missing_fields:
             messages.error(request, f"The following fields are required: {', '.join(missing_fields)}")
-            return render(request, 'create_ticket.html', {
+            return render(request, 'tickets/create_ticket.html', {
                 'next_number': f'INC{10001 + ticket_count:07d}',
                 'selected_group': assignment_group
             })
@@ -733,5 +804,41 @@ def school_autofill(request):
         schools = Master_Data.objects.all().values('name', 'code')[:10]
     return JsonResponse(list(schools), safe=False)
 
-def new(request):
-    return render(request,'new.html')
+def test_view(request):
+    all_tickets = Create_Ticket.objects.all().order_by('-created_at')
+    for ticket in all_tickets:
+        school=Master_Data.objects.filter(name=ticket.school_name).first()
+        ticket.school_email=school.email if school else None
+    paginator = Paginator(all_tickets, 8) 
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    fields_to_serialize = (
+        'number',
+        'short_description',
+        'caller',
+        'priority',
+        'state',
+        'category',
+        'assigned_to',
+        'updated_at',
+        'id',
+        'school_name',
+        'school_code',
+        'assignment_group',
+        'updated_by'
+    )
+    serialized_tickets = serialize('json', all_tickets, fields=fields_to_serialize)
+    temp_list = json.loads(serialized_tickets)
+    processed_tickets = []
+    for item in temp_list:
+        ticket_data = item['fields']
+        ticket_data['id'] = item['pk'] 
+        processed_tickets.append(ticket_data)
+    tickets_json = json.dumps(processed_tickets)
+    context = { 
+        'tickets': page_obj.object_list, 
+        'ticket_count': paginator.count,
+        'tickets_json': tickets_json,
+        'page_obj': page_obj,
+    }
+    return render(request,'test.html',context)
