@@ -36,7 +36,6 @@ def sign_up_api(request):
 
 @api_view(['POST'])
 def login_api(request):
-    """API endpoint for user login using User_Management model credentials."""
     if request.method == 'POST':
         username = request.data.get('username')
         password = request.data.get('password')

@@ -1,9 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Incidents Table</title>
-<link rel="stylesheet" href="static/test.css">
+<link rel="stylesheet" href="{% static 'dashboard.css' %}">
 </head>
 <body>
   
@@ -21,6 +22,7 @@
          <span>{{ request.session.name|default:request.session.username }}</span>
          <span style="color:#e2fefd; font-weight:600;"></span>
        </div>
+       <a href="{% url 'logout' %}" class="logout-icon-btn"></a>
      </div>
      <nav class="sidebar-nav">
        <a href="#" class="nav-item">Overview</a>
@@ -34,6 +36,7 @@
     </div>
     <div class="main-content">
       <div class="content-area">
+    
                     {% if messages %}
             {% for message in messages %}
               <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
@@ -95,9 +98,6 @@
     <div class="submenu-item">Active - Unassigned</div>
     <div class="submenu-item">Assigned to me</div>
     <div class="submenu-item">Closed</div>
-    <!-- <div class="submenu-item">Incident Mobile</div>
-    <div class="submenu-item">Incident Portal</div>
-    <div class="submenu-item">My Open Incidents</div> -->
   </div>
 
   <div class="submenu-panel" id="groupby-menu" style="display:none;">
@@ -664,7 +664,6 @@ syncSelectAll();
         });
     });
 
-    // Initial setup
     document.querySelector("#filters-menu .submenu-item").style.fontWeight = "bold";
     document.querySelector('#show-menu .submenu-item:nth-child(4)').style.fontWeight = "bold"; // 20 rows
     applyFiltersAndPagination();

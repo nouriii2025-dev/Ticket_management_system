@@ -6,6 +6,9 @@
 <link rel="stylesheet" href="static/test.css">
 </head>
 <body>
+  
+<span id="currentUsername" style="display:none;">{{ current_username }}</span>
+<span id="currentUserFullName" style="display:none;">{{ current_user_fullname }}</span>
 
   <div class="main-layout">
     <div class="sidebar">
@@ -38,69 +41,98 @@
               </div>
             {% endfor %}
           {% endif %}
-        <!-- <h1 class="page-title">Tickets</h1> -->
-        
-        <div class="search-and-table-container">
-            
-            <header class="header">
-            {% if request.session.role == 'admin' %}
-            <form method="POST" action="{% url 'delete_tickets' %}" onsubmit="return confirm('Are you sure you want to delete the selected tickets?');">
+        <form method="POST" action="{% url 'delete_tickets' %}" onsubmit="return confirm('Are you sure you want to delete the selected tickets?');">
         {% csrf_token %}
+        <div class="search-and-table-container">
+          <header class="header">
+            {% if request.session.role == 'admin' %}
             <button type="submit" class="delete-ticket-btn">Delete</button>
-            </form>
             {% endif %}
             <a href="{% url 'create' %}"><button type="button" class="add-ticket-btn">+ Add Ticket</button></a>
           </header>
-
-
-         <fieldset class="page-title-fieldset">
+          <fieldset class="page-title-fieldset">
           <legend>Tickets</legend>
 
-        <div class="ticket-toolbar-modern">
-        <div class="toolbar-controls">
-            <label class="select-all-label">
+<div class="ticket-toolbar-modern">
+    <div class="toolbar-controls">
+        <label class="select-all-label">
             <input type="checkbox" id="selectAll"> All
-            </label>
-            <select id="columnSelect" class="toolbar-select">
-                    <option>Number</option>
-                    <option>Opened</option>
-                    <option>Created by</option>
-                    <option>Short description</option>
-                    <option>Caller</option>
-                    <option>School name</option>
-                    <option>School code</option>
-                    <option>Priority</option>
-                    <option>State</option>
-                    <option>Category</option>
-                    <option>Assignment group</option>
-                    <option>Assigned to</option>
-                    <option>Updated</option>
-                    <option>Updated by</option>
-                    <option>Actions</option>
-            </select>
-            <input type="text" id="globalSearch" class="toolbar-search" placeholder="Search">
+        </label>
 
-            <!-- Incidents Dropdown aligned right -->
-            <div class="incidents-dropdown">
-            <select id="incidentsDrop" class="toolbar-select">
-                <option value="">Incidents</option>
-                <option value="view">View</option>
-                <option value="filters">Filters</option>
-                <option value="groupby">Group By</option>
-                <option value="show">Show</option>
-                <option value="refresh">Refresh List</option>
-                <option value="create">Create Favorite</option>
-            </select>
-            </div>
-        </div>
-        </div>
+        <select id="columnSelect" class="toolbar-select">
+            <option>Number</option>
+            <option>Opened</option>
+            <option>Created by</option>
+            <option>Short description</option>
+            <option>Caller</option>
+            <option>School name</option>
+            <option>School code</option>
+            <option>Priority</option>
+            <option>State</option>
+            <option>Category</option>
+            <option>Assignment group</option>
+            <option>Assigned to</option>
+            <option>Updated</option>
+            <option>Updated by</option>
+            <option>Actions</option>
+        </select>
+
+        <input type="text" id="globalSearch" class="toolbar-search" placeholder="Search">
+     
+
+        <div class="menu-container">
+  <div class="menu-button">Incidents ▾</div>
+
+  <div class="menu-panel" style="display:none;">
+    <div class="menu-item" data-menu="filters">Filters ▸</div>
+    <div class="menu-item" data-menu="groupby">Group By ▸</div>
+    <div class="menu-item" data-menu="show">Show ▸</div>
+  </div>
+
+  <div class="submenu-panel" id="filters-menu" style="display:none;">
+    <div class="submenu-item">All</div>
+    <div class="submenu-item">Active</div>
+    <div class="submenu-item">Active - Unassigned</div>
+    <div class="submenu-item">Assigned to me</div>
+    <div class="submenu-item">Closed</div>
+    <!-- <div class="submenu-item">Incident Mobile</div>
+    <div class="submenu-item">Incident Portal</div>
+    <div class="submenu-item">My Open Incidents</div> -->
+  </div>
+
+  <div class="submenu-panel" id="groupby-menu" style="display:none;">
+    <div class="submenu-item">--None--</div>
+    <div class="submenu-item">Active</div>
+    <div class="submenu-item">Assigned to</div>
+    <div class="submenu-item">Caller</div>
+    <div class="submenu-item">Assignment group</div>
+    <div class="submenu-item">Category</div>
+    <div class="submenu-item">Created by</div>
+    <div class="submenu-item">Updated by</div>
+    <div class="submenu-item">Short description</div>
+    <div class="submenu-item">State</div>
+    <div class="submenu-item">Priority</div>
+  </div>
+
+  <div class="submenu-panel" id="show-menu" style="display:none;">
+    <div class="submenu-item">All</div>
+    <div class="submenu-item">10 rows per page</div>
+    <div class="submenu-item">15 rows per page</div>
+    <div class="submenu-item">20 rows per page</div>
+    <div class="submenu-item">50 rows per page</div>
+    <div class="submenu-item">100 rows per page</div>
+  </div>
+</div>
 
 
+    </div>
+</div>
 
-<table id="incidentsTable">
+    <table id="incidentsTable">
+
     <thead>
         <tr>
-            <th><input type="checkbox" id="headerCheck"></th>
+            <th></th>
             <th data-col="number">Number <span class="col-menu">⋮</span></th>
             <th data-col="opened">Opened <span class="col-menu">⋮</span></th>
             <th data-col="created">Created by <span class="col-menu">⋮</span></th>
@@ -117,7 +149,7 @@
             <th data-col="updatedBy">Updated by <span class="col-menu">⋮</span></th>
             <th data-col="actions">Actions</th>
         </tr>
-        <!-- search row stays the same -->
+
         <tr class="search-row">
             <td></td>
             <td><input type="text" data-col="number" placeholder="Search"></td>
@@ -169,7 +201,6 @@
     </tbody>
 </table>
 
-<!-- Dropdown menu (hidden, will be cloned for each column) -->
 <div id="columnMenuTemplate" style="display:none;">
     <div class="column-menu">
         <div class="menu-item" data-action="sort-asc">Sort (a to z)</div>
@@ -216,7 +247,6 @@ const globalInp     = document.getElementById('globalSearch');
 const colInputs     = table.querySelectorAll('.search-row input');
 let currentGroupCol = null;
 
-
 function filterTable() {
     const global = globalInp.value.trim().toLowerCase();
     const filters = {};
@@ -245,7 +275,6 @@ colInputs.forEach(inp => inp.addEventListener('input', filterTable));
 
 
 const selectAll = document.getElementById('selectAll');
-const headerCheck = document.getElementById('headerCheck');
 const rowChecks = table.querySelectorAll('.rowCheck');
 
 function syncSelectAll() {
@@ -258,26 +287,22 @@ selectAll.addEventListener('change', () => {
     const visible = [...rows()].filter(r => r.style.display !== 'none');
     visible.forEach(r => r.querySelector('.rowCheck').checked = selectAll.checked);
 });
-headerCheck.addEventListener('change', () => selectAll.checked = headerCheck.checked);
 table.addEventListener('change', e => { if (e.target.classList.contains('rowCheck')) syncSelectAll(); });
 
-// ---------- COLUMN MENU (three dots) - FIXED VERSION ----------
+
 let activeMenu = null;
 
 document.addEventListener('click', e => {
     const isMenuClick = e.target.classList.contains('col-menu');
     const isInsideMenu = e.target.closest && e.target.closest('.column-menu');
 
-    // Close any open menu if clicked outside
     if (!isMenuClick && !isInsideMenu && activeMenu) {
         activeMenu.remove();
         activeMenu = null;
         return;
     }
 
-    // Open menu if three dots clicked
     if (isMenuClick) {
-        // Remove any previous menu
         if (activeMenu) activeMenu.remove();
 
         const template = document.getElementById('columnMenuTemplate').firstElementChild.cloneNode(true);
@@ -300,17 +325,15 @@ document.addEventListener('click', e => {
         th.style.position = 'relative';
         th.appendChild(template);
 
-        // Position it properly below the header
         const rect = th.getBoundingClientRect();
         template.style.top = `${th.offsetHeight + 2}px`;
-        template.style.left = `${rect.width - template.offsetWidth}px`; // align right
+        template.style.left = `${rect.width - template.offsetWidth}px`; 
         template.style.transform = 'translateX(-8px)';
 
         activeMenu = template;
     }
 });
 
-// ---------- SORTING ----------
 function sortColumn(colKey, ascending = true) {
     const ths = table.querySelectorAll('th');
     let idx = -1;
@@ -320,7 +343,6 @@ function sortColumn(colKey, ascending = true) {
     arr.sort((a, b) => {
         const aVal = a.children[idx].textContent.trim();
         const bVal = b.children[idx].textContent.trim();
-        // simple date detection
         const aDate = Date.parse(aVal);
         const bDate = Date.parse(bVal);
         if (!isNaN(aDate) && !isNaN(bDate)) {
@@ -331,13 +353,12 @@ function sortColumn(colKey, ascending = true) {
             : bVal.localeCompare(aVal);
     });
 
-    // remove groups first
     ungroup();
     arr.forEach(r => tbody.appendChild(r));
 }
 
 function groupByColumn(colKey) {
-    ungroup();                     // clear any previous grouping
+    ungroup();                    
     currentGroupCol = colKey;
 
     const ths = table.querySelectorAll('th');
@@ -351,34 +372,29 @@ function groupByColumn(colKey) {
         map.get(key).push(row);
     });
 
-    // Sort groups alphabetically
     const sortedKeys = [...map.keys()].sort((a, b) => a.localeCompare(b));
 
     sortedKeys.forEach(key => {
         const groupHeader = document.createElement('tr');
-        groupHeader.className = 'group-header collapsed';  // <-- IMPORTANT: start collapsed
+        groupHeader.className = 'group-header collapsed';  
         groupHeader.dataset.groupKey = key;
 
         const cell = document.createElement('td');
         cell.colSpan = table.querySelectorAll('th').length;
-        
-        // Arrow + group name + count
-        // cell.innerHTML = `<span class="group-arrow">▶</span> <strong>${key}</strong> (${map.get(key).length})`;
+
         cell.innerHTML = `<span class="group-arrow">▶</span> <span style="margin-left: 28px;">${key}</span> 
             <span style="color:#666; font-weight:normal; margin-left:8px;">(${map.get(key).length})</span>`;
         groupHeader.appendChild(cell);
         tbody.appendChild(groupHeader);
 
-        // Add all tickets in this group (initially hidden)
         const groupRows = map.get(key);
         groupRows.forEach(r => {
             r.classList.add('group-member');
-            r.style.display = 'none';           // <-- hide by default
+            r.style.display = 'none';          
             tbody.appendChild(r);
         });
     });
 
-    // === Click handler for expand/collapse ===
     tbody.querySelectorAll('.group-header').forEach(header => {
         header.addEventListener('click', function () {
             this.classList.toggle('collapsed');
@@ -414,9 +430,244 @@ function ungroup() {
 }
 
 syncSelectAll();
+</script>
 
 
 
+<script>
+    const menuBtn = document.querySelector(".menu-button");
+    const menuPanel = document.querySelector(".menu-panel");
+    const submenuPanels = document.querySelectorAll(".submenu-panel");
+    const currentUsername = document.getElementById("currentUsername")?.textContent.trim() || "";
+    const currentUserFullName = document.getElementById("currentUserFullName")?.textContent.trim() || currentUsername;
+
+    let rowsPerPage = 20;
+    let currentFilter = "all";
+
+    // Fixed: Include group headers and members properly
+    function getAllDataRows() {
+        return Array.from(tbody.querySelectorAll('tr')).filter(tr => 
+            !tr.querySelector('th') && !tr.classList.contains('search-row')
+        );
+    }
+
+    function applyFiltersAndPagination() {
+        const allDataRows = getAllDataRows();
+        let filteredRows = allDataRows;
+
+        // === APPLY FILTER: Active, Closed, etc. ===
+        if (currentFilter === "active") {
+            filteredRows = allDataRows.filter(row => {
+                const state = row.cells[9]?.textContent.trim(); 
+                return !['Closed', 'Resolved', 'Canceled'].includes(state);
+            });
+        } else if (currentFilter === "active-unassigned") {
+            filteredRows = allDataRows.filter(row => {
+                const state = row.cells[9]?.textContent.trim();
+                const assignedTo = row.cells[12]?.textContent.trim();
+                return !['Closed', 'Resolved', 'Canceled'].includes(state) && 
+                       (!assignedTo || assignedTo === '' || assignedTo === 'None');
+            });
+        } else if (currentFilter === "assigned-to-me") {
+            filteredRows = allDataRows.filter(row => {
+                const assignedTo = row.cells[12]?.textContent.trim(); 
+             
+                return assignedTo === currentUsername || assignedTo === currentUserFullName;
+            });
+        } 
+        else if (currentFilter === "closed") {
+            filteredRows = allDataRows.filter(row => {
+            const state = row.cells[9]?.textContent.trim().toLowerCase(); 
+            return ['closed','canceled'].includes(state); 
+        });
+        }
+       
+        const global = globalInp.value.trim().toLowerCase();
+        const colFilters = {};
+        colInputs.forEach(inp => {
+            if (inp.value.trim()) colFilters[inp.dataset.col] = inp.value.trim().toLowerCase();
+        });
+
+        const finalVisibleRows = filteredRows.filter(row => {
+            const rowText = row.textContent.toLowerCase();
+            if (global && !rowText.includes(global)) return false;
+
+            for (const col in colFilters) {
+                const th = [...table.querySelectorAll('th')].find(t => t.dataset.col === col);
+                if (!th) continue;
+                const idx = [...table.querySelectorAll('th')].indexOf(th);
+                const cellText = row.cells[idx]?.textContent.toLowerCase() || '';
+                if (!cellText.includes(colFilters[col])) return false;
+            }
+            return true;
+        });
+
+
+        const isGrouped = currentGroupCol !== null;
+
+        if (isGrouped) {
+          
+            tbody.querySelectorAll('.group-member').forEach(r => r.style.display = 'none');
+            tbody.querySelectorAll('.group-header').forEach(h => {
+                h.style.display = '';
+                const key = h.dataset.groupKey;
+                const members = tbody.querySelectorAll(`.group-member`);
+                let visibleInGroup = 0;
+
+                members.forEach(member => {
+                    if (finalVisibleRows.includes(member)) visibleInGroup++;
+                });
+
+  
+                const countSpan = h.querySelector('span:last-child');
+                if (countSpan) countSpan.textContent = `(${visibleInGroup})`;
+
+         
+                if (visibleInGroup > 0) {
+                    h.classList.remove('collapsed');
+                    h.querySelector('.group-arrow').textContent = '▼';
+                
+                    members.forEach(member => {
+                        if (finalVisibleRows.includes(member) && 
+                            member.closest('tr')?.previousElementSibling?.dataset.groupKey === key) {
+                            member.style.display = '';
+                        }
+                    });
+                } else {
+                    h.classList.add('collapsed');
+                    h.querySelector('.group-arrow').textContent = '▶';
+                }
+            });
+         } 
+    
+         else {
+         
+            allDataRows.forEach(row => {
+                const shouldShow = finalVisibleRows.includes(row);
+                row.style.display = shouldShow ? '' : 'none';
+            });
+
+       
+            let count = 0;
+            allDataRows.forEach(row => {
+                if (row.style.display !== 'none') {
+                    row.style.display = count < rowsPerPage ? '' : 'none';
+                    count++;
+                }
+            });
+        }
+
+        const total = finalVisibleRows.length;
+        const showing = Math.min(total, rowsPerPage);
+        const infoSpan = document.querySelector('.pagination span span');
+        if (infoSpan) infoSpan.remove();
+        document.querySelector('.pagination span')?.insertAdjacentHTML('beforeend', 
+            ` <span style="margin-left:20px;color:#555;">Showing 1–${total > 0 ? showing : 0} of ${total}</span>`
+        );
+
+        syncSelectAll();
+    }
+
+    // Re-apply on search
+    globalInp.addEventListener('input', () => setTimeout(applyFiltersAndPagination, 10));
+    colInputs.forEach(inp => inp.addEventListener('input', () => setTimeout(applyFiltersAndPagination, 10)));
+
+    // Menu controls
+    menuBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        menuPanel.style.display = menuPanel.style.display === "block" ? "none" : "block";
+        submenuPanels.forEach(m => m.style.display = "none");
+    });
+
+    document.querySelectorAll(".menu-item").forEach(item => {
+        item.addEventListener("mouseenter", () => {
+            submenuPanels.forEach(m => m.style.display = "none");
+            const submenu = document.getElementById(item.dataset.menu + "-menu");
+            if (submenu) submenu.style.display = "block";
+        });
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest(".menu-container")) {
+            menuPanel.style.display = "none";
+            submenuPanels.forEach(m => m.style.display = "none");
+        }
+    });
+
+    // FILTERS
+    document.querySelectorAll("#filters-menu .submenu-item").forEach(item => {
+        item.addEventListener("click", () => {
+            const text = item.textContent.trim();
+            currentFilter = {
+                "All": "all",
+                "Active": "active",
+                "Active - Unassigned": "active-unassigned",
+                "Assigned to me": "assigned-to-me",
+                "Closed": "closed"
+            }[text] || "all";
+
+            document.querySelectorAll("#filters-menu .submenu-item").forEach(i => i.style.fontWeight = "normal");
+            item.style.fontWeight = "bold";
+
+            applyFiltersAndPagination();
+            menuPanel.style.display = "none";
+            submenuPanels.forEach(m => m.style.display = "none");
+        });
+    });
+
+    // SHOW (rows per page)
+    document.querySelectorAll("#show-menu .submenu-item").forEach(item => {
+        item.addEventListener("click", () => {
+            const text = item.textContent.trim();
+            if (text.includes("All")) {
+                rowsPerPage = 9999;
+            } else {
+                const num = parseInt(text);
+                rowsPerPage = isNaN(num) ? 20 : num;
+            }
+
+            document.querySelectorAll("#show-menu .submenu-item").forEach(i => i.style.fontWeight = "normal");
+            item.style.fontWeight = "bold";
+
+            applyFiltersAndPagination();
+            menuPanel.style.display = "none";
+            submenuPanels.forEach(m => m.style.display = "none");
+        });
+    });
+
+
+    //group by menu functionality 
+    document.querySelectorAll("#groupby-menu .submenu-item").forEach(item => {
+        item.addEventListener("click", () => {
+            const group = item.textContent.trim();
+            
+            // This is the menu closing logic:
+            menuPanel.style.display = "none";
+            submenuPanels.forEach(m => m.style.display = "none");
+            
+            if (group === "-- None --") { ungroup(); return; }
+
+            let colKey = null;
+
+            if (group === "Active") colKey = "state"; 
+            if (group === "Assigned to") colKey = "assignedTo";
+            if (group === "Caller") colKey = "caller";
+            if (group === "Assignment group") colKey = "assignGroup";
+            if (group === "Category") colKey = "category";
+            if (group === "Created by") colKey = "created";
+            if (group === "Updated by") colKey = "updatedBy";
+            if (group === "Short description") colKey = "desc"; 
+            if (group === "State") colKey = "state";
+            if (group === "Priority") colKey = "priority";
+
+            if (colKey) groupByColumn(colKey);
+        });
+    });
+
+    // Initial setup
+    document.querySelector("#filters-menu .submenu-item").style.fontWeight = "bold";
+    document.querySelector('#show-menu .submenu-item:nth-child(4)').style.fontWeight = "bold"; // 20 rows
+    applyFiltersAndPagination();
 </script>
 
 </body>

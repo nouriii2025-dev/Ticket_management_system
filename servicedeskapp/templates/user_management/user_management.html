@@ -18,6 +18,7 @@
                   <span>{{ request.session.name|default:request.session.username }}</span>
          <span style="color:#e2fefd; font-weight:600;"></span>
        </div>
+       <a href="{% url 'logout' %}" class="logout-icon-btn"></a>
      </div>
      <nav class="sidebar-nav">
        <a href="#" class="nav-item">Overview</a>
@@ -26,6 +27,7 @@
        <a href="{% url 'master_data' %}" class="nav-item">Master data</a>
        <a href="#" class="nav-item">Reports</a>
      </nav>
+     <a href="{% url 'logout' %}" class="logout-icon-btn"></a>
     </div>
 
     <div class="main-content">

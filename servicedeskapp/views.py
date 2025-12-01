@@ -54,22 +54,6 @@ def sign_up(request):
     return render(request,'signup.html')
 
 
-# def login(request):
-#     if request.method == 'POST':
-#         email = request.POST.get('email')
-#         password = request.POST.get('password')
-#         try:
-#             exist_user = Sign_up.objects.get(email=email)
-#             if exist_user.check_password(password):
-#                 return redirect('dashboard')
-#             else:
-#                 messages.error(request, "Invalid password")
-#                 return redirect('login')
-#         except Sign_up.DoesNotExist:
-#             messages.error(request, "User with this email does not exist")
-#             return redirect('login')
-#     return render(request, 'login.html')
-
 def login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -91,24 +75,6 @@ def login(request):
     return render(request, 'login.html')
 
 
-# def reset_password(request):
-#     if request.method=='POST':
-#         email=request.POST.get('email')
-#         new_password=request.POST.get('new_password')
-#         confirm_password=request.POST.get('confirm_password')
-#         if new_password != confirm_password:
-#             messages.error(request,"passwords donot match")
-#             return redirect('reset')
-#         try:
-#             sign=Sign_up.objects.get(email=email)
-
-#             sign.set_password(new_password)
-#             sign.save()
-#             messages.success(request, "Your password has been successfully updated. Please log in.")
-#             return redirect('login')
-#         except Sign_up.DoesNotExist:
-#             return redirect('reset')
-#     return render(request,'resetpass.html')
 
 token_generator = PasswordResetTokenGenerator()
 
@@ -121,17 +87,11 @@ def reset_password(request):
         except User_Management.DoesNotExist:
             messages.error(request, "Email not found.")
             return redirect("reset")
-
-        # Create UID + Token
         uidb64 = urlsafe_base64_encode(force_bytes(user.id))
         token = token_generator.make_token(user)
-
-        # Build the password reset URL
         reset_url = request.build_absolute_uri(
             reverse("reset_confirm", kwargs={"uidb64": uidb64, "token": token})
         )
-
-        # Send email
         send_mail(
             subject="Password Reset Instructions",
             message=f"Click the link below to reset your password (valid for 10 minutes):\n{reset_url}",
@@ -139,10 +99,8 @@ def reset_password(request):
             recipient_list=[email],
             fail_silently=False,
         )
-
         messages.success(request, "Reset link sent! Check your email.")
         return redirect("login")
-
     return render(request, "resetpass.html")
 
 def reset_confirm(request, uidb64, token):
@@ -367,7 +325,7 @@ def create_ticket(request):
             except Exception as e:
                 print(f"Email sending failed: {e}")
         
-        messages.success(request,'Ticket added and notified ')
+        messages.success(request,'Ticket created and notification sent successfully.')
         return redirect('dashboard')    
     else:
         selected_group=request.GET.get('assignment_group','')
@@ -803,6 +761,8 @@ def school_autofill(request):
     else:
         schools = Master_Data.objects.all().values('name', 'code')[:10]
     return JsonResponse(list(schools), safe=False)
+
+
 
 def test_view(request):
     all_tickets = Create_Ticket.objects.all().order_by('-created_at')
