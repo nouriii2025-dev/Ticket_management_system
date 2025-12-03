@@ -42,8 +42,9 @@ urlpatterns = [
     path('school_autofill',views.school_autofill,name='school_autofill'),
     path('test',views.test_view,name='test'),
 
+
     #rest api
-     path('auth/signup/', apiviews.sign_up_api, name='api_signup'),
+    path('auth/signup/', apiviews.sign_up_api, name='api_signup'),
     path('auth/login/', apiviews.login_api, name='api_login'),
     path('auth/reset-password/', apiviews.reset_password_api, name='api_reset_password'),
 

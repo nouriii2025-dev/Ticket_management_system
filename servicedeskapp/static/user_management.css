@@ -1,80 +1,83 @@
+    :root {
+        --primary: #159b9b;
+        --primary-dark: #0d8383;
+        --red: #e74c3c;
+        --green: #16b28b;
+        --light-bg: #f8f9fc;
+        --border: #d2e8ed;
+    }
+
+* { margin:0; padding:0; box-sizing:border-box; }
 body {
-    background-color: #f5f6fb;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
+    background: var(--light-bg);
     color: #333;
     font-size: 14px;
+    margin: 0;
 }
-.main-layout {
-    display: flex;
-    height: calc(100vh - 20px);
-    padding: 10px;
-}
-.sidebar {
-    background-color: #159b9b;
-    width: 230px;
-    padding: 0;
-    color: #f7f7fb;
-    display: flex;
-    flex-direction: column;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-}
-.user-info {
-    background-color: #0d8383;
-    border-radius: 8px;
-    padding: 15px 18px;
-    margin: 15px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
-    position: relative;
-    overflow: visible;
-}
-.user-info img {
-    background: #fff;
-    padding: 3px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-}
-.user-info > div:first-child {
-    font-size: 16px;
-    font-weight: 600;
-}
-.user-info > div:last-child {
-    font-size: 12px;
-    margin-top: 5px;
-}
-.user-info > div:last-child span:last-child {
-    color: #e2fefd;
-    font-weight: 500;
-}
-.sidebar-nav {
-    padding: 5px 10px;
-}
-.nav-item {
+
+/* ====================== TOP BAR ====================== */
+.topbar {
+    height: 62px;
+    background: linear-gradient(135deg, #117a7a, #159b9b);
+    color: white;
     display: flex;
     align-items: center;
-    padding: 12px 14px;
-    color: #f7f7fb;
-    font-size: 14px;
-    font-weight: 500;
+    justify-content: space-between;
+    padding: 0 28px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.topbar-brand { font-size: 21px; font-weight: 700; }
+.topbar-nav {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    justify-content: center;
+}
+.topbar-nav a {
+    color: rgba(255,255,255,0.9);
     text-decoration: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 500;
     transition: all 0.2s;
-    border-radius: 8px;
-    margin: 4px 0;
 }
-.nav-item::before {
-    content: '▪';
-    font-size: 18px;
-    margin-right: 10px;
+.topbar-nav a:hover, .topbar-nav a.active {
+    background: rgba(255,255,255,0.25);
+    color: white;
 }
-.nav-item.active, 
-.nav-item:hover {
-    background: #e7f8fa;
-    color: #159b9b;
-    font-weight: 600;
+
+.topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
 }
+.logout-btn {
+        width: 40px;
+        height: 40px;
+        background: rgba(255,255,255,0.15);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+}
+
+.logout-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.logout-btn::before {
+    content: url('https://img.icons8.com/ios-glyphs/20/ffffff/exit.png');
+}
+
 
 /* Content Area */
 .content-area {
@@ -87,7 +90,7 @@ body {
   background: #fff;
   padding: 20px;
   border-radius: 15px;
-  width: 112%;
+  width: 100%;
 }
 
 .create-user {
@@ -187,40 +190,3 @@ th, td {
     padding: 0 15px;              /* spacing around text */
 }
 
-
-.logout-icon-btn {
-    position: absolute;
-    top: 50%; /* Center vertically within .user-info */
-    right: -15px; /* Adjust to sit just outside the right edge */
-    transform: translateY(-50%); /* Fine-tune vertical centering */
-    z-index: 10;
-    
-    /* Visuals */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%; /* Makes it circular */
-    background-color: #e7f8fa; /* White/light background, matching the reference image */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: background-color 0.2s, box-shadow 0.2s;
-}
-
-/* Add the 'Exit' icon using a background image (like the reference uses) or a specific character */
-.logout-icon-btn::before {
-    /* Using an external icon for clarity */
-    content: url('https://img.icons8.com/ios-glyphs/18/0d8383/exit.png');
-    display: block;
-    width: 18px;
-    height: 18px;
-    /* In case the external image doesn't load, use Unicode as a fallback */
-    /* content: '\21A9'; color: #0d8383; font-size: 18px; */ 
-}
-
-/* Hover Effect */
-.logout-icon-btn:hover {
-    background-color: #fff; /* Slightly brighter on hover */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}

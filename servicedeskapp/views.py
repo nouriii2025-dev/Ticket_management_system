@@ -103,32 +103,25 @@ def reset_password(request):
         return redirect("login")
     return render(request, "resetpass.html")
 
+
 def reset_confirm(request, uidb64, token):
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
         user = User_Management.objects.get(pk=uid)
     except:
         user = None
-
-    # Validate the token (including expiration time)
     if user is None or not token_generator.check_token(user, token):
         return HttpResponse("Reset link is invalid or has expired.")
-
-    # If valid and POST → save password
     if request.method == "POST":
         new_pass = request.POST.get("new_password")
         confirm_pass = request.POST.get("confirm_password")
-
         if new_pass != confirm_pass:
             messages.error(request, "Passwords do not match.")
             return redirect(request.path)
-
         user.set_password(new_pass)
         user.save()
-
         messages.success(request, "Password reset successful. Login now.")
         return redirect("login")
-
     return render(request, "reset_confirm.html")
 
 def logout(request):

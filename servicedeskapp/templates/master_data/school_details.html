@@ -1,32 +1,31 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Master Data</title>
-    <link rel="stylesheet" href="static/school_details.css">
+    <link rel="stylesheet" href="{% static 'school_details.css' %}">
 </head>
 <body>
 <div class="main-layout">
-  <div class="sidebar">
-     <div class="user-info">
-       <div style="display:flex;align-items:center;gap:7px;">
-         <span style="font-weight:700;">Ticket Creations</span>
-       </div>
-       <div style="margin-top:6px;font-size:13px;">
-         <span>Welcome</span><br/>
-         <span>{{ request.session.name|default:request.session.username }}</span>
-         <span style="color:#e2fefd; font-weight:600;"></span>
-       </div>
-       <a href="{% url 'logout' %}" class="logout-icon-btn"></a>
-     </div>
-     <nav class="sidebar-nav">
-       <a href="#" class="nav-item">Overview</a>
-       <a href="{% url 'dashboard' %}" class="nav-item">Tickets</a>
-       <a href="{% url 'user_management' %}" class="nav-item">User Management</a>
-       <a href="{% url 'master_data' %}" class="nav-item active">Master data</a>
-       <a href="#" class="nav-item">Reports</a>
-     </nav>
+ <div class="topbar">
+    <div class="topbar-brand">Ticket Management</div>
+    <nav class="topbar-nav">
+        <a href="#">Overview</a>
+        <a href="{% url 'dashboard' %}">Tickets</a>
+        {% if request.session.role == 'admin' %}
+            <a href="{% url 'user_management' %}">User Management</a>
+            <a href="{% url 'master_data' %}"  class="active">Master Data</a>
+        {% endif %}
+        <a href="#">Reports</a>
+    </nav>
+    <div class="topbar-user">
+        <span>Welcome, {{ request.session.name|default:request.session.username }}</span>
+        <a href="{% url 'logout' %}">
+                <button class="logout-btn" title="Logout"></button>
+            </a>
     </div>
+</div>
 
     <div class="main-content">
         <form action="{% url 'school_details' %}" method="post">

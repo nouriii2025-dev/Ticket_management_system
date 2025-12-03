@@ -1,40 +1,36 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Incidents Table</title>
-<link rel="stylesheet" href="static/test.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'test.css' %}">
 </head>
-<body>
-  
-<span id="currentUsername" style="display:none;">{{ current_username }}</span>
-<span id="currentUserFullName" style="display:none;">{{ current_user_fullname }}</span>
 
-  <div class="main-layout">
-    <div class="sidebar">
-     <div class="user-info">
-       <div style="display:flex;align-items:center;gap:7px;">
-         <span style="font-weight:700;">Ticket Creations</span>
-       </div>
-       <div style="margin-top:6px;font-size:13px;">
-         <span>Welcome</span><br/>
-         <span>{{ request.session.name|default:request.session.username }}</span>
-         <span style="color:#e2fefd; font-weight:600;"></span>
-       </div>
-     </div>
-     <nav class="sidebar-nav">
-       <a href="#" class="nav-item">Overview</a>
-       <a href="{% url 'dashboard' %}" class="nav-item active">Tickets</a>
-       {% if request.session.role == 'admin' %}
-       <li><a href="{% url 'user_management' %}" class="nav-item">User Management</a></li>
-       <li><a href="{% url 'master_data' %}" class="nav-item">Master data</a></li>
-       {% endif %}
-       <a href="#" class="nav-item">Reports</a>
-     </nav>
+<body>
+    <div class="topbar">
+    <div class="topbar-brand">Ticket Management</div>
+    <nav class="topbar-nav">
+        <a href="#">Overview</a>
+        <a href="{% url 'dashboard' %}" class="active">Tickets</a>
+        {% if request.session.role == 'admin' %}
+            <a href="{% url 'user_management' %}">User Management</a>
+            <a href="{% url 'master_data' %}">Master Data</a>
+        {% endif %}
+        <a href="#">Reports</a>
+    </nav>
+    <div class="topbar-user">
+        <span>Welcome, {{ request.session.name|default:request.session.username }}</span>
+        <a href="{% url 'logout' %}">
+                <button class="logout-btn" title="Logout"></button>
+            </a>
     </div>
-    <div class="main-content">
-      <div class="content-area">
-                    {% if messages %}
+</div>
+
+<div class="main-content">
+      <div class="content-area">  
+            {% if messages %}
             {% for message in messages %}
               <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
                 {{ message }}
@@ -95,9 +91,6 @@
     <div class="submenu-item">Active - Unassigned</div>
     <div class="submenu-item">Assigned to me</div>
     <div class="submenu-item">Closed</div>
-    <!-- <div class="submenu-item">Incident Mobile</div>
-    <div class="submenu-item">Incident Portal</div>
-    <div class="submenu-item">My Open Incidents</div> -->
   </div>
 
   <div class="submenu-panel" id="groupby-menu" style="display:none;">
@@ -123,7 +116,6 @@
     <div class="submenu-item">100 rows per page</div>
   </div>
 </div>
-
 
     </div>
 </div>
@@ -233,10 +225,10 @@
 </div>
       </div>
         </fieldset>
+        </form>
       </div>
-    </div>
-    </div>
-    </div>
+ 
+   
 
 
 <script>
@@ -664,11 +656,11 @@ syncSelectAll();
         });
     });
 
-    // Initial setup
     document.querySelector("#filters-menu .submenu-item").style.fontWeight = "bold";
     document.querySelector('#show-menu .submenu-item:nth-child(4)').style.fontWeight = "bold"; // 20 rows
     applyFiltersAndPagination();
 </script>
+
 
 </body>
 </html>

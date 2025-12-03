@@ -9,6 +9,11 @@ from rest_framework.response import Response
 from rest_framework import status
 import re
 from django.core.exceptions import ValidationError
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.urls import reverse
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 @api_view(['POST'])
 def sign_up_api(request):
@@ -36,39 +41,70 @@ def sign_up_api(request):
 
 @api_view(['POST'])
 def login_api(request):
-    if request.method == 'POST':
-        username = request.data.get('username')
-        password = request.data.get('password')
-        
-        try:
-            exist_user = User_Management.objects.get(username=username)
-        except User_Management.DoesNotExist:
-            return Response({"error": "User with this username does not exist"}, status=status.HTTP_404_NOT_FOUND)
-        
-        if check_password(password, exist_user.password):
-            user_data = UserManagementSerializer(exist_user).data
-            return Response({"message": "Login successful", "user": user_data}, status=status.HTTP_200_OK)
+    username = request.data.get('username')
+    password = request.data.get('password')
+    if not username or not password:
+        return Response(
+            {"error": "Username and password are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    try:
+        user = User_Management.objects.get(username=username)
+        if check_password(password, user.password):
+            user_data = {
+                "username": user.username,
+                "name": user.name,
+                "role": user.role,
+                "message": "Login successful"
+            }
+            return Response(user_data, status=status.HTTP_200_OK)        
         else:
-            return Response({"error": "Invalid password"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Invalid password"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+    except User_Management.DoesNotExist:
+        return Response(
+            {"error": "User does not exist"},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
+
+token_generator = PasswordResetTokenGenerator()
 
 @api_view(['POST'])
 def reset_password_api(request):
-    if request.method == 'POST':
-        email = request.data.get('email')
-        new_password = request.data.get('new_password')
-        confirm_password = request.data.get('confirm_password')
+    email = request.data.get("email")
+    if not email:
+        return Response(
+            {"error": "Email is required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    try:
+        user = User_Management.objects.get(email=email)
+    except User_Management.DoesNotExist:
+        return Response(
+            {"error": "Email not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    uidb64 = urlsafe_base64_encode(force_bytes(user.id))
+    token = token_generator.make_token(user)
+    reset_url = request.build_absolute_uri(
+        reverse("reset_confirm", kwargs={"uidb64": uidb64, "token": token})
+    )
+    send_mail(
+        subject="Password Reset Instructions",
+        message=f"Click the link to reset your password:\n{reset_url}\n\nValid for 10 minutes.",
+        from_email="your-email@gmail.com",
+        recipient_list=[email],
+        fail_silently=False,
+    )
+    return Response(
+        {"message": "Reset link sent! Check your email."},
+        status=status.HTTP_200_OK
+    )
 
-        if new_password != confirm_password:
-            return Response({"error": "Passwords don't match"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        try:
-            sign = Sign_up.objects.get(email=email)
-            sign.set_password(new_password)
-            sign.save()
-            return Response({"message": "Your password has been successfully updated. Please log in."}, status=status.HTTP_200_OK)
-        except Sign_up.DoesNotExist:
-            return Response({"error": "User with this email does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 
