@@ -673,8 +673,6 @@ hr {
   font-weight: 600;
 }
 
-
-
 .select-all-label input[type="checkbox"] {
   vertical-align: middle;
   margin-top: 0; /* Remove unwanted offset */
@@ -686,4 +684,81 @@ hr {
   height: 40px;   /* Match the height of the table row for perfect vertical alignment */
   display: flex;
   gap: 6px;
+}
+
+
+
+/* ====================== TOP BAR DROPDOWN STYLES (REVISED) ====================== */
+
+/* 1. Container setup */
+.topbar-dropdown-container {
+    position: relative; 
+    display: inline-block; 
+}
+
+/* 2. Style for the main Tickets link */
+.topbar-dropdown-toggle {
+    display: flex; 
+    align-items: center;
+    gap: 4px;
+    /* The rest of the styling is inherited from .topbar-nav a */
+}
+
+/* 3. The dropdown arrow - HIDDEN BY DEFAULT */
+.dropdown-arrow {
+    font-size: 10px;
+    transition: opacity 0.2s;
+    opacity: 0; /* Initially hidden */
+    transform: translateY(2px); 
+    padding-left: 5px; /* Add some space between 'Tickets' and '▼' */
+}
+
+/* 4. SHOW ARROW ON HOVER (Requirement 2) */
+.topbar-dropdown-container:hover .dropdown-arrow {
+    opacity: 1; 
+}
+
+/* 5. Dropdown Menu styling - HIDDEN BY DEFAULT */
+.topbar-dropdown-menu {
+    display: none; /* Always hidden unless JS adds the .open class */
+    position: absolute;
+    top: 100%; 
+    left: 50%;
+    transform: translateX(-50%); 
+    background-color: #fff;
+    min-width: 160px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    overflow: hidden;
+    padding: 6px 0;
+    z-index: 1001; 
+}
+
+/* 6. SHOW MENU WHEN JAVASCRIPT ADDS THE .open CLASS (Requirement 3) */
+.topbar-dropdown-container.open .topbar-dropdown-menu {
+    display: block;
+}
+/* When open, keep the arrow visible (in case the mouse moves away) */
+.topbar-dropdown-container.open .dropdown-arrow {
+    opacity: 1;
+    /* Rotate the arrow slightly when open */
+    transform: translateY(2px) rotate(180deg); 
+}
+
+
+/* Dropdown Item Link style */
+.dropdown-item {
+    color: #333;
+    padding: 10px 15px;
+    text-decoration: none;
+    display: block;
+    font-weight: 400 !important; 
+    transition: background-color 0.15s, color 0.15s;
+    white-space: nowrap; 
+}
+
+.dropdown-item:hover {
+    background-color: var(--primary-dark); 
+    color: white;
+    border-radius: 0;
 }

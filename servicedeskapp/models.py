@@ -59,12 +59,9 @@ Priority_Choices=[
     ('moderate','Moderate'),
     ('high','High'),
 ]
-Caller_Category_Choices=[
-    ('principal','Principal'),
-    ('teacher','Teacher'),
-    ('parent','Parent'),
-    ('office staff','Office staff'),
-    ('other','Other'),
+Platform_Choices=[
+    ('web application','Web Application'),
+    ('mobile application','Mobile Application'),
 ]
 
 class Create_Ticket(models.Model):
@@ -72,8 +69,8 @@ class Create_Ticket(models.Model):
     channel=models.CharField(max_length=100,choices=Channel_Choices,blank=True,default='email',null=True)
     sub_category=models.CharField(max_length=100,blank=True,null=True,choices=Sub_category_Choices)
     state=models.CharField(max_length=100,choices=State_Choices,null=True,blank=True,default='')
-    caller=models.CharField(max_length=100)
-    caller_category=models.CharField(max_length=100,choices=Caller_Category_Choices,blank=True,null=True)
+    caller=models.CharField(max_length=100,blank=True,null=True)
+    platform=models.CharField(max_length=100,choices=Platform_Choices,blank=True,null=True)
     impact=models.CharField(max_length=100,choices=Impact_Choices,default='low')
     number = models.CharField(max_length=50,blank=True,null=True)
     school_name=models.CharField(max_length=100,blank=True,null=True)
@@ -90,6 +87,7 @@ class Create_Ticket(models.Model):
     description = models.TextField(blank=True,null=True)
     additional_comments = models.TextField(blank=True,null=True)
     work_notes = models.TextField(blank=True,null=True)
+    caller_details = models.ForeignKey('Caller_Details',on_delete=models.SET_NULL,null=True,blank=True,related_name='tickets')
     def __str__(self):
         return f" {self.number}: {self.short_description}"
     
@@ -161,8 +159,16 @@ class Master_Data(models.Model):
     phone=models.CharField(validators=[phone_validator],max_length=10,null=True,blank=True)
     def __str__(self):
         return self.name
-
-
+    
+class Caller_Details(models.Model):
+    caller_name=models.CharField(max_length=100,null=True,blank=True)
+    caller_role=models.CharField(max_length=100,blank=True,null=True)
+    caller_email=models.EmailField(max_length=100,null=True,blank=True)
+    caller_phone=models.CharField(validators=[phone_validator],max_length=10,null=True,blank=True)
+    school_name=models.CharField(max_length=100,null=True,blank=True)
+    school_code=models.CharField(max_length=100,null=True,blank=True)
+    def __str__(self):
+        return self.caller_name
 
 
 

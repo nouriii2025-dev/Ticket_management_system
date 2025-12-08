@@ -2,18 +2,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="{% static 'test.css' %}">
+<meta charset="UTF-8">
+<title>Incidents Table</title>
+<link rel="stylesheet" href="{% static 'dashboard.css' %}">
 </head>
+<body>  
+<span id="currentUsername" style="display:none;">{{ current_username }}</span>
+<span id="currentUserFullName" style="display:none;">{{ current_user_fullname }}</span>
 
-<body>
-    <div class="topbar">
+<div class="topbar">
     <div class="topbar-brand">Ticket Management</div>
     <nav class="topbar-nav">
         <a href="#">Overview</a>
-        <a href="{% url 'dashboard' %}" class="active">Tickets</a>
+        <div class="topbar-dropdown-container">
+        <a href="{% url 'dashboard' %}" class="active topbar-dropdown-toggle">
+            Tickets <span class="dropdown-arrow">▼</span>
+        </a>
+        <div class="topbar-dropdown-menu">
+            <a href="{% url 'caller_details' %}" id="caller-details-link" class="dropdown-item">Caller Details</a>
+        </div>
+    </div>
         {% if request.session.role == 'admin' %}
             <a href="{% url 'user_management' %}">User Management</a>
             <a href="{% url 'master_data' %}">Master Data</a>
@@ -27,9 +35,8 @@
             </a>
     </div>
 </div>
-
-<div class="main-content">
-      <div class="content-area">  
+    <div class="main-content">
+      <div class="content-area">    
             {% if messages %}
             {% for message in messages %}
               <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
@@ -44,7 +51,8 @@
             {% if request.session.role == 'admin' %}
             <button type="submit" class="delete-ticket-btn">Delete</button>
             {% endif %}
-            <a href="{% url 'create' %}"><button type="button" class="add-ticket-btn">+ Add Ticket</button></a>
+            <!-- <a href="{% url 'create' %}"><button type="button" class="add-ticket-btn">+ Add Ticket</button></a> -->
+            <button type="button" class="add-ticket-btn" id="openCallerModal">+ Add Ticket</button>
           </header>
           <fieldset class="page-title-fieldset">
           <legend>Tickets</legend>
@@ -116,6 +124,7 @@
     <div class="submenu-item">100 rows per page</div>
   </div>
 </div>
+
 
     </div>
 </div>
@@ -225,10 +234,10 @@
 </div>
       </div>
         </fieldset>
-        </form>
       </div>
- 
-   
+    </div>
+    </div>
+    </div>
 
 
 <script>
@@ -661,6 +670,6 @@ syncSelectAll();
     applyFiltersAndPagination();
 </script>
 
-
 </body>
 </html>
+

@@ -23,7 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-uzfpk7j67f)k643*&2#ujvjhfv*pky_apjh&1ih3(en$)fhoep'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+
+# DEBUG = False
+# STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+DEBUG = True
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 ALLOWED_HOSTS = ['tickets.edship.in', 'localhost', '127.0.0.1']
 
@@ -118,6 +122,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+# STATICFILES_DIRS = [BASE_DIR / 'static',]
 
 
 # Default primary key field type
@@ -143,7 +148,3 @@ SERVER_EMAIL = 'emailproj1234@gmail.com'
 EMAIL_TIMEOUT = 20
 
 PASSWORD_RESET_TIMEOUT = 600   # 10 minutes
-
-
-
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"

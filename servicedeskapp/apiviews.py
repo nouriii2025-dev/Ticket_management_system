@@ -14,6 +14,7 @@ from django.utils.encoding import force_bytes
 from django.urls import reverse
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.http import urlsafe_base64_decode
 
 @api_view(['POST'])
 def sign_up_api(request):
@@ -105,7 +106,41 @@ def reset_password_api(request):
     )
 
 
+@api_view(['POST'])
+def reset_confirm_api(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User_Management.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User_Management.DoesNotExist):
+        user = None
+    if user is None or not token_generator.check_token(user, token):
+        return Response(
+            {"error": "Reset link is invalid or has expired."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    new_password = request.data.get("new_password")
+    confirm_password = request.data.get("confirm_password")
+    if not new_password or not confirm_password:
+        return Response(
+            {"error": "Both new_password and confirm_password are required."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    if new_password != confirm_password:
+        return Response(
+            {"error": "Passwords do not match."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    user.password = make_password(new_password)
+    user.save()
+    return Response(
+        {"message": "Password reset successful. You can now login."},
+        status=status.HTTP_200_OK
+    )
 
+@api_view(['POST'])
+def logout_api(request):
+    request.session.flush()
+    return Response({"message": "Logged out successfully."})
 
 
 @api_view(['GET', 'POST'])

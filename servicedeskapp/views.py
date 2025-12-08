@@ -6,7 +6,7 @@ import json
 from django.core.serializers import serialize
 from django.contrib.auth.hashers import check_password,make_password
 from .decorators import *
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from datetime import datetime
 from django.db.models import Max
 import re
@@ -24,6 +24,8 @@ from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_decode
+from django.db.models import Max
+from django.db import transaction
 
 
 
@@ -125,17 +127,56 @@ def reset_confirm(request, uidb64, token):
     return render(request, "reset_confirm.html")
 
 def logout(request):
+    request.session.flush()
     return redirect('login')
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def parent_caller(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        phone = request.POST.get('phone')
+        email = request.POST.get('email', '')
+
+        if not name or not phone:
+            return JsonResponse({'success': False, 'error': 'Name and phone required'})
+
+        # Save parent as caller in Master_Data (you already use this for schools)
+        caller, created = Master_Data.objects.update_or_create(
+            phone=phone,
+            defaults={
+                'name': name,
+                'email': email,
+                'role': 'parent'  # optional field, add if you have it
+            }
+        )
+
+        return JsonResponse({
+            'success': True,
+            'caller_name': caller.name
+        })
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
 
 
 def dashboard(request):
     all_tickets = Create_Ticket.objects.all().order_by('-created_at')
     for ticket in all_tickets:
-        school=Master_Data.objects.filter(name=ticket.school_name).first()
-        ticket.school_email=school.email if school else None
-    paginator = Paginator(all_tickets, 8) 
-    page_number = request.GET.get('page', 1)
-    page_obj = paginator.get_page(page_number)
+        # school=Master_Data.objects.filter(name=ticket.school_name).first()
+        # ticket.school_email=school.email if school else None  
+        caller=Caller_Details.objects.filter(caller_name=ticket.caller).first()
+        ticket.caller_email = ticket.caller_details.caller_email if ticket.caller_details else None
+        # ticket.caller_email=caller.caller_email if caller else None
+    paginator = Paginator(all_tickets, 8)
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page_number)
+    except (PageNotAnInteger, EmptyPage):
+        page_obj = paginator.page(1)
     fields_to_serialize = (
         'number',
         'short_description',
@@ -169,61 +210,50 @@ def dashboard(request):
     }
     return render(request, 'tickets/dashboard.html', context)
 
-
-
-
-def delete_tickets(request):
-    if request.method == 'POST':
-        selected_ids = request.POST.getlist('selected_tickets')
-        if selected_ids:
-            Create_Ticket.objects.filter(id__in=selected_ids).delete()
-            messages.success(request, f"{len(selected_ids)} ticket(s) deleted successfully.")
-        else:
-            messages.error(request, "No tickets selected.")
-    return redirect('dashboard')
-
-
 def create_ticket(request):
     if 'username' not in request.session:
-        messages.error(request,"please login first")
+        messages.error(request, "Please login first")
         return redirect('login')
+    
+    # Generate next ticket number
     ticket_count = Create_Ticket.objects.count()
-    parent_incident=request.GET.get('parent_incident')
-    latest_ticket = Create_Ticket.objects.aggregate(max_number=Max('number'))['max_number']     #check whats the latest number id and then give the next number.
+    latest_ticket = Create_Ticket.objects.aggregate(max_number=Max('number'))['max_number']
     if latest_ticket:
         match = re.search(r'(\d+)$', latest_ticket)
-        if match:                                         
+        if match:
             next_num = int(match.group(1)) + 1
         else:
-            next_num = 10001  
+            next_num = 10001
     else:
-        next_num = 10001 
+        next_num = 10001
     next_number = f'INC{next_num:07d}'
+    
     group_members = []
-
-    if request.method=='POST':
-        category=request.POST.get('category')
-        channel=request.POST.get('channel')
-        sub_category=request.POST.get('sub_category')
-        state=request.POST.get('state')
-        caller=request.POST.get('caller')
-        caller_category=request.POST.get('caller_category')
-        impact=request.POST.get('impact')
-        school_name=request.POST.get('school_name')
-        urgency=request.POST.get('urgency')
-        school_code=request.POST.get('school_code')
-        priority=request.POST.get('priority')
-        assignment_group=request.POST.get('assignment_group')
-        created_by=request.session.get('username')
-        updated_by=request.POST.get('updated_by')
-        assigned_to=request.POST.get('assigned_to')
-        short_description=request.POST.get('short_description')
-        description=request.POST.get('description')
-        additional_comments=request.POST.get('additional_comments')
-        work_notes=request.POST.get('work_notes')
-        parent_incident=request.GET.get('parent_incident')
-        # next_num = 10001 + ticket_count
-        # number = f'INC{next_num:07d}'
+    parent_incident = request.GET.get('parent_incident', '')
+    parent_caller = request.GET.get('caller', '')
+    
+    if request.method == 'POST':
+        category = request.POST.get('category')
+        channel = request.POST.get('channel')
+        sub_category = request.POST.get('sub_category')
+        state = request.POST.get('state')
+        caller_name = request.POST.get('caller') 
+        platform = request.POST.get('platform')
+        impact = request.POST.get('impact')
+        school_name = request.POST.get('school_name')
+        school_code = request.POST.get('school_code')
+        urgency = request.POST.get('urgency')
+        priority = request.POST.get('priority')
+        assignment_group = request.POST.get('assignment_group')
+        created_by = request.session.get('username')
+        updated_by = request.POST.get('updated_by')
+        assigned_to = request.POST.get('assigned_to')
+        short_description = request.POST.get('short_description')
+        description = request.POST.get('description')
+        additional_comments = request.POST.get('additional_comments')
+        work_notes = request.POST.get('work_notes')
+        
+        # Generate ticket number (recalculate for accuracy)
         latest_ticket_number = Create_Ticket.objects.aggregate(max_number=Max('number'))['max_number']
         if latest_ticket_number:
             match = re.search(r'(\d+)$', latest_ticket_number)
@@ -234,118 +264,184 @@ def create_ticket(request):
         else:
             next_num = 10001
         number = f'INC{next_num:07d}'
-
+        
+        # Validate required fields
         required_fields = {
-        'School Name': school_name,
-        'Caller': caller,
-        'Category': category,
-        'State': state,
-        'Urgency': urgency,
-        'Assignment Group': assignment_group,
-        'Short Description': short_description,
-    }
-
+            'School Name': school_name,
+            'Caller': caller_name,
+            'Category': category,
+            'State': state,
+            'Urgency': urgency,
+            'Assignment Group': assignment_group,
+            'Short Description': short_description,
+        }
+        
         missing_fields = [field for field, value in required_fields.items() if not value]
         if missing_fields:
             messages.error(request, f"The following fields are required: {', '.join(missing_fields)}")
+            selected_group = request.POST.get('assignment_group', '')
             return render(request, 'tickets/create_ticket.html', {
-                'next_number': f'INC{10001 + ticket_count:07d}',
-                'selected_group': assignment_group
+                'next_number': next_number,
+                'selected_group': selected_group,
+                'group_members': group_members,
+                'parent_incident': parent_incident,
+                'parent_caller': parent_caller,
+                'latest_caller': request.session.get('last_caller_name', ''),
+                'latest_school_name': school_name,  
+                'latest_school_code': school_code,
             })
         
-        try:
-            school = Master_Data.objects.get(name=school_name)
-            school_email = school.email
-        except Master_Data.DoesNotExist:
-            school = None
-            school_email = None
-
-        if not school:
-            messages.error(request,"School not found. Please enter a valid school.")
+        # Validate caller exists
+        caller=Caller_Details.objects.filter(caller_name=caller_name)
+        if caller.exists():
+            caller = caller.first()
+            caller_email = caller.caller_email
+        else:
+            messages.error(request, "Caller not found.")
             return render(request, 'tickets/create_ticket.html', {
                 'next_number': next_number,
                 'selected_group': assignment_group,
-                'group_members':group_members,
+                'group_members': group_members,
+                'parent_incident': parent_incident,
+                'parent_caller': parent_caller,
+                'latest_caller': request.session.get('last_caller_name', ''),
             })
-
-        if not school_email:
-            messages.warning(request," This school does not have an email configured. Notification will not be sent.")
         
-        Create_Ticket.objects.create(category=category,
-            channel=channel,
-            sub_category=sub_category,
-            state=state,
-            caller=caller,
-            caller_category=caller_category,
-            impact=impact,
-            school_name=school_name,
-            urgency=urgency,
-            school_code=school_code,
-            priority=priority,
-            assignment_group=assignment_group,
-            created_by=created_by,
-            updated_by=updated_by,
-            assigned_to=assigned_to,
-            short_description=short_description,
-            description=description,
-            additional_comments=additional_comments,
-            work_notes=work_notes,
-            number=number)
-        
-        try:
-            school = Master_Data.objects.get(name=school_name)
-            school_email = school.email
-        except Master_Data.DoesNotExist:
-            school_email = None
+        # caller_details_obj = None
+        # if caller_name:
+        #     try:
+        #         caller_details_obj = Caller_Details.objects.filter(caller_name=caller_name)
+        #     except Caller_Details.DoesNotExist:
+        #         caller_details_obj = Caller_Details.objects.create(
+        #             caller_name=caller_name,
+        #             school_name=school_name,
+        #             school_code=school_code
+        #         )
+        #         messages.info(request, f"New caller '{caller_name}' created automatically.")
 
-        if school_email:
+        caller_details_obj = None
+        if caller_name:
+            caller = Caller_Details.objects.filter(caller_name=caller_name)
+        if caller.exists():
+            caller_details_obj = caller.first()  # ✅ Single instance
+        else:
+            caller_details_obj = Caller_Details.objects.create(
+                caller_name=caller_name,
+                school_name=school_name,
+                school_code=school_code
+            )
+            messages.info(request, f"New caller '{caller_name}' created automatically.")
+        
+        # Create ticket with transaction for data integrity
+        with transaction.atomic():
+            ticket = Create_Ticket.objects.create(
+                category=category,
+                channel=channel,
+                sub_category=sub_category,
+                state=state,
+                caller=caller_name,  # Display name
+                caller_details=caller_details_obj,  # ForeignKey relationship
+                platform=platform,
+                impact=impact,
+                school_name=school_name,
+                school_code=school_code,
+                urgency=urgency,
+                priority=priority,
+                assignment_group=assignment_group,
+                created_by=created_by,
+                updated_by=updated_by,
+                assigned_to=assigned_to,
+                short_description=short_description,
+                description=description,
+                additional_comments=additional_comments,
+                work_notes=work_notes,
+                number=number
+            )
+        
+        # Send email notification
+        if caller_details_obj and caller_details_obj.caller_email:
+            caller_email = caller_details_obj.caller_email
             subject = f"New Ticket Created: {number}"
             message = (
-                f"Dear Sir/Madam,\n\n"
+                f"Dear {caller_name},\n\n"
                 f"A new ticket has been created for your school {school_name}.\n\n"
                 f"Ticket Number: {number}\n"
                 f"Short Description: {short_description}\n\n"
-                "Our team is actively looking into the issue and will keep you updated.\n"
-                "If you need any further assistance, kindly reach out to our support team.\n\n"
-                "Regards,\n"
-                "IT Support Team\n"
-                "Edship Technologies"
+                f"Our team is actively looking into the issue and will keep you updated.\n"
+                f"If you need any further assistance, kindly reach out to our support team.\n\n"
+                f"Regards,\n"
+                f"IT Support Team\n"
+                f"Edship Technologies"
             )
             from_email = settings.DEFAULT_FROM_EMAIL
-            recipient_list = [school_email]
+            recipient_list = [caller_email]
             try:
                 send_mail(subject, message, from_email, recipient_list, fail_silently=False)
             except Exception as e:
-                print(f"Email sending failed: {e}")
+                messages.warning(request, f'Ticket created but email failed: {str(e)}')
+        else:
+            messages.success(request, f'Ticket {number} created (no caller email available).')
+            # except Exception as e:
+            #     messages.warning(request, f"Ticket created successfully but email failed: {str(e)}")
         
-        messages.success(request,'Ticket created and notification sent successfully.')
-        return redirect('dashboard')    
+        # Clear session data after successful creation
+        # if 'last_caller_name' in request.session:
+        #     del request.session['last_caller_name']
+        # if 'last_caller_id' in request.session:
+        #     del request.session['last_caller_id']
+        for key in ['last_caller_name', 'last_caller_id', 'last_school_name', 'last_school_code']:
+            request.session.pop(key, None)
+        request.session.modified = True
+        
+        messages.success(request, f'Ticket {number} created and notification sent successfully.')
+        return redirect('dashboard')
     else:
-        selected_group=request.GET.get('assignment_group','')
-        # next_num = 10001 + ticket_count                #count only the rows in the table thus identifying the next number
-        # next_number = f'INC{next_num:07d}'
-        group_members=[]
+        selected_group = request.GET.get('assignment_group', '')
         if selected_group:
             try:
-                group=Assignment_Group.objects.get(name=selected_group)
-                group_members=Group_Members.objects.filter(group=group)
+                group = Assignment_Group.objects.get(name=selected_group)
+                group_members = Group_Members.objects.filter(group=group)
             except Assignment_Group.DoesNotExist:
-                group_members=[]
-        context={
-            'next_number':next_number,
-            'selected_group':selected_group,
-            'group_members':group_members,
-            'parent_incident':parent_incident,
-        }
-    return render(request,'tickets/create_ticket.html',context)
-
+                group_members = []
+        
+        # context = {
+        #     'next_number': next_number,
+        #     'selected_group': selected_group,
+        #     'group_members': group_members,
+        #     'parent_incident': parent_incident,
+        #     'parent_caller': parent_caller,
+        #     'latest_caller': request.session.get('last_caller_name', ''),  # Autofill caller
+        #     'latest_school_name': request.session.get('last_school_name', ''),
+        #     'latest_school_code': request.session.get('last_school_code', ''),
+        # }   
+           
+    context = {
+        'next_number': next_number, 
+        'selected_group': selected_group,
+        'group_members': group_members, 
+        'parent_incident': parent_incident,
+        'parent_caller': parent_caller,
+        'latest_caller': '', 
+        'latest_school_name': '', 
+        'latest_school_code': ''  ,
+    }
+    return render(request, 'tickets/create_ticket.html', context)
 
 def update_ticket(request, ticket_id):
     if 'username' not in request.session:
         messages.error(request,"please login first")
         return redirect('login')
     single_ticket = get_object_or_404(Create_Ticket, id=ticket_id)
-    selected_group = request.GET.get('assignment_group', single_ticket.assignment_group)
+    selected_group_param = request.GET.get('assignment_group')  
+    current_group = single_ticket.assignment_group 
+    selected_group = selected_group_param if selected_group_param else current_group
+    group_members = []
+    if selected_group and selected_group.strip():
+        try:
+            group = Assignment_Group.objects.get(name=selected_group)
+            group_members = Group_Members.objects.filter(group=group).select_related('user')
+        except Assignment_Group.DoesNotExist:
+            group_members = []
     if request.method == 'POST':
         old_values={
             'category': single_ticket.category,
@@ -353,7 +449,7 @@ def update_ticket(request, ticket_id):
             'sub_category': single_ticket.sub_category,
             'state': single_ticket.state,
             'caller': single_ticket.caller,
-            'caller_category':single_ticket.caller_category,
+            'platform': single_ticket.platform,
             'impact': single_ticket.impact,
             'school_name': single_ticket.school_name,
             'urgency': single_ticket.urgency,
@@ -379,7 +475,7 @@ def update_ticket(request, ticket_id):
             single_ticket.state = request.POST.get('state')
 
         single_ticket.caller = request.POST.get('caller')
-        single_ticket.caller_category = request.POST.get('caller_category')
+        single_ticket.platform = request.POST.get('platform')
         single_ticket.impact = request.POST.get('impact')
         single_ticket.school_name = request.POST.get('school_name')
         single_ticket.urgency = request.POST.get('urgency')
@@ -394,7 +490,7 @@ def update_ticket(request, ticket_id):
         single_ticket.work_notes = request.POST.get('work_notes')
         single_ticket.save() 
 
-        fields_to_check=['category', 'channel', 'sub_category', 'state', 'caller','caller_category', 'impact', 
+        fields_to_check=['category', 'channel', 'sub_category', 'state', 'caller','platform', 'impact', 
             'school_name', 'urgency', 'school_code', 'priority', 'assignment_group', 
              'assigned_to', 'short_description', 'description', 
             'additional_comments', 'work_notes']
@@ -416,7 +512,6 @@ def update_ticket(request, ticket_id):
             activity_record=Activity.objects.create(
                 ticket=single_ticket,
                 user=single_ticket.updated_by,
-                # action="Field changes"
                 action="Field changes"
             )   
             for change in field_changes:
@@ -428,15 +523,32 @@ def update_ticket(request, ticket_id):
                 )   
         if action == "resolve":
             single_ticket.resolved_date = timezone.now()
+            # try:
+            #     school = Master_Data.objects.get(name=single_ticket.school_name)
+            #     single_ticket.school_email = school.email
+            # except Master_Data.DoesNotExist:
+            #     single_ticket.school_email = None
+            # if single_ticket.school_email:
+            #     subject = f"Your ticket {single_ticket.number} has been resolved"
+            #     message = (
+            #         f"Dear Sir/Madam,\n\n"
+            #         f"We are happy to inform you that your reported issue has been successfully resolved.\n\n"
+            #         f"Ticket No.: {single_ticket.number}\n"
+            #         f"Short Description: {single_ticket.short_description}\n\n"
+            #         "If the issue reoccurs or you need further assistance, kindly inform us.\n\n"
+            #         "Regards,\n"
+            #         "IT Support Team\n"
+            #         "Edship Technologies\n"
+            #     )
             try:
-                school = Master_Data.objects.get(name=single_ticket.school_name)
-                single_ticket.school_email = school.email
-            except Master_Data.DoesNotExist:
-                single_ticket.school_email = None
-            if single_ticket.school_email:
+                caller = Caller_Details.objects.get(name=single_ticket.caller)
+                single_ticket.caller_email = caller.caller_email
+            except Caller_Details.DoesNotExist:
+                single_ticket.caller_email = None
+            if single_ticket.caller_email:
                 subject = f"Your ticket {single_ticket.number} has been resolved"
                 message = (
-                    f"Dear Sir/Madam,\n\n"
+                    f"Dear { caller },\n\n"
                     f"We are happy to inform you that your reported issue has been successfully resolved.\n\n"
                     f"Ticket No.: {single_ticket.number}\n"
                     f"Short Description: {single_ticket.short_description}\n\n"
@@ -446,19 +558,32 @@ def update_ticket(request, ticket_id):
                     "Edship Technologies\n"
                 )
 
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [single_ticket.school_email])
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [single_ticket.caller_email])
             messages.success(request, "Ticket resolved and email notification sent.")
         else:
             messages.success(request, "Ticket updated successfully.")
         return redirect('update', ticket_id=single_ticket.id) 
+
     else:
         activities=single_ticket.activities.all().order_by('-created_at').prefetch_related('changes')
         context = {
         'tickets': single_ticket,
         'activities': activities,
         'selected_group':selected_group,
+        'group_members': group_members,
         }
     return render(request, 'tickets/update_ticket.html', context)
+
+
+def delete_tickets(request):
+    if request.method == 'POST':
+        selected_ids = request.POST.getlist('selected_tickets')
+        if selected_ids:
+            Create_Ticket.objects.filter(id__in=selected_ids).delete()
+            messages.success(request, f"{len(selected_ids)} ticket(s) deleted successfully.")
+        else:
+            messages.error(request, "No tickets selected.")
+    return redirect('dashboard')
 
 
 #--------------------GROUP LISTING, ADDING NEW GROUP, EDITING AND DELETING---------------------------------
@@ -744,8 +869,6 @@ def group_details(request):
     }
     return render(request,'master_data/group_details.html',context)
 
-
-
 def school_autofill(request):
     q = request.GET.get('q', '')
     if q:
@@ -795,3 +918,227 @@ def test_view(request):
         'page_obj': page_obj,
     }
     return render(request,'test.html',context)
+
+
+
+
+
+def test_create(request):
+    if 'username' not in request.session:
+        messages.error(request, "Please login first")
+        return redirect('login')
+    
+    # Generate next ticket number
+    ticket_count = Create_Ticket.objects.count()
+    latest_ticket = Create_Ticket.objects.aggregate(max_number=Max('number'))['max_number']
+    if latest_ticket:
+        match = re.search(r'(\d+)$', latest_ticket)
+        if match:
+            next_num = int(match.group(1)) + 1
+        else:
+            next_num = 10001
+    else:
+        next_num = 10001
+    next_number = f'INC{next_num:07d}'
+    
+    group_members = []
+    parent_incident = request.GET.get('parent_incident', '')
+    parent_caller = request.GET.get('caller', '')
+    
+    if request.method == 'POST':
+        # Extract all form fields
+        category = request.POST.get('category')
+        channel = request.POST.get('channel')
+        sub_category = request.POST.get('sub_category')
+        state = request.POST.get('state')
+        caller_name = request.POST.get('caller') 
+        platform = request.POST.get('platform')
+        impact = request.POST.get('impact')
+        school_name = request.POST.get('school_name')
+        school_code = request.POST.get('school_code')
+        urgency = request.POST.get('urgency')
+        priority = request.POST.get('priority')
+        assignment_group = request.POST.get('assignment_group')
+        created_by = request.session.get('username')
+        updated_by = request.POST.get('updated_by')
+        assigned_to = request.POST.get('assigned_to')
+        short_description = request.POST.get('short_description')
+        description = request.POST.get('description')
+        additional_comments = request.POST.get('additional_comments')
+        work_notes = request.POST.get('work_notes')
+        
+        # Generate ticket number (recalculate for accuracy)
+        latest_ticket_number = Create_Ticket.objects.aggregate(max_number=Max('number'))['max_number']
+        if latest_ticket_number:
+            match = re.search(r'(\d+)$', latest_ticket_number)
+            if match:
+                next_num = int(match.group(1)) + 1
+            else:
+                next_num = 10001
+        else:
+            next_num = 10001
+        number = f'INC{next_num:07d}'
+        
+        # Validate required fields
+        required_fields = {
+            'School Name': school_name,
+            'Caller': caller_name,
+            'Category': category,
+            'State': state,
+            'Urgency': urgency,
+            # 'Assignment Group': assignment_group,
+            'Short Description': short_description,
+        }
+        
+        missing_fields = [field for field, value in required_fields.items() if not value]
+        if missing_fields:
+            messages.error(request, f"The following fields are required: {', '.join(missing_fields)}")
+            selected_group = request.POST.get('assignment_group', '')
+            return render(request, 'test_create.html', {
+                'next_number': next_number,
+                'selected_group': selected_group,
+                'group_members': group_members,
+                'parent_incident': parent_incident,
+                'parent_caller': parent_caller,
+                'latest_caller': request.session.get('last_caller_name', ''),
+            })
+        
+        # Validate school exists
+        try:
+            caller = Caller_Details.objects.get(caller_name=caller_name)
+            caller_email = caller.caller_email
+        except Caller_Details.DoesNotExist:
+            messages.error(request, "Caller not found.")
+            return render(request, 'test_create.html', {
+                'next_number': next_number,
+                'selected_group': assignment_group,
+                'group_members': group_members,
+                'parent_incident': parent_incident,
+                'parent_caller': parent_caller,
+                'latest_caller': request.session.get('last_caller_name', ''),
+            })
+        
+        if not caller_email:
+            messages.warning(request, "This caller does not have an email configured. Notification will not be sent.")
+        
+        # NEW: Handle caller_details ForeignKey
+        caller_details_obj = None
+        if caller_name:
+            try:
+                # Find exact matching Caller_Details by name
+                caller_details_obj = Caller_Details.objects.get(caller_name=caller_name)
+            except Caller_Details.DoesNotExist:
+                # Fallback: create on-the-fly if not found (for legacy data)
+                caller_details_obj = Caller_Details.objects.create(
+                    caller_name=caller_name,
+                    school_name=school_name,
+                    school_code=school_code
+                )
+                messages.info(request, f"New caller '{caller_name}' created automatically.")
+        
+        # Create ticket with transaction for data integrity
+        with transaction.atomic():
+            ticket = Create_Ticket.objects.create(
+                category=category,
+                channel=channel,
+                sub_category=sub_category,
+                state=state,
+                caller=caller_name,  # Display name
+                caller_details=caller_details_obj,  # ForeignKey relationship
+                platform=platform,
+                impact=impact,
+                school_name=school_name,
+                school_code=school_code,
+                urgency=urgency,
+                priority=priority,
+                assignment_group=assignment_group,
+                created_by=created_by,
+                updated_by=updated_by,
+                assigned_to=assigned_to,
+                short_description=short_description,
+                description=description,
+                additional_comments=additional_comments,
+                work_notes=work_notes,
+                number=number
+            )
+        
+        # Send email notification
+        if caller_email:
+            subject = f"New Ticket Created: {number}"
+            message = (
+                f"Dear {caller_name},\n\n"
+                f"A new ticket has been created for your school {school_name}.\n\n"
+                f"Ticket Number: {number}\n"
+                f"Short Description: {short_description}\n\n"
+                f"Our team is actively looking into the issue and will keep you updated.\n"
+                f"If you need any further assistance, kindly reach out to our support team.\n\n"
+                f"Regards,\n"
+                f"IT Support Team\n"
+                f"Edship Technologies"
+            )
+            from_email = settings.DEFAULT_FROM_EMAIL
+            recipient_list = [caller_email]
+            try:
+                send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+            except Exception as e:
+                messages.warning(request, f"Ticket created successfully but email failed: {str(e)}")
+        
+        # Clear session data after successful creation
+        if 'last_caller_name' in request.session:
+            del request.session['last_caller_name']
+        if 'last_caller_id' in request.session:
+            del request.session['last_caller_id']
+        
+        messages.success(request, f'Ticket {number} created and notification sent successfully.')
+        return redirect('dashboard')
+    else:
+        selected_group = request.GET.get('assignment_group', '')
+        if selected_group:
+            try:
+                group = Assignment_Group.objects.get(name=selected_group)
+                group_members = Group_Members.objects.filter(group=group)
+            except Assignment_Group.DoesNotExist:
+                group_members = []
+        
+        context = {
+            'next_number': next_number,
+            'selected_group': selected_group,
+            'group_members': group_members,
+            'parent_incident': parent_incident,
+            'parent_caller': parent_caller,
+            'latest_caller': request.session.get('last_caller_name', ''),  # Autofill caller
+            'latest_school_name': request.session.get('last_school_name', ''),
+            'latest_school_code': request.session.get('last_school_code', ''),
+        }   
+    return render(request, 'test_create.html', context)
+
+
+def caller_details(request):
+    callers=Caller_Details.objects.all()
+    return render(request,'tickets/caller_details.html',{'callers':callers})   
+
+
+def add_caller_details(request):
+    if request.method == 'POST':
+        if 'save' in request.POST:
+            caller=Caller_Details.objects.create(
+                caller_name=request.POST['caller_name'],
+                caller_role=request.POST['caller_role'],
+                caller_email=request.POST['caller_email'],
+                caller_phone=request.POST['caller_phone'],
+                school_name=request.POST['school_name'],
+                school_code=request.POST['school_code']
+            )
+            # request.session['last_caller_name'] = request.POST['caller_name']
+            request.session['last_caller_name'] = caller.caller_name  # Name for display
+            request.session['last_caller_id'] = caller.id  # NEW: ID for FK
+            request.session['last_school_name'] = request.POST['school_name']
+            request.session['last_school_code'] = request.POST['school_code']
+    return redirect(reverse('test_create') + '?from_caller=1')    # IMPORTANT: tell create page we are coming from caller popup
+
+
+def overview(request):
+    return render(request,'overview.html')
+
+def reports(request):
+    return render(request,'reports.html')

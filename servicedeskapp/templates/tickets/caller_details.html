@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Caller details</title>
+    <link rel="stylesheet" href="{% static 'school_details.css' %}">
+</head>
+<body>
+<div class="main-layout">
+ <div class="topbar">
+    <div class="topbar-brand">Ticket Management</div>
+    <nav class="topbar-nav">
+        <a href="{% url 'overview' %}">Overview</a>
+        <div class="topbar-dropdown-container">
+        <a href="{% url 'dashboard' %}" class="active topbar-dropdown-toggle">
+            Tickets <span class="dropdown-arrow">▼</span>
+        </a>
+        <div class="topbar-dropdown-menu">
+            <a href="{% url 'caller_details' %}" id="caller-details-link" class="dropdown-item">Caller Details</a>
+        </div>
+        </div>
+        {% if request.session.role == 'admin' %}
+            <a href="{% url 'user_management' %}">User Management</a>
+            <a href="{% url 'master_data' %}">Master Data</a>
+        {% endif %}
+        <a href="{% url 'reports' %}">Reports</a>
+    </nav>
+     <div class="topbar-user">
+        <span>Welcome, {{ request.session.name|default:request.session.username }}</span>
+    <div class="profile-dropdown">
+        <button class="profile-btn" title="User Menu">
+            <svg class="profile-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            <!-- <span class="user-initials">{{ request.session.name|default:request.session.username|slice:":1"|upper }}</span> -->
+        </button>
+        <div class="profile-menu">
+            <a href="{% url 'reset' %}" class="profile-menu-item">Reset Password</a>
+            <a href="{% url 'logout' %}" class="profile-menu-item">Logout</a>
+        </div>
+    </div>
+</div>
+</div>
+
+    <div class="main-content">
+        <form action="{% url 'caller_details' %}" method="post">
+            {% csrf_token %}
+        <div class="user-management">
+
+          {% if messages %}
+            {% for message in messages %}
+              <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                {{ message }}
+              </div>              
+            {% endfor %}
+          {% endif %}
+           <fieldset class="user-fieldset">
+            <legend>Caller Details</legend>
+   
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>School name</th>
+                <th>School code</th>
+                <!-- <th>Actions</th> -->
+              </tr>
+            </thead>
+            <tbody>
+              {% for caller in callers %}
+              <tr>
+                <td>{{ caller.caller_name }}</td>
+                <td>{{ caller.caller_role }}</td>
+                <td>{{ caller.caller_email }}</td>
+                <td>{{ caller.caller_phone }}</td>
+                <td>{{ caller.school_name }}</td>
+                <td>{{ caller.school_code }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+           </fieldset>
+        </div>
+        </form>
+      </div>
+    </div>
+ </div>
+
+ <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const profileBtn = document.querySelector('.profile-btn');
+    const profileMenu = document.querySelector('.profile-menu');
+    
+    if (profileBtn && profileMenu) {
+        profileBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileMenu.classList.toggle('open');
+        });
+        
+        document.addEventListener('click', function() {
+            profileMenu.classList.remove('open');
+        });
+    }
+});
+
+</script>
+</body>
+</html>

@@ -11,20 +11,36 @@
      <div class="topbar">
     <div class="topbar-brand">Ticket Management</div>
     <nav class="topbar-nav">
-        <a href="#">Overview</a>
-        <a href="{% url 'dashboard' %}" class="active">Tickets</a>
+        <a href="{% url 'overview' %}">Overview</a>
+        <div class="topbar-dropdown-container">
+        <a href="{% url 'dashboard' %}" class="active topbar-dropdown-toggle">
+            Tickets <span class="dropdown-arrow">▼</span>
+        </a>
+        <div class="topbar-dropdown-menu">
+            <a href="{% url 'caller_details' %}" id="caller-details-link" class="dropdown-item">Caller Details</a>
+        </div>
+    </div>
         {% if request.session.role == 'admin' %}
             <a href="{% url 'user_management' %}">User Management</a>
             <a href="{% url 'master_data' %}">Master Data</a>
         {% endif %}
-        <a href="#">Reports</a>
+        <a href="{% url 'reports' %}">Reports</a>
     </nav>
-    <div class="topbar-user">
+     <div class="topbar-user">
         <span>Welcome, {{ request.session.name|default:request.session.username }}</span>
-        <a href="{% url 'logout' %}">
-                <button class="logout-btn" title="Logout"></button>
-            </a>
+    <div class="profile-dropdown">
+        <button class="profile-btn" title="User Menu">
+            <svg class="profile-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            <!-- <span class="user-initials">{{ request.session.name|default:request.session.username|slice:":1"|upper }}</span> -->
+        </button>
+        <div class="profile-menu">
+            <a href="{% url 'reset' %}" class="profile-menu-item">Reset Password</a>
+            <a href="{% url 'logout' %}" class="profile-menu-item">Logout</a>
+        </div>
     </div>
+</div>
 </div>
     <div class="main-content">
              {% if messages %}
@@ -41,23 +57,24 @@
                 <button class="action-btn-top resolve">Resolve</button>
             </div>
           <fieldset class="ticket-fieldset">
-        <!-- <h2 class="add-ticket-title">Add Tickets</h2> -->
-         <legend>Add Ticket</legend>
+         <legend>Create Ticket</legend>
             <div class="form-row">
                 <div class="form-group">
                     <label>School Name <span class="required">*</span></label>
                     <input type="text" name="school_name" placeholder="Enter school name" id="school_name_input" 
-                    autocomplete="off" required>
+                    autocomplete="off" required value="{{ latest_school_name|default:'' }}">
                     <div id="school_suggestions" class="autocomplete-items"></div>
                 </div>
                 <div class="form-group">
                     <label>School Code</label>
-                    <input type="text" name="school_code" placeholder="Enter school code" id="school_code_input">
+                    <input type="text" name="school_code" placeholder="Enter school code" id="school_code_input" value="{{ latest_school_code|default:'' }}">
                     
                 </div>
                 <div class="form-group">
                     <label>Caller <span class="required">*</span></label>
-                    <input type="text" name="caller" placeholder="Enter caller" required>
+                    <input type="text" id="caller_field" class="form-control" name="caller" value="{{ latest_caller }}" 
+                        placeholder="Click to add caller details" readonly onclick="openCallerModal()" value="{{ latest_caller|default:'' }}">
+                    <input type="hidden" name="caller_details_id" value="{{ request.session.last_caller_id|default:'' }}">
                 </div>
             </div>
             <div class="form-row">
@@ -80,15 +97,12 @@
                         <option value="other">Other</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Caller category</label>
-                    <select name="caller_category">
+                 <div class="form-group">
+                    <label>Platform<span class="required">*</span></label>
+                    <select name="platform" required>
                         <option value="">Select category</option>
-                        <option value="principal">Principal</option>
-                        <option value="teacher">Teacher</option>
-                        <option value="parent">Parent</option>
-                        <option value="ofiice staff">Office staff</option>
-                        <option value="other">Other</option>
+                        <option value="web application">Web Application</option>
+                        <option value="mobile application">Mobile Application</option>
                     </select>
                 </div>
             </div>
@@ -320,6 +334,28 @@
     </div>
  </div>
 
+  <div id="callerModal" class="modal">
+  <div class="modal-content">
+    <!-- <span class="close">&times;</span> -->
+    <h2>Add Caller Details</h2>
+    <form method="post" action="{% url 'add_caller_details' %}">
+      {% csrf_token %}
+      <input type="hidden" name="ticket_school_name" value="{{ school_name }}">
+      <input type="hidden" name="ticket_school_code" value="{{ school_code }}">
+      
+      <input type="text" name="caller_name" placeholder="Name" required>
+      <input type="text" name="caller_role" placeholder="Role" required>
+      <input type="email" name="caller_email" placeholder="Email" required>
+      <input type="tel" name="caller_phone" placeholder="Phone" required>
+      <input type="text" name="school_name" id="modal_school_name" placeholder="School Name">
+      <input type="text" name="school_code" id="modal_school_code" placeholder="School Code">
+      
+      <button type="submit" name="save">Save</button>
+      <button type="button" onclick="closeModal()">Cancel</button>
+    </form>
+  </div>
+</div>
+
  <script>
  function showTab(evt, tabName) {
     var i, tabcontent, tabbtns;
@@ -436,7 +472,164 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 
+<script>
+    // Save form data to sessionStorage before opening modal
+function saveFormData() {
+    const formData = {};
+    document.querySelectorAll('#createTicketForm input, #createTicketForm select, #createTicketForm textarea').forEach(el => {
+        formData[el.name] = el.value;
+    });
+    sessionStorage.setItem('ticketFormData', JSON.stringify(formData));
+}
+
+// Restore form data from sessionStorage
+function restoreFormData() {
+    const savedData = sessionStorage.getItem('ticketFormData');
+    if (savedData) {
+        const formData = JSON.parse(savedData);
+        Object.keys(formData).forEach(key => {
+            const el = document.querySelector(`[name="${key}"]`);
+            if (el) el.value = formData[key];
+        });
+    }
+}
+
+// Open modal with autofill
+document.getElementById('caller_field').addEventListener('click', function() {
+    saveFormData();
+    
+    // Autofill school details
+    document.getElementById('modal_school_name').value = 
+        document.querySelector('[name="school_name"]').value;
+    document.getElementById('modal_school_code').value = 
+        document.querySelector('[name="school_code"]').value;
+    
+    document.getElementById('callerModal').style.display = 'block';
+});
+
+// Close modal without page reload
+function closeModal() {
+    document.getElementById('callerModal').style.display = 'none';
+    restoreFormData(); // Restore original form data
+}
+
+</script>
+
+<!-- <script>
+window.onload = function () {
+    const params = new URLSearchParams(window.location.search);
+    const fromCaller = params.get('from_caller');   // present when returning from popup
+
+    const callerName = "{{ latest_caller|default:'' }}";
+    const schoolName = "{{ latest_school_name|default:'' }}";
+    const schoolCode = "{{ latest_school_code|default:'' }}";
+
+    if (fromCaller) {
+        // Coming back from caller popup: restore all three
+        if (callerName) {
+            document.getElementById('caller_field').value = callerName;
+        }
+        if (schoolName) {
+            document.getElementById('school_name_input').value = schoolName;
+        }
+        if (schoolCode) {
+            document.getElementById('school_code_input').value = schoolCode;
+        }
+    } else {
+        // Fresh page or normal refresh: do not keep old values
+        document.getElementById('caller_field').value = "";
+        document.getElementById('school_name_input').value = "";
+        document.getElementById('school_code_input').value = "";
+    }
+
+    const savedData = localStorage.getItem("ticketFormData");
+    if (savedData && params.has("assignment_group")) {
+        const data = JSON.parse(savedData);
+        Object.keys(data).forEach(key => {
+            if (key === "assignment_group" ||
+                key === "caller" ||
+                key === "school_name" ||
+                key === "school_code") return; 
+
+            const field = document.querySelector(`[name="${key}"]`);
+            if (field) {
+                if (field.type === "checkbox") {
+                    field.checked = (data[key] === "on");
+                } else {
+                    field.value = data[key];
+                }
+            }
+        });
+        localStorage.removeItem("ticketFormData");
+    }
+
+    if (typeof loadCallerTable === "function") {
+        loadCallerTable();
+    }
+};
+</script> -->
+
+<script>
+window.onload = function () {
+    const params = new URLSearchParams(window.location.search);
+    
+    // Handle assignment group return - RESTORE ALL fields including school/caller
+    if (params.has("assignment_group")) {
+        const savedData = localStorage.getItem("ticketFormData");
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            Object.keys(data).forEach(key => {
+                const field = document.querySelector(`[name="${key}"]`);
+                if (field) {
+                    if (field.type === "checkbox") {
+                        field.checked = (data[key] === "on");
+                    } else {
+                        field.value = data[key];
+                    }
+                }
+            });
+            localStorage.removeItem("ticketFormData");
+        }
+        return; // Exit early - assignment group handled
+    }
+    
+    // Handle caller modal return
+    const fromCaller = params.get('from_caller');
+    const callerName = "{{ latest_caller|default:'' }}";
+    const schoolName = "{{ latest_school_name|default:'' }}";
+    const schoolCode = "{{ latest_school_code|default:'' }}";
+    
+    if (fromCaller && (callerName || schoolName || schoolCode)) {
+        if (callerName) document.getElementById('caller_field').value = callerName;
+        if (schoolName) document.getElementById('school_name_input').value = schoolName;
+        if (schoolCode) document.getElementById('school_code_input').value = schoolCode;
+    }
+    
+    // Fresh page load - clear localStorage data only
+    if (!params.has("assignment_group") && !params.get('from_caller')) {
+        localStorage.removeItem("ticketFormData");
+    }
+};
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const profileBtn = document.querySelector('.profile-btn');
+    const profileMenu = document.querySelector('.profile-menu');
+    
+    if (profileBtn && profileMenu) {
+        profileBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileMenu.classList.toggle('open');
+        });
+        
+        document.addEventListener('click', function() {
+            profileMenu.classList.remove('open');
+        });
+    }
+});
+
+</script>
+
 </body>
 </html>
-
-

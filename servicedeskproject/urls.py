@@ -15,6 +15,7 @@ urlpatterns = [
     path('dashboard',views.dashboard,name='dashboard'),
     path('create',views.create_ticket,name='create'),
     path('update<int:ticket_id>',views.update_ticket,name='update'),
+    path('parent-caller', views.parent_caller, name='parent_caller'),
 
     path('assigned',views.assigned_group,name='assigned'),
     path('new_group',views.new_group,name='new_group'),
@@ -41,12 +42,19 @@ urlpatterns = [
     
     path('school_autofill',views.school_autofill,name='school_autofill'),
     path('test',views.test_view,name='test'),
+    path('caller_details',views.caller_details,name='caller_details'),
+    path('test_create/',views.test_create,name='test_create'),
+    path('add-caller-details/', views.add_caller_details, name='add_caller_details'),
+    path('overview', views.overview, name='overview'),
+    path('reports', views.reports, name='reports'),
+
 
 
     #rest api
     path('auth/signup/', apiviews.sign_up_api, name='api_signup'),
     path('auth/login/', apiviews.login_api, name='api_login'),
     path('auth/reset-password/', apiviews.reset_password_api, name='api_reset_password'),
+    path('auth/reset-confirm/', apiviews.reset_confirm_api, name='api_reset_confirm'),
 
     path('tickets/', apiviews.dashboard_api, name='api_dashboard'), 
     path('tickets/create/', apiviews.create_ticket_api, name='api_create_ticket'), 

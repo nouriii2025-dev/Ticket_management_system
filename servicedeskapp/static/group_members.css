@@ -164,40 +164,169 @@ body {
 
 
 
-  
-.logout-icon-btn {
-    position: absolute;
-    top: 50%; /* Center vertically within .user-info */
-    right: -15px; /* Adjust to sit just outside the right edge */
-    transform: translateY(-50%); /* Fine-tune vertical centering */
-    z-index: 10;
-    
-    /* Visuals */
-    display: flex;
-    justify-content: center;
+
+/* ====================== TOP BAR DROPDOWN STYLES (Final Fix) ====================== */
+
+/* 1. Container setup: MUST be position: relative and flex-shrink: 0 */
+.topbar-dropdown-container {
+    position: relative; 
+    display: inline-block; 
+    flex-shrink: 0; /* Prevents container from being squeezed by other nav items */
+}
+
+/* 2. Style for the main Tickets link */
+.topbar-dropdown-toggle {
+    display: flex; 
     align-items: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%; /* Makes it circular */
-    background-color: #e7f8fa; /* White/light background, matching the reference image */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: background-color 0.2s, box-shadow 0.2s;
+    gap: 4px;
+    height: 100%; /* Important for click area */
+    /* The rest of the styling is inherited from .topbar-nav a */
 }
 
-/* Add the 'Exit' icon using a background image (like the reference uses) or a specific character */
-.logout-icon-btn::before {
-    /* Using an external icon for clarity */
-    content: url('https://img.icons8.com/ios-glyphs/18/0d8383/exit.png');
+/* 3. The dropdown arrow - Hidden by default, shown on hover */
+.dropdown-arrow {
+    font-size: 10px;
+    transition: opacity 0.2s, transform 0.2s;
+    opacity: 0; 
+    transform: translateY(2px); 
+    padding-left: 5px; 
+}
+
+/* 4. SHOW ARROW ON HOVER */
+.topbar-dropdown-container:hover .dropdown-arrow {
+    opacity: 1; 
+}
+
+/* 5. Dropdown Menu styling - The WHITE BOX that opens */
+.topbar-dropdown-menu {
+    display: none; /* Always hidden unless JS adds the .open class */
+    position: absolute;
+    top: 100%; /* Position right below the Tickets link */
+    left: 50%;
+    transform: translateX(-50%); /* Center the menu under the link */
+    background-color: #159b9b;
+    min-width: 160px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    overflow: hidden;
+    padding: 6px 0;
+    z-index: 1001; 
+    /* Force the height to ensure the dropdown menu doesn't push the nav bar */
+    height: auto; 
+}
+
+/* 6. SHOW MENU WHEN JAVASCRIPT ADDS THE .open CLASS */
+.topbar-dropdown-container.open .topbar-dropdown-menu {
     display: block;
-    width: 18px;
-    height: 18px;
-    /* In case the external image doesn't load, use Unicode as a fallback */
-    /* content: '\21A9'; color: #0d8383; font-size: 18px; */ 
 }
 
-/* Hover Effect */
-.logout-icon-btn:hover {
-    background-color: #fff; /* Slightly brighter on hover */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+/* When open, keep the arrow visible and rotate it */
+.topbar-dropdown-container.open .dropdown-arrow {
+    opacity: 1;
+    transform: translateY(2px) rotate(180deg); 
+}
+
+#caller-details-link {
+    /* Set the text color to a visible dark shade and use !important */
+    color: #fff !important; 
+}
+
+/* Dropdown Item Link style: Must override topbar-nav styles */
+.topbar-dropdown-menu .dropdown-item {
+    color: #fff !important;
+    padding: 10px 15px !important;
+    text-decoration: none;
+    display: block;
+    font-weight: 400 !important; 
+    transition: background-color 0.15s, color 0.15s;
+    white-space: nowrap; 
+    /* Important: Resetting the topbar-nav link padding and margin */
+    padding: 10px 15px !important; 
+    border-radius: 0 !important;
+    background: none !important; 
+}
+
+.dropdown-item:hover {
+    background-color: var(--primary-dark) !important; 
+    color: white !important;
+}
+
+
+
+/* ====================== profile icon ====================== */
+.profile-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.profile-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(1.05);
+}
+
+.profile-icon {
+    width: 20px;
+    height: 20px;
+    color: white;
+}
+
+.user-initials {
+    position: absolute;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.profile-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #159b9b;
+    min-width: 160px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s;
+    z-index: 1001;
+    overflow: hidden;
+}
+
+.profile-dropdown:hover .profile-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.profile-menu-item {
+    color: white !important;
+    padding: 12px 16px !important;
+    text-decoration: none;
+    display: block;
+    font-weight: 400 !important;
+    transition: background-color 0.15s;
+    white-space: nowrap;
+}
+
+.profile-menu-item:hover {
+    background-color: #0d8383 !important;
 }
