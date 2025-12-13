@@ -8,7 +8,7 @@
 </head>
 
 <body>
-     <div class="topbar">
+    <div class="topbar">
     <div class="topbar-brand">Ticket Management</div>
     <nav class="topbar-nav">
         <a href="{% url 'overview' %}">Overview</a>
@@ -155,11 +155,11 @@
                 </div>
                 <div class="form-group">
                     <label>Priority</label>
-                    <select name="priority">
-                        <option value="">Select priority</option>
-                        <option value="planning">Planning</option>
-                        <option value="moderate">Moderate</option>
-                        <option value="high">High</option>
+                    <select name="priority" required>
+                        <option value="" disabled selected>Select Priority</option>
+                        {% for p in priorities %}
+                            <option value="{{ p.id }}">{{ p.name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                  <div class="form-group">
@@ -514,60 +514,6 @@ function closeModal() {
 }
 
 </script>
-
-<!-- <script>
-window.onload = function () {
-    const params = new URLSearchParams(window.location.search);
-    const fromCaller = params.get('from_caller');   // present when returning from popup
-
-    const callerName = "{{ latest_caller|default:'' }}";
-    const schoolName = "{{ latest_school_name|default:'' }}";
-    const schoolCode = "{{ latest_school_code|default:'' }}";
-
-    if (fromCaller) {
-        // Coming back from caller popup: restore all three
-        if (callerName) {
-            document.getElementById('caller_field').value = callerName;
-        }
-        if (schoolName) {
-            document.getElementById('school_name_input').value = schoolName;
-        }
-        if (schoolCode) {
-            document.getElementById('school_code_input').value = schoolCode;
-        }
-    } else {
-        // Fresh page or normal refresh: do not keep old values
-        document.getElementById('caller_field').value = "";
-        document.getElementById('school_name_input').value = "";
-        document.getElementById('school_code_input').value = "";
-    }
-
-    const savedData = localStorage.getItem("ticketFormData");
-    if (savedData && params.has("assignment_group")) {
-        const data = JSON.parse(savedData);
-        Object.keys(data).forEach(key => {
-            if (key === "assignment_group" ||
-                key === "caller" ||
-                key === "school_name" ||
-                key === "school_code") return; 
-
-            const field = document.querySelector(`[name="${key}"]`);
-            if (field) {
-                if (field.type === "checkbox") {
-                    field.checked = (data[key] === "on");
-                } else {
-                    field.value = data[key];
-                }
-            }
-        });
-        localStorage.removeItem("ticketFormData");
-    }
-
-    if (typeof loadCallerTable === "function") {
-        loadCallerTable();
-    }
-};
-</script> -->
 
 <script>
 window.onload = function () {

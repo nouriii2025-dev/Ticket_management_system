@@ -3,13 +3,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Incident - New Record</title>
-    <link rel="stylesheet" href="{% static 'user_management.css' %}">
+    <title>Add details- Master Data</title>
+    <link rel="stylesheet" href="{% static 'create_user.css' %}">
 </head>
 <body>
-
-  <div class="topbar">
-    <div class="topbar-brand">User Management</div>
+<div class="main-layout">
+ <div class="topbar">
+    <div class="topbar-brand">Master Data</div>
     <nav class="topbar-nav">
         <a href="{% url 'overview' %}">Overview</a>
         <div class="topbar-dropdown-container">
@@ -19,14 +19,14 @@
         <div class="topbar-dropdown-menu">
             <a href="{% url 'caller_details' %}" id="caller-details-link" class="dropdown-item">Caller Details</a>
         </div>
-        </div>
+    </div>
         {% if request.session.role == 'admin' %}
-            <a href="{% url 'user_management' %}"  class="active">User Management</a>
-            <a href="{% url 'master_data' %}">Master Data</a>
+            <a href="{% url 'user_management' %}">User Management</a>
+            <a href="{% url 'master_data' %}"  class="active">Master Data</a>
         {% endif %}
         <a href="{% url 'reports' %}">Reports</a>
     </nav>
-    <div class="topbar-user">
+     <div class="topbar-user">
         <span>Welcome, {{ request.session.name|default:request.session.username }}</span>
     <div class="profile-dropdown">
         <button class="profile-btn" title="User Menu">
@@ -43,64 +43,59 @@
 </div>
 </div>
 
+
     <div class="main-content">
-      <div class="content-area">
-        <form action="{% url 'user_management' %}" method="post">
-            {% csrf_token %}
-        <div class="user-management">
+        <div class="content-area">
+            <form action="{% url 'priority_add' %}" method="post">
+                {% csrf_token %}
+        <div class="create-user">
           {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+              <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
                 {{ message }}
-              </div>              
+              </div>
             {% endfor %}
           {% endif %}
-          <div class="create-user-container">
-            <a href="{% url 'create_user' %}">
-              <button type="button" class="create-user">+ Create User</button></a>
+          <fieldset class="create-user-fieldset">
+            <legend>Add Details</legend>
+           <div class="form-row">
+            <div class="form-field-group">
+                <label>Priority<span class="required">*</span></label>
+                <select name="name" required>
+                    <option value="low">Low</option>
+                    <option value="moderate">Moderate</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                </select>
+            </div>
+            <div class="form-field-group">
+                <label for="time">Time<span class="required">*</span></label>
+                <input type="number" placeholder="Enter time" name="time" required>
+            </div>
+            <div class="form-field-group">
+                <label>Unit<span class="required">*</span></label>
+                <select name="unit" required>
+                    <option value="minutes">Minutes</option>
+                    <option value="hours">Hours</option>
+                    <option value="days">Days</option>
+                </select>
+            </div>
+           </div>
+        
+      
+            </fieldset>
+          <div class="form-buttons">
+            <button type="reset" class="reset-btn">Reset</button>
+            <button type="submit" class="create-btn">Submit</button>
           </div>
-          <fieldset class="user-fieldset">
-          <legend>User Details</legend>
-   
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Role</th>
-                <th>Created</th>
-                <th>Last Login</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-                {% for user in add %}
-              <tr>
-                <td>{{ user.name }}</td>
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.phone }}</td>
-                <td>{{ user.role }}</td>
-                <td>{{ user.created_at }}</td>
-                <td>{{ user.last_login }}</td>
-                <td class="actions">
-                  <a href="{% url 'edit_user' user.id %}">
-                  <img src="https://img.icons8.com/ios-glyphs/18/edit.png" alt="Edit"></a>
-                  <a href="{% url 'delete_user' user.id %}">
-                  <img src="https://img.icons8.com/ios-glyphs/18/trash.png" alt="Delete"></a>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-           </fieldset>
+        </div>
         </div>
         </form>
       </div>
     </div>
-<script>
+ </div>
+
+ <script>
     document.addEventListener('DOMContentLoaded', function() {
     const profileBtn = document.querySelector('.profile-btn');
     const profileMenu = document.querySelector('.profile-menu');
@@ -116,7 +111,7 @@
         });
     }
 });
-</script>
 
+</script>
 </body>
 </html>

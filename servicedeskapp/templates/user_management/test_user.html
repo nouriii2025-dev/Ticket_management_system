@@ -1,0 +1,223 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'test_user.css' %}">
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-brand">User Management</div>
+    <nav class="topbar-nav">
+        <a href="{% url 'overview' %}">Overview</a>
+        <div class="topbar-dropdown-container">
+        <a href="{% url 'dashboard' %}" class="topbar-dropdown-toggle">
+            Tickets <span class="dropdown-arrow">▼</span>
+        </a>
+        <div class="topbar-dropdown-menu">
+            <a href="{% url 'caller_details' %}" id="caller-details-link" class="dropdown-item">Caller Details</a>
+        </div>
+        </div>
+        {% if request.session.role == 'admin' %}
+            <a href="{% url 'user_management' %}"  class="active">User Management</a>
+            <a href="{% url 'master_data' %}">Master Data</a>
+        {% endif %}
+        <a href="{% url 'reports' %}">Reports</a>
+    </nav>
+    <div class="topbar-user">
+        <span>Welcome, {{ request.session.name|default:request.session.username }}</span>
+    <div class="profile-dropdown">
+        <button class="profile-btn" title="User Menu">
+            <svg class="profile-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            <!-- <span class="user-initials">{{ request.session.name|default:request.session.username|slice:":1"|upper }}</span> -->
+        </button>
+        <div class="profile-menu">
+            <a href="{% url 'reset' %}" class="profile-menu-item">Reset Password</a>
+            <a href="{% url 'logout' %}" class="profile-menu-item">Logout</a>
+        </div>
+    </div>
+</div>
+</div>
+
+<div class="main-content">
+      <div class="content-area">
+        <form action="{% url 'test_user' %}" method="post">
+            {% csrf_token %}
+        <div class="user-management">
+          {% if messages %}
+            {% for message in messages %}
+              <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                {{ message }}
+              </div>              
+            {% endfor %}
+          {% endif %}
+          <div class="create-user-container">
+            <a href="{% url 'create_user' %}">
+              <button type="button" class="create-user">+ Create User</button></a>
+          </div>
+
+        <div class="filters">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search by name, username, email or phone...">
+            </div>
+            <select id="roleFilter" class="filter-select">
+                <option value="">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="user">User</option>
+            </select>
+        </div>
+
+            <fieldset class="user-fieldset">
+          <legend>User Details</legend>
+                {% if add %}
+          <table id="usersTable">
+            <thead>
+            <tr>
+                <th class="sortable" data-sort="name">Name</th>
+                <th class="sortable" data-sort="username">Username</th>
+                <th class="sortable" data-sort="email">Email</th>
+                <th class="sortable" data-sort="phone">Phone</th>
+                <th class="sortable" data-sort="role">Role</th>
+                <th class="sortable" data-sort="created">Created</th>
+                <th class="sortable" data-sort="lastlogin">Last Login</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for user in add %}
+              <tr>
+                <td data-label="Name">{{ user.name }}</td>
+                <td data-label="Username">{{ user.username }}</td>
+                <td data-label="Email">{{ user.email }}</td>
+                <td data-label="Phone">{{ user.phone }}</td>
+                <td data-label="Role">
+                            <span class="role-badge {% if user.role == 'admin' %}role-admin{% else %}role-user{% endif %}">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td data-label="Created" data-sort-value="{{ user.created_at|date:'U' }}">
+                            {{ user.created_at|date:"M d, Y, g:i a" }}
+                        </td>
+                        <td data-label="Last Login" data-sort-value="{% if user.last_login %}{{ user.last_login|date:'U' }}{% else %}0{% endif %}">
+                            {% if user.last_login %}
+                                {{ user.last_login|date:"M d, Y, g:i a" }}
+                            {% else %}
+                                <span style="color:#9ca3af; font-style:italic;">Never</span>
+                            {% endif %}
+                        </td>
+                <td data-label="Actions" class="actions">
+                  <a href="{% url 'edit_user' user.id %}">
+                  <img src="https://img.icons8.com/ios-glyphs/18/edit.png" alt="Edit"></a>
+                  <a href="{% url 'delete_user' user.id %}">
+                  <img src="https://img.icons8.com/ios-glyphs/18/trash.png" alt="Delete"></a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+            {% else %}
+                <p>No users found.</p>
+            {% endif %}
+           </fieldset>
+        </div>
+        </form>
+    </div>
+</div>
+
+<script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const roleFilter = document.getElementById('roleFilter');
+            const table = document.getElementById('usersTable');
+            const rows = table ? table.querySelectorAll('tbody tr') : [];
+            const resultsCount = document.getElementById('resultsCount');
+
+            // Live Search + Filter
+            function filterTable() {
+                const query = searchInput.value.toLowerCase().trim();
+                const role = roleFilter.value;
+
+                let visible = 0;
+
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    const rowRole = row.querySelector('.role-badge').textContent.trim();
+
+                    const matchesSearch = text.includes(query);
+                    const matchesRole = !role || rowRole === role;
+
+                    if (matchesSearch && matchesRole) {
+                        row.style.display = '';
+                        visible++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                resultsCount.textContent = `Showing ${visible} of ${rows.length} users`;
+            }
+
+            searchInput.addEventListener('input', filterTable);
+            roleFilter.addEventListener('change', filterTable);
+
+            // Initial count
+            if (resultsCount) resultsCount.textContent = `Showing all ${rows.length} users`;
+
+            // Sorting
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.addEventListener('click', () => {
+                    const key = th.getAttribute('data-sort');
+                    const isAsc = th.classList.contains('asc');
+                    const rowsArray = Array.from(table.querySelectorAll('tbody tr'));
+
+                    rowsArray.sort((a, b) => {
+                        let aVal = a.querySelector(`[data-sort-value]`).dataset.sortValue || a.children[Array.from(th.parentNode.children).indexOf(th)].textContent.trim();
+                        let bVal = b.querySelector(`[data-sort-value]`).dataset.sortValue || b.children[Array.from(th.parentNode.children).indexOf(th)].textContent.trim();
+
+                        if (!isNaN(aVal) && !isNaN(bVal)) {
+                            aVal = parseInt(aVal); bVal = parseInt(bVal);
+                        }
+
+                        return (aVal > bVal ? 1 : -1) * (isAsc ? -1 : 1);
+                    });
+
+                    // Clear previous sort indicators
+                    document.querySelectorAll('th').forEach(h => {
+                        h.classList.remove('asc', 'desc');
+                    });
+
+                    th.classList.add(isAsc ? 'desc' : 'asc');
+
+                    // Re-append sorted rows
+                    rowsArray.forEach(row => table.querySelector('tbody').appendChild(row));
+                });
+            });
+        });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const profileBtn = document.querySelector('.profile-btn');
+    const profileMenu = document.querySelector('.profile-menu');
+    
+    if (profileBtn && profileMenu) {
+        profileBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileMenu.classList.toggle('open');
+        });
+        
+        document.addEventListener('click', function() {
+            profileMenu.classList.remove('open');
+        });
+    }
+});
+</script>
+</body>
+</html>

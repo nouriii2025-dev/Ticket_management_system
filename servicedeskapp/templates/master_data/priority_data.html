@@ -3,13 +3,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Incident - New Record</title>
-    <link rel="stylesheet" href="{% static 'user_management.css' %}">
+    <title>Priority Details</title>
+    <link rel="stylesheet" href="{% static 'priority_data.css' %}">
 </head>
 <body>
-
+ <div class="main-layout">
   <div class="topbar">
-    <div class="topbar-brand">User Management</div>
+    <div class="topbar-brand">Master Data</div>
     <nav class="topbar-nav">
         <a href="{% url 'overview' %}">Overview</a>
         <div class="topbar-dropdown-container">
@@ -19,21 +19,20 @@
         <div class="topbar-dropdown-menu">
             <a href="{% url 'caller_details' %}" id="caller-details-link" class="dropdown-item">Caller Details</a>
         </div>
-        </div>
+    </div>
         {% if request.session.role == 'admin' %}
-            <a href="{% url 'user_management' %}"  class="active">User Management</a>
-            <a href="{% url 'master_data' %}">Master Data</a>
+            <a href="{% url 'user_management' %}">User Management</a>
+            <a href="{% url 'master_data' %}"  class="active">Master Data</a>
         {% endif %}
         <a href="{% url 'reports' %}">Reports</a>
     </nav>
-    <div class="topbar-user">
+     <div class="topbar-user">
         <span>Welcome, {{ request.session.name|default:request.session.username }}</span>
     <div class="profile-dropdown">
         <button class="profile-btn" title="User Menu">
             <svg class="profile-icon" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
             </svg>
-            <!-- <span class="user-initials">{{ request.session.name|default:request.session.username|slice:":1"|upper }}</span> -->
         </button>
         <div class="profile-menu">
             <a href="{% url 'reset' %}" class="profile-menu-item">Reset Password</a>
@@ -43,11 +42,11 @@
 </div>
 </div>
 
-    <div class="main-content">
-      <div class="content-area">
-        <form action="{% url 'user_management' %}" method="post">
+<div class="main-content">
+        <form action="{% url 'priority_data' %}" method="post">
             {% csrf_token %}
         <div class="user-management">
+
           {% if messages %}
             {% for message in messages %}
               <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
@@ -56,41 +55,26 @@
             {% endfor %}
           {% endif %}
           <div class="create-user-container">
-            <a href="{% url 'create_user' %}">
-              <button type="button" class="create-user">+ Create User</button></a>
+                <a href="{% url 'priority_add' %}">
+              <button type="button" class="create-user">+ Add details</button></a>
           </div>
-          <fieldset class="user-fieldset">
-          <legend>User Details</legend>
+           <fieldset class="user-fieldset">
+            <legend>Priority Details</legend>
    
           <table>
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Role</th>
-                <th>Created</th>
-                <th>Last Login</th>
-                <th>Actions</th>
+                <th>Time</th>
+                <th>Unit</th>               
               </tr>
             </thead>
             <tbody>
-                {% for user in add %}
+                {% for p in priorities  %}
               <tr>
-                <td>{{ user.name }}</td>
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.phone }}</td>
-                <td>{{ user.role }}</td>
-                <td>{{ user.created_at }}</td>
-                <td>{{ user.last_login }}</td>
-                <td class="actions">
-                  <a href="{% url 'edit_user' user.id %}">
-                  <img src="https://img.icons8.com/ios-glyphs/18/edit.png" alt="Edit"></a>
-                  <a href="{% url 'delete_user' user.id %}">
-                  <img src="https://img.icons8.com/ios-glyphs/18/trash.png" alt="Delete"></a>
-                </td>
+                <td>{{ p.name }}</td>
+                <td>{{ p.time }}</td>
+                <td>{{ p.unit }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -100,7 +84,8 @@
         </form>
       </div>
     </div>
-<script>
+ </div>
+ <script>
     document.addEventListener('DOMContentLoaded', function() {
     const profileBtn = document.querySelector('.profile-btn');
     const profileMenu = document.querySelector('.profile-menu');
@@ -116,7 +101,7 @@
         });
     }
 });
-</script>
 
+</script>
 </body>
 </html>

@@ -1,11 +1,11 @@
-    :root {
-        --primary: #159b9b;
-        --primary-dark: #0d8383;
-        --red: #e74c3c;
-        --green: #16b28b;
-        --light-bg: #f8f9fc;
-        --border: #d2e8ed;
-    }
+:root {
+    --primary: #159b9b;
+    --primary-dark: #0d8383;
+    --red: #e74c3c;
+    --green: #16b28b;
+    --light-bg: #f8f9fc;
+    --border: #d2e8ed;
+}
 
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
@@ -139,7 +139,7 @@ table {
 }
 
 thead {
-  background: #f5f6fe;
+  background: #d6ece9;
   text-align: left;
 }
 
@@ -190,7 +190,7 @@ th, td {
     padding: 0 15px;              /* spacing around text */
 }
 
-/* ====================== TOP BAR DROPDOWN STYLES (Final Fix) ====================== */
+/* ====================== TOP BAR DROPDOWN STYLES ====================== */
 
 /* 1. Container setup: MUST be position: relative and flex-shrink: 0 */
 .topbar-dropdown-container {
@@ -355,3 +355,5 @@ th, td {
 .profile-menu-item:hover {
     background-color: #0d8383 !important;
 }
+
+

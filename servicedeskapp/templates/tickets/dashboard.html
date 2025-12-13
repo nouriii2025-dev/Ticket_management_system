@@ -1,9 +1,11 @@
 {% load static %}
+{% load tz %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Incidents Table</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="{% static 'dashboard.css' %}">
 </head>
 <body>  
@@ -161,6 +163,7 @@
             <th data-col="school_name">School name <span class="col-menu">⋮</span></th>
             <th data-col="school_code">School code <span class="col-menu">⋮</span></th>
             <th data-col="priority">Priority <span class="col-menu">⋮</span></th>
+            <th data-col="time_left">Time Left <span class="col-menu">⋮</span></th>
             <th data-col="state">State <span class="col-menu">⋮</span></th>
             <th data-col="category">Category <span class="col-menu">⋮</span></th>
             <th data-col="assignGroup">Assignment group <span class="col-menu">⋮</span></th>
@@ -180,6 +183,7 @@
             <td><input type="text" data-col="school_name" placeholder="Search"></td>
             <td><input type="text" data-col="school_code" placeholder="Search"></td>
             <td><input type="text" data-col="priority" placeholder="Search"></td>
+            <td><input type="text" data-col="time_left" placeholder="Search"></td>
             <td><input type="text" data-col="state" placeholder="Search"></td>
             <td><input type="text" data-col="category" placeholder="Search"></td>
             <td><input type="text" data-col="assignGroup" placeholder="Search"></td>
@@ -194,18 +198,33 @@
         <tr data-number="{{ ticket.number }}">
             <td><input type="checkbox" name="selected_tickets" value="{{ ticket.id }}" class="rowCheck"></td>
             <td><a href="{% url 'update' ticket_id=ticket.id %}">{{ ticket.number }}</a></td>
-            <td>{{ ticket.created_at }}</td>
+            <td>{% localtime on %}{{ ticket.created_at|date:"M. d, Y, P" }}{% endlocaltime %}</td>
             <td>{{ ticket.created_by }}</td>
             <td>{{ ticket.short_description }}</td>
             <td>{{ ticket.caller }}</td>
             <td>{{ ticket.school_name }}</td>
             <td>{{ ticket.school_code }}</td>
             <td>{{ ticket.priority }}</td>
+            <!-- <td class="{% if ticket.time_left == 'Overdue' %}overdue{% else %}{% if ticket.time_left != 'No SLA' %}sla-ok{% endif %}{% endif %}">
+                {{ ticket.time_left }}
+            </td>  -->
+            <td class="time-left-cell">
+                <span class="time-badge badge-{{ ticket.time_left_badge_class }}">
+                    {% if ticket.time_left == 'Overdue' %}
+                        <i class="fas fa-exclamation-triangle"></i>
+                    {% elif ticket.time_left == 'No SLA' %}
+                        <i class="fas fa-ban"></i>
+                    {% else %}
+                        <i class="fas fa-clock"></i>
+                    {% endif %}
+                    {{ ticket.time_left }}
+                </span>
+            </td>
             <td>{{ ticket.state }}</td>
             <td>{{ ticket.category }}</td>
             <td>{{ ticket.assignment_group }}</td>
             <td>{{ ticket.assigned_to }}</td>
-            <td>{{ ticket.updated_at }}</td>
+            <td>{% localtime on %}{{ ticket.updated_at|date:"M. d, Y, P" }}{% endlocaltime %}</td>
             <td>{{ ticket.updated_by }}</td>
             <td class="actions">
                 {% if ticket.caller_email %}
@@ -690,7 +709,7 @@ syncSelectAll();
 </script>
 
 <script>
-// --- Revised Dropdown Logic (Confirm this code is present) ---
+
 document.addEventListener('DOMContentLoaded', () => {
     const dropdownContainer = document.querySelector('.topbar-dropdown-container');
     const dropdownToggle = document.querySelector('.topbar-dropdown-toggle');
@@ -741,9 +760,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
 </script>
-
 
 </body>
 </html>

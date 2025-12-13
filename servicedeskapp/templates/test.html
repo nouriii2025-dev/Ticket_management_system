@@ -2,674 +2,313 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Incidents Table</title>
-<link rel="stylesheet" href="{% static 'dashboard.css' %}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reports</title>
+    <link rel="stylesheet" href="{% static 'test.css' %}" />
 </head>
-<body>  
-<span id="currentUsername" style="display:none;">{{ current_username }}</span>
-<span id="currentUserFullName" style="display:none;">{{ current_user_fullname }}</span>
-
-<div class="topbar">
-    <div class="topbar-brand">Ticket Management</div>
+<body>
+   <div class="topbar">
+    <div class="topbar-brand">Reports</div>
     <nav class="topbar-nav">
-        <a href="#">Overview</a>
+        <a href="{% url 'overview' %}">Overview</a>
         <div class="topbar-dropdown-container">
-        <a href="{% url 'dashboard' %}" class="active topbar-dropdown-toggle">
+        <a href="{% url 'dashboard' %}" class="topbar-dropdown-toggle">
             Tickets <span class="dropdown-arrow">▼</span>
         </a>
         <div class="topbar-dropdown-menu">
             <a href="{% url 'caller_details' %}" id="caller-details-link" class="dropdown-item">Caller Details</a>
         </div>
-    </div>
+        </div>
         {% if request.session.role == 'admin' %}
             <a href="{% url 'user_management' %}">User Management</a>
             <a href="{% url 'master_data' %}">Master Data</a>
         {% endif %}
-        <a href="#">Reports</a>
+        <a href="{% url 'reports' %}" class="active">Reports</a>
     </nav>
     <div class="topbar-user">
         <span>Welcome, {{ request.session.name|default:request.session.username }}</span>
-        <a href="{% url 'logout' %}">
-                <button class="logout-btn" title="Logout"></button>
-            </a>
+    <div class="profile-dropdown">
+        <button class="profile-btn" title="User Menu">
+            <svg class="profile-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+        </button>
+        <div class="profile-menu">
+            <a href="{% url 'reset' %}" class="profile-menu-item">Reset Password</a>
+            <a href="{% url 'logout' %}" class="profile-menu-item">Logout</a>
+        </div>
     </div>
 </div>
-    <div class="main-content">
-      <div class="content-area">    
-            {% if messages %}
-            {% for message in messages %}
-              <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
-                {{ message }}
-              </div>
+</div>
+
+
+<div class="reports-header">
+    <div class="reports-header-top">
+        <div class="reports-header-text">
+            <h1 class="reports-title">Reports & Analytics</h1>
+            <p class="reports-subtitle">Key reports and insights for support tasks</p>
+        </div>
+
+        <!-- Generate PDF & Export Data - Top Right -->
+        <div class="reports-actions">
+            <button class="btn btn-outline">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 10v6m-3-3h6m6 6H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2z"/>
+                </svg>
+                Generate PDF
+            </button>
+            <button class="btn btn-primary">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                    <polyline points="16 6 12 2 8 6"/>
+                    <line x1="12" y1="2" x2="12" y2="15"/>
+                </svg>
+                Export Data
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters Row - Full width, below title -->
+    <div class="reports-filters">
+        <div class="filter-dropdown">
+            <div class="filter-select-wrapper">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+
+                <select id="school-select" name="school" class="filter-select">
+                <option value="">All Schools</option>
+                {% for s in schools %}
+                    <option value="{{ s.id }}">{{ s.name }}</option>
+                {% endfor %}
+                </select>
+
+                <svg class="dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+        </div>
+
+
+
+        <div class="filter-dropdown">
+            <div class="filter-date-wrapper" id="date-wrapper">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 8h18M8 4v4M16 4v4M5 8v12h14V8"/>
+                </svg>
+
+                <span id="date-display" class="date-display">Select date</span>
+
+                <svg class="dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 9l-7 7-7-7"/>
+                </svg>
+
+                <input type="date" id="date-input" class="date-input-hidden">
+            </div>
+        </div>
+
+    </div>
+</div>
+ 
+<!-- ====================== MAIN CONTENT - REPORTS DASHBOARD ====================== -->
+
+    <div class="dashboard-grid">
+
+    <div class="report-card">
+    <h2 class="report-card-title">Category Classification</h2>
+    <p>Issue distribution by category type</p>
+
+    <div class="chart-container">
+        <canvas id="ticketCategoryChart"></canvas>
+
+        <div class="chart-legend">
+            {% for label, count in category_legend %}
+                <div class="legend-item">
+                <!-- <span class="dot"></span>{{ label }}  -->
+                <span class="dot dot-{{ forloop.counter0 }}"></span>{{ label }}
+                <span class="count">{{ count }}</span>
+                </div>
             {% endfor %}
-          {% endif %}
-        <form method="POST" action="{% url 'delete_tickets' %}" onsubmit="return confirm('Are you sure you want to delete the selected tickets?');">
-        {% csrf_token %}
-        <div class="search-and-table-container">
-          <header class="header">
-            {% if request.session.role == 'admin' %}
-            <button type="submit" class="delete-ticket-btn">Delete</button>
-            {% endif %}
-            <!-- <a href="{% url 'create' %}"><button type="button" class="add-ticket-btn">+ Add Ticket</button></a> -->
-            <button type="button" class="add-ticket-btn" id="openCallerModal">+ Add Ticket</button>
-          </header>
-          <fieldset class="page-title-fieldset">
-          <legend>Tickets</legend>
-
-<div class="ticket-toolbar-modern">
-    <div class="toolbar-controls">
-        <label class="select-all-label">
-            <input type="checkbox" id="selectAll"> All
-        </label>
-
-        <select id="columnSelect" class="toolbar-select">
-            <option>Number</option>
-            <option>Opened</option>
-            <option>Created by</option>
-            <option>Short description</option>
-            <option>Caller</option>
-            <option>School name</option>
-            <option>School code</option>
-            <option>Priority</option>
-            <option>State</option>
-            <option>Category</option>
-            <option>Assignment group</option>
-            <option>Assigned to</option>
-            <option>Updated</option>
-            <option>Updated by</option>
-            <option>Actions</option>
-        </select>
-
-        <input type="text" id="globalSearch" class="toolbar-search" placeholder="Search">
-     
-
-        <div class="menu-container">
-  <div class="menu-button">Incidents ▾</div>
-
-  <div class="menu-panel" style="display:none;">
-    <div class="menu-item" data-menu="filters">Filters ▸</div>
-    <div class="menu-item" data-menu="groupby">Group By ▸</div>
-    <div class="menu-item" data-menu="show">Show ▸</div>
-  </div>
-
-  <div class="submenu-panel" id="filters-menu" style="display:none;">
-    <div class="submenu-item">All</div>
-    <div class="submenu-item">Active</div>
-    <div class="submenu-item">Active - Unassigned</div>
-    <div class="submenu-item">Assigned to me</div>
-    <div class="submenu-item">Closed</div>
-  </div>
-
-  <div class="submenu-panel" id="groupby-menu" style="display:none;">
-    <div class="submenu-item">--None--</div>
-    <div class="submenu-item">Active</div>
-    <div class="submenu-item">Assigned to</div>
-    <div class="submenu-item">Caller</div>
-    <div class="submenu-item">Assignment group</div>
-    <div class="submenu-item">Category</div>
-    <div class="submenu-item">Created by</div>
-    <div class="submenu-item">Updated by</div>
-    <div class="submenu-item">Short description</div>
-    <div class="submenu-item">State</div>
-    <div class="submenu-item">Priority</div>
-  </div>
-
-  <div class="submenu-panel" id="show-menu" style="display:none;">
-    <div class="submenu-item">All</div>
-    <div class="submenu-item">10 rows per page</div>
-    <div class="submenu-item">15 rows per page</div>
-    <div class="submenu-item">20 rows per page</div>
-    <div class="submenu-item">50 rows per page</div>
-    <div class="submenu-item">100 rows per page</div>
-  </div>
-</div>
-
-
-    </div>
-</div>
-
-    <table id="incidentsTable">
-
-    <thead>
-        <tr>
-            <th></th>
-            <th data-col="number">Number <span class="col-menu">⋮</span></th>
-            <th data-col="opened">Opened <span class="col-menu">⋮</span></th>
-            <th data-col="created">Created by <span class="col-menu">⋮</span></th>
-            <th data-col="desc">Short description <span class="col-menu">⋮</span></th>
-            <th data-col="caller">Caller <span class="col-menu">⋮</span></th>
-            <th data-col="school_name">School name <span class="col-menu">⋮</span></th>
-            <th data-col="school_code">School code <span class="col-menu">⋮</span></th>
-            <th data-col="priority">Priority <span class="col-menu">⋮</span></th>
-            <th data-col="state">State <span class="col-menu">⋮</span></th>
-            <th data-col="category">Category <span class="col-menu">⋮</span></th>
-            <th data-col="assignGroup">Assignment group <span class="col-menu">⋮</span></th>
-            <th data-col="assignedTo">Assigned to <span class="col-menu">⋮</span></th>
-            <th data-col="updated">Updated <span class="col-menu">⋮</span></th>
-            <th data-col="updatedBy">Updated by <span class="col-menu">⋮</span></th>
-            <th data-col="actions">Actions</th>
-        </tr>
-
-        <tr class="search-row">
-            <td></td>
-            <td><input type="text" data-col="number" placeholder="Search"></td>
-            <td><input type="text" data-col="opened" placeholder="Search"></td>
-            <td><input type="text" data-col="created" placeholder="Search"></td>
-            <td><input type="text" data-col="desc" placeholder="Search"></td>
-            <td><input type="text" data-col="caller" placeholder="Search"></td>
-            <td><input type="text" data-col="school_name" placeholder="Search"></td>
-            <td><input type="text" data-col="school_code" placeholder="Search"></td>
-            <td><input type="text" data-col="priority" placeholder="Search"></td>
-            <td><input type="text" data-col="state" placeholder="Search"></td>
-            <td><input type="text" data-col="category" placeholder="Search"></td>
-            <td><input type="text" data-col="assignGroup" placeholder="Search"></td>
-            <td><input type="text" data-col="assignedTo" placeholder="Search"></td>
-            <td><input type="text" data-col="updated" placeholder="Search"></td>
-            <td><input type="text" data-col="updatedBy" placeholder="Search"></td>
-            <td></td>
-        </tr>
-    </thead>
-    <tbody id="tableBody">
-        {% for ticket in tickets %}
-        <tr data-number="{{ ticket.number }}">
-            <td><input type="checkbox" name="selected_tickets" value="{{ ticket.id }}" class="rowCheck"></td>
-            <td><a href="{% url 'update' ticket_id=ticket.id %}">{{ ticket.number }}</a></td>
-            <td>{{ ticket.created_at }}</td>
-            <td>{{ ticket.created_by }}</td>
-            <td>{{ ticket.short_description }}</td>
-            <td>{{ ticket.caller }}</td>
-            <td>{{ ticket.school_name }}</td>
-            <td>{{ ticket.school_code }}</td>
-            <td>{{ ticket.priority }}</td>
-            <td>{{ ticket.state }}</td>
-            <td>{{ ticket.category }}</td>
-            <td>{{ ticket.assignment_group }}</td>
-            <td>{{ ticket.assigned_to }}</td>
-            <td>{{ ticket.updated_at }}</td>
-            <td>{{ ticket.updated_by }}</td>
-            <td class="actions">
-                {% if ticket.school_email %}
-                <a href="mailto:{{ ticket.school_email }}?subject=Regarding%20Ticket%20{{ ticket.number }}&body=Dear Sir/Madam,%0D%0A%0D%0A Regards,%0D%0AIT%20Support%20Team%0D%0AEdship%20Technologies">
-                    <img src="https://img.icons8.com/ios-glyphs/18/new-post.png" alt="Email">
-                </a>
-                {% else %}
-                <img src="https://img.icons8.com/ios-glyphs/18/new-post.png" alt="Email">
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-<div id="columnMenuTemplate" style="display:none;">
-    <div class="column-menu">
-        <div class="menu-item" data-action="sort-asc">Sort (a to z)</div>
-        <div class="menu-item" data-action="sort-desc">Sort (z to a)</div>
-        <hr>
-        <div class="menu-item" data-action="group">Group By</div>
-        <div class="menu-item" data-action="ungroup">Ungroup</div>
-        <hr>
-        <div class="menu-item" data-action="taskboard">Show Visual Task Board</div>
-        <div class="menu-item" data-action="bar">Bar Chart</div>
-        <div class="menu-item" data-action="pie">Pie Chart</div>
-    </div>
-</div>
-   <div class="pagination">
-    <span>
-        {% if page_obj.has_previous %}
-            <a href="?page=1">&laquo; first</a>
-            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-        {% endif %}
-
-        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}">next</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-        {% endif %}
-    </span>
-</div>
-
-</div>
-      </div>
-        </fieldset>
-      </div>
-    </div>
+        
+        </div>
     </div>
     </div>
 
+    <div class="platform-card">
+    <div>
+        <h2 class="title">Platform Distribution</h2>
+        <p class="subtitle">Tickets by platform source</p>
+    </div>
+
+    <div class="platform-content">
+        <!-- Donut on the left -->
+        <div class="donut-wrapper">
+            <div class="donut" id="platform-donut"></div>
+            <div class="donut-center-text">
+                <div class="center-count" id="center-count-value">560</div>
+                <div class="center-label">{{ total_tickets }}</div>
+            </div>
+        </div>
+
+        <!-- List on the right -->
+        <div class="platform-list">
+            <div class="platform-item" data-segment="web">
+                <div class="platform-left">
+                    <div class="platform-icon web"><div class="icon-desktop"></div></div>
+                    <div>
+                        <div class="platform-text-main">Web</div>
+                        <div class="platform-text-sub">Application</div>
+                    </div>
+                </div>
+                <div class="platform-right">
+                    <div class="platform-count">{{ web_count }}</div>
+                    <div class="platform-progress"><div class="platform-progress-bar web"></div></div>
+                   
+                </div>
+            </div>
+
+            <div class="platform-item" data-segment="mobile">
+                <div class="platform-left">
+                    <div class="platform-icon mobile"><div class="icon-mobile"></div></div>
+                    <div>
+                        <div class="platform-text-main">Mobile</div>
+                        <div class="platform-text-sub">Application</div>
+                    </div>
+                </div>
+                <div class="platform-right">
+                    <div class="platform-count">{{ mobile_count }}</div>
+                    <div class="platform-progress"><div class="platform-progress-bar mobile"></div></div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-const table         = document.getElementById('incidentsTable');
-const tbody         = document.getElementById('tableBody');
-const rows          = () => tbody.querySelectorAll('tr:not(.group-header)');
-const globalInp     = document.getElementById('globalSearch');
-const colInputs     = table.querySelectorAll('.search-row input');
-let currentGroupCol = null;
+// Global chart instances so we can destroy them later
+let categoryChart = null;
+let donutAnimationTimeout = null;
 
-function filterTable() {
-    const global = globalInp.value.trim().toLowerCase();
-    const filters = {};
-    colInputs.forEach(inp => {
-        if (inp.value.trim()) filters[inp.dataset.col] = inp.value.trim().toLowerCase();
-    });
+// Elements
+const schoolSelect = document.getElementById('school-select');
+const centerCount = document.getElementById('center-count-value');
+const centerLabel = document.querySelector('.donut-center-text .center-label');
+const platformItems = document.querySelectorAll('.platform-item');
+const donut = document.getElementById('platform-donut');
 
-    rows().forEach(row => {
-        const cells = row.querySelectorAll('td');
-        let show = true;
+// Colors matching your current bar chart
+const COLORS = ['#e74c3c', '#f39c12', '#16a085', '#3498db', '#8e44ad', '#1abc9c'];
 
-        if (global && !row.textContent.toLowerCase().includes(global)) show = false;
+// Fetch and update all charts
+function updateReports(schoolId = '') {
+    const url = schoolId 
+        ? `/reports_data?school=${schoolId}` 
+        : `/reports_data`;
 
-        for (const col in filters) {
-            const th = [...table.querySelectorAll('th')].find(t => t.dataset.col === col);
-            if (!th) continue;
-            const idx = [...table.querySelectorAll('th')].indexOf(th);
-            if (!cells[idx].textContent.toLowerCase().includes(filters[col])) show = false;
-        }
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            // === Update Bar Chart ===
+            const ctx = document.getElementById('ticketCategoryChart').getContext('2d');
+            
+            if (categoryChart) categoryChart.destroy();
 
-        row.style.display = show ? '' : 'none';
-    });
-}
-globalInp.addEventListener('input', filterTable);
-colInputs.forEach(inp => inp.addEventListener('input', filterTable));
-
-
-const selectAll = document.getElementById('selectAll');
-const rowChecks = table.querySelectorAll('.rowCheck');
-
-function syncSelectAll() {
-    const visible = [...rows()].filter(r => r.style.display !== 'none');
-    const checked = visible.filter(r => r.querySelector('.rowCheck').checked);
-    selectAll.indeterminate = checked.length > 0 && checked.length < visible.length;
-    selectAll.checked = checked.length === visible.length && visible.length > 0;
-}
-selectAll.addEventListener('change', () => {
-    const visible = [...rows()].filter(r => r.style.display !== 'none');
-    visible.forEach(r => r.querySelector('.rowCheck').checked = selectAll.checked);
-});
-table.addEventListener('change', e => { if (e.target.classList.contains('rowCheck')) syncSelectAll(); });
-
-
-let activeMenu = null;
-
-document.addEventListener('click', e => {
-    const isMenuClick = e.target.classList.contains('col-menu');
-    const isInsideMenu = e.target.closest && e.target.closest('.column-menu');
-
-    if (!isMenuClick && !isInsideMenu && activeMenu) {
-        activeMenu.remove();
-        activeMenu = null;
-        return;
-    }
-
-    if (isMenuClick) {
-        if (activeMenu) activeMenu.remove();
-
-        const template = document.getElementById('columnMenuTemplate').firstElementChild.cloneNode(true);
-        const th = e.target.parentElement;
-        const col = th.dataset.col;
-
-        template.querySelectorAll('.menu-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const action = item.dataset.action;
-                if (action === 'sort-asc') sortColumn(col, true);
-                if (action === 'sort-desc') sortColumn(col, false);
-                if (action === 'group') groupByColumn(col);
-                if (action === 'ungroup') ungroup();
-                if (action === 'taskboard') alert('Visual Task Board – not implemented');
-                template.remove();
-                activeMenu = null;
-            });
-        });
-
-        th.style.position = 'relative';
-        th.appendChild(template);
-
-        const rect = th.getBoundingClientRect();
-        template.style.top = `${th.offsetHeight + 2}px`;
-        template.style.left = `${rect.width - template.offsetWidth}px`; 
-        template.style.transform = 'translateX(-8px)';
-
-        activeMenu = template;
-    }
-});
-
-function sortColumn(colKey, ascending = true) {
-    const ths = table.querySelectorAll('th');
-    let idx = -1;
-    ths.forEach((th, i) => { if (th.dataset.col === colKey) idx = i; });
-
-    const arr = Array.from(rows());
-    arr.sort((a, b) => {
-        const aVal = a.children[idx].textContent.trim();
-        const bVal = b.children[idx].textContent.trim();
-        const aDate = Date.parse(aVal);
-        const bDate = Date.parse(bVal);
-        if (!isNaN(aDate) && !isNaN(bDate)) {
-            return ascending ? aDate - bDate : bDate - aDate;
-        }
-        return ascending
-            ? aVal.localeCompare(bVal)
-            : bVal.localeCompare(aVal);
-    });
-
-    ungroup();
-    arr.forEach(r => tbody.appendChild(r));
-}
-
-function groupByColumn(colKey) {
-    ungroup();                    
-    currentGroupCol = colKey;
-
-    const ths = table.querySelectorAll('th');
-    let idx = -1;
-    ths.forEach((th, i) => { if (th.dataset.col === colKey) idx = i; });
-
-    const map = new Map();
-    rows().forEach(row => {
-        const key = row.children[idx].textContent.trim() || '(empty)';
-        if (!map.has(key)) map.set(key, []);
-        map.get(key).push(row);
-    });
-
-    const sortedKeys = [...map.keys()].sort((a, b) => a.localeCompare(b));
-
-    sortedKeys.forEach(key => {
-        const groupHeader = document.createElement('tr');
-        groupHeader.className = 'group-header collapsed';  
-        groupHeader.dataset.groupKey = key;
-
-        const cell = document.createElement('td');
-        cell.colSpan = table.querySelectorAll('th').length;
-
-        cell.innerHTML = `<span class="group-arrow">▶</span> <span style="margin-left: 28px;">${key}</span> 
-            <span style="color:#666; font-weight:normal; margin-left:8px;">(${map.get(key).length})</span>`;
-        groupHeader.appendChild(cell);
-        tbody.appendChild(groupHeader);
-
-        const groupRows = map.get(key);
-        groupRows.forEach(r => {
-            r.classList.add('group-member');
-            r.style.display = 'none';          
-            tbody.appendChild(r);
-        });
-    });
-
-    tbody.querySelectorAll('.group-header').forEach(header => {
-        header.addEventListener('click', function () {
-            this.classList.toggle('collapsed');
-
-            const arrow = this.querySelector('.group-arrow');
-            if (this.classList.contains('collapsed')) {
-                arrow.textContent = '▶';
-            } else {
-                arrow.textContent = '▼';
-            }
-
-            let next = this.nextElementSibling;
-            while (next && next.classList.contains('group-member')) {
-                next.style.display = this.classList.contains('collapsed') ? 'none' : '';
-                next = next.nextElementSibling;
-            }
-        });
-    });
-}
-
-
-function ungroup() {
-    document.querySelectorAll('.group-header').forEach(header => header.remove());
-    document.querySelectorAll('tr').forEach(row => {
-        if (!row.querySelector('th') && !row.classList.contains('search-row'))
-        { 
-            row.style.display = '';          
-            row.classList.remove('group-member');
-        }
-    });
-
-    currentGroupCol = null;
-}
-
-syncSelectAll();
-</script>
-
-
-
-<script>
-    const menuBtn = document.querySelector(".menu-button");
-    const menuPanel = document.querySelector(".menu-panel");
-    const submenuPanels = document.querySelectorAll(".submenu-panel");
-    const currentUsername = document.getElementById("currentUsername")?.textContent.trim() || "";
-    const currentUserFullName = document.getElementById("currentUserFullName")?.textContent.trim() || currentUsername;
-
-    let rowsPerPage = 20;
-    let currentFilter = "all";
-
-    // Fixed: Include group headers and members properly
-    function getAllDataRows() {
-        return Array.from(tbody.querySelectorAll('tr')).filter(tr => 
-            !tr.querySelector('th') && !tr.classList.contains('search-row')
-        );
-    }
-
-    function applyFiltersAndPagination() {
-        const allDataRows = getAllDataRows();
-        let filteredRows = allDataRows;
-
-        // === APPLY FILTER: Active, Closed, etc. ===
-        if (currentFilter === "active") {
-            filteredRows = allDataRows.filter(row => {
-                const state = row.cells[9]?.textContent.trim(); 
-                return !['Closed', 'Resolved', 'Canceled'].includes(state);
-            });
-        } else if (currentFilter === "active-unassigned") {
-            filteredRows = allDataRows.filter(row => {
-                const state = row.cells[9]?.textContent.trim();
-                const assignedTo = row.cells[12]?.textContent.trim();
-                return !['Closed', 'Resolved', 'Canceled'].includes(state) && 
-                       (!assignedTo || assignedTo === '' || assignedTo === 'None');
-            });
-        } else if (currentFilter === "assigned-to-me") {
-            filteredRows = allDataRows.filter(row => {
-                const assignedTo = row.cells[12]?.textContent.trim(); 
-             
-                return assignedTo === currentUsername || assignedTo === currentUserFullName;
-            });
-        } 
-        else if (currentFilter === "closed") {
-            filteredRows = allDataRows.filter(row => {
-            const state = row.cells[9]?.textContent.trim().toLowerCase(); 
-            return ['closed','canceled'].includes(state); 
-        });
-        }
-       
-        const global = globalInp.value.trim().toLowerCase();
-        const colFilters = {};
-        colInputs.forEach(inp => {
-            if (inp.value.trim()) colFilters[inp.dataset.col] = inp.value.trim().toLowerCase();
-        });
-
-        const finalVisibleRows = filteredRows.filter(row => {
-            const rowText = row.textContent.toLowerCase();
-            if (global && !rowText.includes(global)) return false;
-
-            for (const col in colFilters) {
-                const th = [...table.querySelectorAll('th')].find(t => t.dataset.col === col);
-                if (!th) continue;
-                const idx = [...table.querySelectorAll('th')].indexOf(th);
-                const cellText = row.cells[idx]?.textContent.toLowerCase() || '';
-                if (!cellText.includes(colFilters[col])) return false;
-            }
-            return true;
-        });
-
-
-        const isGrouped = currentGroupCol !== null;
-
-        if (isGrouped) {
-          
-            tbody.querySelectorAll('.group-member').forEach(r => r.style.display = 'none');
-            tbody.querySelectorAll('.group-header').forEach(h => {
-                h.style.display = '';
-                const key = h.dataset.groupKey;
-                const members = tbody.querySelectorAll(`.group-member`);
-                let visibleInGroup = 0;
-
-                members.forEach(member => {
-                    if (finalVisibleRows.includes(member)) visibleInGroup++;
-                });
-
-  
-                const countSpan = h.querySelector('span:last-child');
-                if (countSpan) countSpan.textContent = `(${visibleInGroup})`;
-
-         
-                if (visibleInGroup > 0) {
-                    h.classList.remove('collapsed');
-                    h.querySelector('.group-arrow').textContent = '▼';
-                
-                    members.forEach(member => {
-                        if (finalVisibleRows.includes(member) && 
-                            member.closest('tr')?.previousElementSibling?.dataset.groupKey === key) {
-                            member.style.display = '';
-                        }
-                    });
-                } else {
-                    h.classList.add('collapsed');
-                    h.querySelector('.group-arrow').textContent = '▶';
+            categoryChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.category_labels,
+                    datasets: [{
+                        data: data.category_data,
+                        backgroundColor: COLORS,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { beginAtZero: true }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
                 }
             });
-         } 
-    
-         else {
-         
-            allDataRows.forEach(row => {
-                const shouldShow = finalVisibleRows.includes(row);
-                row.style.display = shouldShow ? '' : 'none';
+
+            // === Update Legend Counts ===
+            const legendContainer = document.querySelector('.chart-legend');
+            legendContainer.innerHTML = '';
+            data.category_legend.forEach(([label, count], i) => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.innerHTML = `
+                    <span class="dot dot-${i}"></span>${label}
+                    <span class="count">${count}</span>
+                `;
+                legendContainer.appendChild(item);
             });
 
-       
-            let count = 0;
-            allDataRows.forEach(row => {
-                if (row.style.display !== 'none') {
-                    row.style.display = count < rowsPerPage ? '' : 'none';
-                    count++;
-                }
+            // === Update Donut & Platform List ===
+            const webPercent = data.total_tickets ? (data.web_count / data.total_tickets * 360).toFixed(1) : 0;
+            const mobilePercent = 360 - webPercent;
+
+            // Update donut gradient
+            donut.style.background = `conic-gradient(
+                #3498db 0deg ${webPercent}deg,
+                #9b59b6 ${webPercent}deg 360deg
+            )`;
+
+            // Trigger re-animation
+            donut.classList.remove('animate', 'final');
+            clearTimeout(donutAnimationTimeout);
+            donutAnimationTimeout = setTimeout(() => {
+                donut.classList.add('animate');
+                setTimeout(() => {
+                    donut.classList.add('final');
+                    donut.classList.remove('animate');
+                }, 1200);
+            }, 100);
+
+            // Update counts in list
+            document.querySelector('[data-segment="web"] .platform-count').textContent = data.web_count;
+            document.querySelector('[data-segment="mobile"] .platform-count').textContent = data.mobile_count;
+
+            // Update center text (default)
+            centerCount.textContent = data.total_tickets;
+            centerLabel.textContent = 'Total Tickets';
+
+            // Update hover behavior with new counts
+            platformItems.forEach(item => {
+                const segment = item.dataset.segment;
+                const count = segment === 'web' ? data.web_count : data.mobile_count;
+                const name = segment === 'web' ? 'Web' : 'Mobile';
+
+                item.onmouseenter = () => {
+                    centerCount.textContent = count;
+                    centerLabel.textContent = name + ' Tickets';
+                };
+                item.onmouseleave = () => {
+                    centerCount.textContent = data.total_tickets;
+                    centerLabel.textContent = 'Total Tickets';
+                };
             });
-        }
+        })
+        .catch(err => console.error('Error loading reports data:', err));
+}
 
-        const total = finalVisibleRows.length;
-        const showing = Math.min(total, rowsPerPage);
-        const infoSpan = document.querySelector('.pagination span span');
-        if (infoSpan) infoSpan.remove();
-        document.querySelector('.pagination span')?.insertAdjacentHTML('beforeend', 
-            ` <span style="margin-left:20px;color:#555;">Showing 1–${total > 0 ? showing : 0} of ${total}</span>`
-        );
+// Initial load
+updateReports();
 
-        syncSelectAll();
-    }
-
-    // Re-apply on search
-    globalInp.addEventListener('input', () => setTimeout(applyFiltersAndPagination, 10));
-    colInputs.forEach(inp => inp.addEventListener('input', () => setTimeout(applyFiltersAndPagination, 10)));
-
-    // Menu controls
-    menuBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        menuPanel.style.display = menuPanel.style.display === "block" ? "none" : "block";
-        submenuPanels.forEach(m => m.style.display = "none");
-    });
-
-    document.querySelectorAll(".menu-item").forEach(item => {
-        item.addEventListener("mouseenter", () => {
-            submenuPanels.forEach(m => m.style.display = "none");
-            const submenu = document.getElementById(item.dataset.menu + "-menu");
-            if (submenu) submenu.style.display = "block";
-        });
-    });
-
-    document.addEventListener("click", (e) => {
-        if (!e.target.closest(".menu-container")) {
-            menuPanel.style.display = "none";
-            submenuPanels.forEach(m => m.style.display = "none");
-        }
-    });
-
-    // FILTERS
-    document.querySelectorAll("#filters-menu .submenu-item").forEach(item => {
-        item.addEventListener("click", () => {
-            const text = item.textContent.trim();
-            currentFilter = {
-                "All": "all",
-                "Active": "active",
-                "Active - Unassigned": "active-unassigned",
-                "Assigned to me": "assigned-to-me",
-                "Closed": "closed"
-            }[text] || "all";
-
-            document.querySelectorAll("#filters-menu .submenu-item").forEach(i => i.style.fontWeight = "normal");
-            item.style.fontWeight = "bold";
-
-            applyFiltersAndPagination();
-            menuPanel.style.display = "none";
-            submenuPanels.forEach(m => m.style.display = "none");
-        });
-    });
-
-    // SHOW (rows per page)
-    document.querySelectorAll("#show-menu .submenu-item").forEach(item => {
-        item.addEventListener("click", () => {
-            const text = item.textContent.trim();
-            if (text.includes("All")) {
-                rowsPerPage = 9999;
-            } else {
-                const num = parseInt(text);
-                rowsPerPage = isNaN(num) ? 20 : num;
-            }
-
-            document.querySelectorAll("#show-menu .submenu-item").forEach(i => i.style.fontWeight = "normal");
-            item.style.fontWeight = "bold";
-
-            applyFiltersAndPagination();
-            menuPanel.style.display = "none";
-            submenuPanels.forEach(m => m.style.display = "none");
-        });
-    });
-
-
-    //group by menu functionality 
-    document.querySelectorAll("#groupby-menu .submenu-item").forEach(item => {
-        item.addEventListener("click", () => {
-            const group = item.textContent.trim();
-            
-            // This is the menu closing logic:
-            menuPanel.style.display = "none";
-            submenuPanels.forEach(m => m.style.display = "none");
-            
-            if (group === "-- None --") { ungroup(); return; }
-
-            let colKey = null;
-
-            if (group === "Active") colKey = "state"; 
-            if (group === "Assigned to") colKey = "assignedTo";
-            if (group === "Caller") colKey = "caller";
-            if (group === "Assignment group") colKey = "assignGroup";
-            if (group === "Category") colKey = "category";
-            if (group === "Created by") colKey = "created";
-            if (group === "Updated by") colKey = "updatedBy";
-            if (group === "Short description") colKey = "desc"; 
-            if (group === "State") colKey = "state";
-            if (group === "Priority") colKey = "priority";
-
-            if (colKey) groupByColumn(colKey);
-        });
-    });
-
-    document.querySelector("#filters-menu .submenu-item").style.fontWeight = "bold";
-    document.querySelector('#show-menu .submenu-item:nth-child(4)').style.fontWeight = "bold"; // 20 rows
-    applyFiltersAndPagination();
+// Listen to school change
+schoolSelect.addEventListener('change', function() {
+    updateReports(this.value || '');  // '' = All Schools
+});
 </script>
 
 </body>
 </html>
-

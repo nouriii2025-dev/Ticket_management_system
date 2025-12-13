@@ -57,25 +57,35 @@ body {
     gap: 12px;
     font-size: 14px;
 }
+.logout-btn {
+        width: 40px;
+        height: 40px;
+        background: rgba(255,255,255,0.15);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+}
 
+.logout-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
 
-.main-content {
-    flex: 1;
-    padding: 0px 0px 0px 10px;
-    background-color: #f4f7fa;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
+.logout-btn::before {
+    content: url('https://img.icons8.com/ios-glyphs/20/ffffff/exit.png');
 }
 
 
+
+/* User Management Table */
 .user-management {
   background: #fff;
   padding: 20px;
   border-radius: 15px;
-  width: 97%;
+  width: 100%;
 }
 
 .create-user {
@@ -113,112 +123,145 @@ body {
 
 .create-user-container {
     display: flex;
-    justify-content: flex-end; 
-    margin-bottom: 15px;       
+    justify-content: flex-end; /* pushes button to the right */
+    margin-bottom: 15px;       /* adds some space below */
+}
+
+.filters {
+    display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;
+    align-items: center;
+}
+
+.search-box {
+    position: relative; 
+    flex: 1; 
+    min-width: 280px;
+}
+.search-box input {
+    width: 100%; 
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #159b9b; 
+    border-radius: 50px;
+    font-size: 1rem; 
+    transition: var(--transition);
+}
+.search-box input:focus {
+    outline: none; border-color: 
+    var(--primary); 
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.1);
+}
+.search-box i {
+    position: absolute; 
+    left: 0.8rem; top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-600);
+}
+
+/* .filter-select {
+    padding: 0.75rem 1rem; 
+    border: 1px solid #159b9b; 
+    border-radius: 50px; 
+    background: white;
+    font-size: 1rem;
+} */
+
+/* ====================== FILTER DROPDOWN (Role Filter) - BEAUTIFUL REDESIGN ====================== */
+.filter-select {
+    padding: 0.75rem 2.4rem 0.75rem 1rem;   /* Extra right padding for arrow */
+    border: 1px solid #159b9b;
+    border-radius: 50px;
+    background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23159b9b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat;
+    background-position: right 14px center;
+    background-size: 16px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #159b9b;
+    cursor: pointer;
+    appearance: none;                     /* Removes default arrow */
+    transition: all 0.25s ease;
+    min-width: 160px;
+    box-shadow: 0 2px 8px rgba(21, 155, 155, 0.1);
 }
 
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+
+.filter-select:focus {
+    outline: none;
+    border-color: #0d8383;
+    background-color: #f0fdfc;
 }
 
-thead {
-  background: #d6ece9;
-  text-align: left;
+/* Optional: Style the options (some browsers support it) */
+.filter-select option {
+    padding: 10px;
+    background: white;
+    color: #333;
 }
 
-th, td {
-  padding: 10px 12px;
-  font-size: 14px;
-  color: #333;
-  border-bottom: 1px solid #eee;
+.filter-select:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(21, 155, 155, 0.25) !important;
 }
 
-.role {
-  padding: 4px 12px;
-  border-radius: 12px;
-  color: #fff;
-  font-size: 13px;
+
+
+
+
+.table-container {
+    background: white; border-radius: var(--border-radius);
+    overflow: hidden; box-shadow: var(--shadow-md);
+    border: 1px solid var(--gray-200);
 }
 
-.role.admin {
-  background: #009b9b;
+table { width: 100%; border-collapse: collapse; }
+th {
+    background: var(--gray-100); padding: 1rem 1.25rem;
+    text-align: left; font-weight: 600; color: var(--gray-800);
+    font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--gray-300); cursor: pointer;
+    user-select: none;
+}
+th.sortable:hover { background: var(--gray-200); }
+th::after { content: " ↕"; opacity: 0.3; font-size: 0.8em; }
+th.asc::after, th.desc::after { opacity: 1; font-weight: bold; }
+
+td { padding: 1rem 1.25rem; border-bottom: 1px solid var(--gray-200); }
+tr:hover { background-color: #f0fdf4; }
+
+.role-badge {
+    padding: 0.35rem 0.75rem; border-radius: 50px;
+    font-size: 0.8rem; font-weight: 600; text-transform: capitalize;
+}
+.role-admin { background: #fee2e2; color: #991b1b; }
+.role-user { background: #ecfdf5; color: #166534; }
+
+.actions { display: flex; gap: 0.75rem; }
+.action-btn {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--transition); background: transparent;
+    border: none; cursor: pointer;
+}
+.edit-btn { color: #6366f1; background: #eef2ff; }
+.edit-btn:hover { background: #e0e7ff; transform: scale(1.1); }
+.delete-btn { color: var(--danger); background: #fee2e2; }
+.delete-btn:hover { background: #fecaca; transform: scale(1.1); }
+
+.no-data {
+    text-align: center; padding: 4rem 2rem; color: var(--gray-600);
 }
 
-.role.user {
-  background: #999;
+@media (max-width: 768px) {
+    .main-content { padding: 1rem; }
+    .page-header, .filters { flex-direction: column; align-items: stretch; }
+    .search-box { min-width: 100%; }
+    table, thead, tbody, th, td, tr { display: block; width: 100%; }
+    th { display: none; }
+    tr { margin-bottom: 1rem; border: 1px solid var(--gray-200); border-radius: 10px; padding: 1rem; }
+    td { display: flex; justify-content: space-between; padding: 0.5rem 0; border: none; }
+    td::before { content: attr(data-label); font-weight: 600; color: var(--gray-600); }
+    .actions { justify-content: flex-end; }
 }
-
-.actions img {
-  margin-right: 10px;
-  cursor: pointer;
-  opacity: 0.8;
-}
-
-.actions img:hover {
-  opacity: 1;
-}
-
-.user-fieldset {
-    border: 2px solid #159b9b;   
-    border-radius: 10px;          
-    padding: 25px 30px;            
-    margin-top: 20px;
-    background-color: #ffffff;     
-}
-
-.user-fieldset legend {
-    font-size: 20px;
-    font-weight: 600;
-    color: #159b9b;               
-    padding: 0 15px;              
-}
-
-.button-card-group {
-  display: flex;
-  gap: 32px;
-  justify-content: flex-start;
-  margin-top: 18px;
-}
-
-.card-btn {
-  background:#159b9b;
-  border-radius: 16px;
-  box-shadow: 0 3px 18px rgba(21, 155, 155, 0.06);
-  padding: 24px 38px;
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  transition: box-shadow 0.2s, transform 0.2s;
-  min-width: 200px;
-  cursor: pointer;
-  border: none;
-}
-
-.card-btn:hover {
-  box-shadow: 0 8px 24px rgba(21, 155, 155, 0.16);
-  transform: translateY(-3px) scale(1.03);
-}
-
-.card-btn-content {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.card-btn-icon {
-  width: 34px;
-  height: 34px;
-  filter: grayscale(0%);
-}
-.card-btn span {
-  color: #fff;
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
 
 /* ====================== TOP BAR DROPDOWN STYLES (Final Fix) ====================== */
 
@@ -307,6 +350,7 @@ th, td {
 }
 
 
+
 /* ====================== profile icon ====================== */
 .profile-dropdown {
     position: relative;
@@ -385,4 +429,18 @@ th, td {
     background-color: #0d8383 !important;
 }
 
+.user-fieldset {
+    border: 2px solid #159b9b;     /* main border color */
+    border-radius: 10px;           /* smooth corners */
+    padding: 25px 30px;            /* space inside */
+    margin-top: 20px;
+    background-color: #ffffff;     /* white background */
+}
+
+.user-fieldset legend {
+    font-size: 20px;
+    font-weight: 600;
+    color: #159b9b;               /* theme color for title */
+    padding: 0 15px;              /* spacing around text */
+}
 

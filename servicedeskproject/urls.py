@@ -39,14 +39,20 @@ urlpatterns = [
     path('school_delete<int:master_id>',views.school_delete,name='school_delete'),
     path('master_data',views.master_data,name='master_data'),
     path('group_details',views.group_details,name='group_details'),
+    path('priority_data',views.priority_data,name='priority_data'),
+    path('priority_add',views.priority_add,name='priority_add'),
     
     path('school_autofill',views.school_autofill,name='school_autofill'),
-    path('test',views.test_view,name='test'),
+    path('test',views.test,name='test'),
     path('caller_details',views.caller_details,name='caller_details'),
-    path('test_create/',views.test_create,name='test_create'),
+    # path('test_create/',views.test_create,name='test_create'),
     path('add-caller-details/', views.add_caller_details, name='add_caller_details'),
     path('overview', views.overview, name='overview'),
+    path('overview_api_view',views.overview_api_view,name='overview_api_view'),
     path('reports', views.reports, name='reports'),
+    path('reports_data', views.reports_data, name='reports_data'),
+    path('test_user', views.test_user, name='test_user'),
+    path('testz', views.testz, name='testz'),
 
 
 

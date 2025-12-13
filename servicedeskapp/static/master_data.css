@@ -57,26 +57,7 @@ body {
     gap: 12px;
     font-size: 14px;
 }
-.logout-btn {
-        width: 40px;
-        height: 40px;
-        background: rgba(255,255,255,0.15);
-        border: none;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.2s;
-    }
 
-    .logout-btn:hover {
-        background: rgba(255,255,255,0.3);
-    }
-
-    .logout-btn::before {
-        content: url('https://img.icons8.com/ios-glyphs/20/ffffff/exit.png');
-    }
 .main-content {
     flex: 1;
     padding: 30px;

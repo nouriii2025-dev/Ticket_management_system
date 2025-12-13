@@ -154,13 +154,14 @@
                 </div>
                 <div class="form-group">
                     <label>Priority</label>
-                    <select name="priority">
-                        <option value="">Select priority</option>
-                       <option value="planning" {% if tickets.priority == 'planning' %}selected{% endif %}>Planning</option>
-                        <option value="moderate" {% if tickets.priority == 'moderate' %}selected{% endif %}>Moderate</option>
-                        <option value="high" {% if tickets.priority == 'high' %}selected{% endif %}>High</option>
-
+                    <select name="priority" required>
+                        {% for p in priorities %}
+                            <option value="{{ p.id }}" {% if tickets.priority.id == p.id %}selected{% endif %}>
+                                {{ p.name }}
+                            </option>
+                        {% endfor %}
                     </select>
+
                 </div>
                <div class="form-group">
                     <label>Impact</label>

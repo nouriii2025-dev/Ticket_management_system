@@ -26,7 +26,9 @@ from django.urls import reverse
 from django.utils.http import urlsafe_base64_decode
 from django.db.models import Max
 from django.db import transaction
-
+from datetime import timedelta
+from django.db.models import Count
+from django.utils.safestring import mark_safe
 
 
 def sign_up(request):
@@ -165,18 +167,74 @@ def parent_caller(request):
 
 def dashboard(request):
     all_tickets = Create_Ticket.objects.all().order_by('-created_at')
-    for ticket in all_tickets:
-        # school=Master_Data.objects.filter(name=ticket.school_name).first()
-        # ticket.school_email=school.email if school else None  
+    for ticket in all_tickets: 
         caller=Caller_Details.objects.filter(caller_name=ticket.caller).first()
         ticket.caller_email = ticket.caller_details.caller_email if ticket.caller_details else None
-        # ticket.caller_email=caller.caller_email if caller else None
+         # SLA Calculation
+        if ticket.priority and ticket.priority.time and ticket.priority.unit:
+            sla_minutes = ticket.priority.time
+            if ticket.priority.unit == 'hours':
+                sla_minutes *= 60
+            elif ticket.priority.unit == 'days':
+                sla_minutes *= 1440  # 24*60
+            
+            deadline = ticket.created_at + timedelta(minutes=sla_minutes)
+            remaining = deadline - timezone.now()
+            
+        #     if remaining.total_seconds() > 0:
+        #         days = remaining.days
+        #         hours = int(remaining.total_seconds() / 3600) % 24
+        #         minutes = int(remaining.total_seconds() / 60) % 60
+        #         if days > 0:
+        #             ticket.time_left = f"{days}d {hours}h"
+        #         elif hours > 0:
+        #             ticket.time_left = f"{hours}h {minutes}m"
+        #         else:
+        #             ticket.time_left = f"{minutes}m"
+        #     else:
+        #         ticket.time_left = "Overdue"
+        # else:
+        #     ticket.time_left = "No SLA"
+            if remaining.total_seconds() > 0:
+                # Calculate total hours left for color decision
+                total_hours_left = remaining.total_seconds() / 3600
+                
+                # Determine badge class based on remaining time
+                if total_hours_left > 48:          # More than 2 days
+                    ticket.time_left_badge_class = "safe"
+                elif total_hours_left > 24:         # 1–2 days
+                    ticket.time_left_badge_class = "approaching"
+                elif total_hours_left > 4:          # 4–24 hours
+                    ticket.time_left_badge_class = "warning"
+                else:                               # Less than 4 hours
+                    ticket.time_left_badge_class = "urgent"
+                
+                # Format the display text nicely
+                days = remaining.days
+                hours = int(remaining.total_seconds() / 3600) % 24
+                minutes = int(remaining.total_seconds() / 60) % 60
+                
+                if days > 0:
+                    ticket.time_left = f"{days}d {hours}h"
+                elif hours > 0:
+                    ticket.time_left = f"{hours}h {minutes}m"
+                else:
+                    ticket.time_left = f"{minutes}m"
+            else:
+                ticket.time_left = "Overdue"
+                ticket.time_left_badge_class = "overdue"
+        else:
+            ticket.time_left = "No SLA"
+            ticket.time_left_badge_class = "nosla"
+
     paginator = Paginator(all_tickets, 8)
     page_number = request.GET.get('page')
     try:
         page_obj = paginator.page(page_number)
     except (PageNotAnInteger, EmptyPage):
+
         page_obj = paginator.page(1)
+
     fields_to_serialize = (
         'number',
         'short_description',
@@ -216,6 +274,7 @@ def create_ticket(request):
         return redirect('login')
     
     # Generate next ticket number
+    priorities = Priority_Data.objects.all()
     ticket_count = Create_Ticket.objects.count()
     latest_ticket = Create_Ticket.objects.aggregate(max_number=Max('number'))['max_number']
     if latest_ticket:
@@ -243,7 +302,8 @@ def create_ticket(request):
         school_name = request.POST.get('school_name')
         school_code = request.POST.get('school_code')
         urgency = request.POST.get('urgency')
-        priority = request.POST.get('priority')
+        priority_id = request.POST.get('priority')
+        priority_obj = Priority_Data.objects.get(id=priority_id) if priority_id else None
         assignment_group = request.POST.get('assignment_group')
         created_by = request.session.get('username')
         updated_by = request.POST.get('updated_by')
@@ -289,6 +349,8 @@ def create_ticket(request):
                 'latest_caller': request.session.get('last_caller_name', ''),
                 'latest_school_name': school_name,  
                 'latest_school_code': school_code,
+                'priorities': priorities,
+
             })
         
         # Validate caller exists
@@ -305,19 +367,9 @@ def create_ticket(request):
                 'parent_incident': parent_incident,
                 'parent_caller': parent_caller,
                 'latest_caller': request.session.get('last_caller_name', ''),
+                'priorities': priorities,
+
             })
-        
-        # caller_details_obj = None
-        # if caller_name:
-        #     try:
-        #         caller_details_obj = Caller_Details.objects.filter(caller_name=caller_name)
-        #     except Caller_Details.DoesNotExist:
-        #         caller_details_obj = Caller_Details.objects.create(
-        #             caller_name=caller_name,
-        #             school_name=school_name,
-        #             school_code=school_code
-        #         )
-        #         messages.info(request, f"New caller '{caller_name}' created automatically.")
 
         caller_details_obj = None
         if caller_name:
@@ -346,7 +398,7 @@ def create_ticket(request):
                 school_name=school_name,
                 school_code=school_code,
                 urgency=urgency,
-                priority=priority,
+                priority=priority_obj,
                 assignment_group=assignment_group,
                 created_by=created_by,
                 updated_by=updated_by,
@@ -381,14 +433,7 @@ def create_ticket(request):
                 messages.warning(request, f'Ticket created but email failed: {str(e)}')
         else:
             messages.success(request, f'Ticket {number} created (no caller email available).')
-            # except Exception as e:
-            #     messages.warning(request, f"Ticket created successfully but email failed: {str(e)}")
-        
-        # Clear session data after successful creation
-        # if 'last_caller_name' in request.session:
-        #     del request.session['last_caller_name']
-        # if 'last_caller_id' in request.session:
-        #     del request.session['last_caller_id']
+
         for key in ['last_caller_name', 'last_caller_id', 'last_school_name', 'last_school_code']:
             request.session.pop(key, None)
         request.session.modified = True
@@ -402,28 +447,22 @@ def create_ticket(request):
                 group = Assignment_Group.objects.get(name=selected_group)
                 group_members = Group_Members.objects.filter(group=group)
             except Assignment_Group.DoesNotExist:
-                group_members = []
-        
-        # context = {
-        #     'next_number': next_number,
-        #     'selected_group': selected_group,
-        #     'group_members': group_members,
-        #     'parent_incident': parent_incident,
-        #     'parent_caller': parent_caller,
-        #     'latest_caller': request.session.get('last_caller_name', ''),  # Autofill caller
-        #     'latest_school_name': request.session.get('last_school_name', ''),
-        #     'latest_school_code': request.session.get('last_school_code', ''),
-        # }   
+                group_members = []  
            
+    latest_caller = request.session.get('last_caller_name', '')
+    latest_school_name = request.session.get('last_school_name', '')
+    latest_school_code = request.session.get('last_school_code', '')
+
     context = {
-        'next_number': next_number, 
+        'next_number': next_number,
         'selected_group': selected_group,
-        'group_members': group_members, 
+        'group_members': group_members,
         'parent_incident': parent_incident,
         'parent_caller': parent_caller,
-        'latest_caller': '', 
-        'latest_school_name': '', 
-        'latest_school_code': ''  ,
+        'latest_caller': latest_caller,
+        'latest_school_name': latest_school_name,
+        'latest_school_code': latest_school_code,
+        'priorities': priorities,
     }
     return render(request, 'tickets/create_ticket.html', context)
 
@@ -431,6 +470,7 @@ def update_ticket(request, ticket_id):
     if 'username' not in request.session:
         messages.error(request,"please login first")
         return redirect('login')
+    priorities = Priority_Data.objects.all()
     single_ticket = get_object_or_404(Create_Ticket, id=ticket_id)
     selected_group_param = request.GET.get('assignment_group')  
     current_group = single_ticket.assignment_group 
@@ -480,7 +520,10 @@ def update_ticket(request, ticket_id):
         single_ticket.school_name = request.POST.get('school_name')
         single_ticket.urgency = request.POST.get('urgency')
         single_ticket.school_code = request.POST.get('school_code')
-        single_ticket.priority = request.POST.get('priority')
+        priority_id = request.POST.get('priority')
+        if priority_id:
+            single_ticket.priority = Priority_Data.objects.get(id=priority_id)
+
         single_ticket.assignment_group = request.POST.get('assignment_group')
         single_ticket.updated_by = request.session.get('username')
         single_ticket.assigned_to = request.POST.get('assigned_to')
@@ -523,35 +566,23 @@ def update_ticket(request, ticket_id):
                 )   
         if action == "resolve":
             single_ticket.resolved_date = timezone.now()
-            # try:
-            #     school = Master_Data.objects.get(name=single_ticket.school_name)
-            #     single_ticket.school_email = school.email
-            # except Master_Data.DoesNotExist:
-            #     single_ticket.school_email = None
-            # if single_ticket.school_email:
-            #     subject = f"Your ticket {single_ticket.number} has been resolved"
-            #     message = (
-            #         f"Dear Sir/Madam,\n\n"
-            #         f"We are happy to inform you that your reported issue has been successfully resolved.\n\n"
-            #         f"Ticket No.: {single_ticket.number}\n"
-            #         f"Short Description: {single_ticket.short_description}\n\n"
-            #         "If the issue reoccurs or you need further assistance, kindly inform us.\n\n"
-            #         "Regards,\n"
-            #         "IT Support Team\n"
-            #         "Edship Technologies\n"
-            #     )
-            try:
-                caller = Caller_Details.objects.get(name=single_ticket.caller)
+
+            caller = (Caller_Details.objects.filter(caller_name=single_ticket.caller).order_by('-id').first())
+
+            if caller:
                 single_ticket.caller_email = caller.caller_email
-            except Caller_Details.DoesNotExist:
+            else:
                 single_ticket.caller_email = None
+
+
             if single_ticket.caller_email:
                 subject = f"Your ticket {single_ticket.number} has been resolved"
                 message = (
-                    f"Dear { caller },\n\n"
+                    f"Dear { caller.caller_name },\n\n"
                     f"We are happy to inform you that your reported issue has been successfully resolved.\n\n"
                     f"Ticket No.: {single_ticket.number}\n"
-                    f"Short Description: {single_ticket.short_description}\n\n"
+                    f"Short Description: {single_ticket.short_description}\n"
+                    f"Additional Comments: {single_ticket.additional_comments}\n\n"
                     "If the issue reoccurs or you need further assistance, kindly inform us.\n\n"
                     "Regards,\n"
                     "IT Support Team\n"
@@ -571,6 +602,8 @@ def update_ticket(request, ticket_id):
         'activities': activities,
         'selected_group':selected_group,
         'group_members': group_members,
+        'priorities': priorities,
+
         }
     return render(request, 'tickets/update_ticket.html', context)
 
@@ -804,6 +837,10 @@ def parent_incident(request):
 #----------------------------------MASTER DATA---------------------------------------------------
 
 @admin_required
+def master_data(request):
+    return render(request,'master_data/master_data.html')
+
+@admin_required
 def school_details(request):
     data=Master_Data.objects.all()
     context={
@@ -850,10 +887,6 @@ def school_delete(request,master_id):
     return redirect('school_details')
 
 @admin_required
-def master_data(request):
-    return render(request,'master_data/master_data.html')
-
-@admin_required
 def group_details(request):
     search=request.GET.get('q','')
     if search:
@@ -869,6 +902,28 @@ def group_details(request):
     }
     return render(request,'master_data/group_details.html',context)
 
+@admin_required
+def priority_data(request):
+    priorities=Priority_Data.objects.all()
+    context={
+        'priorities':priorities
+    }
+    return render(request,'master_data/priority_data.html',context)
+
+@admin_required
+def priority_add(request):
+    if request.method=='POST':
+        name=request.POST.get('name')
+        time=request.POST.get('time')
+        unit=request.POST.get('unit')
+        Priority_Data.objects.create(name=name,time=time,unit=unit)
+        messages.success(request,'Priority Added')
+        return redirect('priority_data')
+    return render(request,'master_data/priority_add.html')
+
+
+
+
 def school_autofill(request):
     q = request.GET.get('q', '')
     if q:
@@ -880,55 +935,12 @@ def school_autofill(request):
 
 
 
-def test_view(request):
-    all_tickets = Create_Ticket.objects.all().order_by('-created_at')
-    for ticket in all_tickets:
-        school=Master_Data.objects.filter(name=ticket.school_name).first()
-        ticket.school_email=school.email if school else None
-    paginator = Paginator(all_tickets, 8) 
-    page_number = request.GET.get('page', 1)
-    page_obj = paginator.get_page(page_number)
-    fields_to_serialize = (
-        'number',
-        'short_description',
-        'caller',
-        'priority',
-        'state',
-        'category',
-        'assigned_to',
-        'updated_at',
-        'id',
-        'school_name',
-        'school_code',
-        'assignment_group',
-        'updated_by'
-    )
-    serialized_tickets = serialize('json', all_tickets, fields=fields_to_serialize)
-    temp_list = json.loads(serialized_tickets)
-    processed_tickets = []
-    for item in temp_list:
-        ticket_data = item['fields']
-        ticket_data['id'] = item['pk'] 
-        processed_tickets.append(ticket_data)
-    tickets_json = json.dumps(processed_tickets)
-    context = { 
-        'tickets': page_obj.object_list, 
-        'ticket_count': paginator.count,
-        'tickets_json': tickets_json,
-        'page_obj': page_obj,
-    }
-    return render(request,'test.html',context)
-
-
-
-
-
 def test_create(request):
     if 'username' not in request.session:
         messages.error(request, "Please login first")
         return redirect('login')
     
-    # Generate next ticket number
+    priorities = Priority_Data.objects.all()
     ticket_count = Create_Ticket.objects.count()
     latest_ticket = Create_Ticket.objects.aggregate(max_number=Max('number'))['max_number']
     if latest_ticket:
@@ -946,7 +958,6 @@ def test_create(request):
     parent_caller = request.GET.get('caller', '')
     
     if request.method == 'POST':
-        # Extract all form fields
         category = request.POST.get('category')
         channel = request.POST.get('channel')
         sub_category = request.POST.get('sub_category')
@@ -957,7 +968,8 @@ def test_create(request):
         school_name = request.POST.get('school_name')
         school_code = request.POST.get('school_code')
         urgency = request.POST.get('urgency')
-        priority = request.POST.get('priority')
+        priority_id = request.POST.get('priority')
+        priority_obj = Priority_Data.objects.get(id=priority_id)
         assignment_group = request.POST.get('assignment_group')
         created_by = request.session.get('username')
         updated_by = request.POST.get('updated_by')
@@ -986,7 +998,7 @@ def test_create(request):
             'Category': category,
             'State': state,
             'Urgency': urgency,
-            # 'Assignment Group': assignment_group,
+            'Assignment Group': assignment_group,
             'Short Description': short_description,
         }
         
@@ -1001,6 +1013,9 @@ def test_create(request):
                 'parent_incident': parent_incident,
                 'parent_caller': parent_caller,
                 'latest_caller': request.session.get('last_caller_name', ''),
+                'latest_school_name': school_name,  
+                'latest_school_code': school_code,
+                'priorities': priorities,
             })
         
         # Validate school exists
@@ -1032,7 +1047,7 @@ def test_create(request):
                 caller_details_obj = Caller_Details.objects.create(
                     caller_name=caller_name,
                     school_name=school_name,
-                    school_code=school_code
+                    school_code=school_code,
                 )
                 messages.info(request, f"New caller '{caller_name}' created automatically.")
         
@@ -1050,7 +1065,7 @@ def test_create(request):
                 school_name=school_name,
                 school_code=school_code,
                 urgency=urgency,
-                priority=priority,
+                priority=priority_obj,
                 assignment_group=assignment_group,
                 created_by=created_by,
                 updated_by=updated_by,
@@ -1109,6 +1124,7 @@ def test_create(request):
             'latest_caller': request.session.get('last_caller_name', ''),  # Autofill caller
             'latest_school_name': request.session.get('last_school_name', ''),
             'latest_school_code': request.session.get('last_school_code', ''),
+            'priorities': priorities,
         }   
     return render(request, 'test_create.html', context)
 
@@ -1134,11 +1150,168 @@ def add_caller_details(request):
             request.session['last_caller_id'] = caller.id  # NEW: ID for FK
             request.session['last_school_name'] = request.POST['school_name']
             request.session['last_school_code'] = request.POST['school_code']
-    return redirect(reverse('test_create') + '?from_caller=1')    # IMPORTANT: tell create page we are coming from caller popup
+    return redirect(reverse('create') + '?from_caller=1')    
 
 
 def overview(request):
     return render(request,'overview.html')
 
+def overview_api_view(request):
+    qs = Create_Ticket.objects.all()
+    now = timezone.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    yesterday_start = today_start - timedelta(days=1)
+    week_start = today_start - timedelta(days=today_start.weekday())
+
+    period = request.GET.get('period')
+    month = request.GET.get('month')
+    start_str = request.GET.get('start')
+    end_str = request.GET.get('end')
+
+    # Apply ONE filter only (priority order)
+    if start_str and end_str:
+        try:
+            start = datetime.strptime(start_str, '%Y-%m-%d').date()
+            end = datetime.strptime(end_str, '%Y-%m-%d').date()
+            qs = qs.filter(created_at__date__gte=start, created_at__date__lte=end)
+            # ↑ Use created_at, not updated_at!
+        except:
+            pass
+    elif month and month.lower() != 'select month':
+        month_map = {
+            'january': 1, 'february': 2, 'march': 3, 'april': 4,
+            'may': 5, 'june': 6, 'july': 7, 'august': 8,
+            'september': 9, 'october': 10, 'november': 11, 'december': 12
+        }
+        m = month_map.get(month.lower())
+        if m:
+            qs = qs.filter(created_at__month=m)
+    elif period == 'today':
+        qs = qs.filter(created_at__gte=today_start)
+    elif period == 'yesterday':
+        qs = qs.filter(created_at__gte=yesterday_start, created_at__lt=today_start)
+    elif period == 'week':
+        qs = qs.filter(created_at__gte=week_start)
+
+    # Now count from the correct queryset
+    total = qs.count()
+    open = qs.filter(state__in=['new', 'in progress', 'on hold']).count()
+    in_progress = qs.filter(state='in progress').count()
+    resolved = qs.filter(state='resolved').count()
+    closed = qs.filter(state='closed').count()
+
+    breached = qs.filter(time_left__lte=timedelta(seconds=0)).count()
+    critical = qs.filter(time_left__gt=timedelta(seconds=0),
+                          time_left__lte=timedelta(hours=2)).count()
+    safe = qs.filter(time_left__gt=timedelta(hours=2)).count()
+
+    return JsonResponse({
+        "total": total,
+        "open": open,
+        "inProgress": in_progress,
+        "resolved": resolved,
+        "closed": closed,
+
+        "sla_breached": breached,
+        "sla_critical": critical,
+        "sla_safe": safe,
+    })
+
+
 def reports(request):
-    return render(request,'reports.html')
+    schools=Master_Data.objects.all().order_by('name')  
+    qs=(Create_Ticket.objects.values('category').annotate(total=Count('id')).order_by('category'))
+    category_display = dict(Category_Choices)
+    labels=[category_display.get(row['category'], row['category']) for row in qs]
+    data=[row['total'] for row in qs]
+    counts=[row['total'] for row in qs]
+
+    web_count= Create_Ticket.objects.filter(platform='web application').count()
+    mobile_count=Create_Ticket.objects.filter(platform='mobile application').count()
+    total_tickets=web_count + mobile_count
+
+    context = {
+        'schools': schools,
+        'category_labels': mark_safe(json.dumps(labels)),
+        'category_data': mark_safe(json.dumps(data)),
+        'category_legend': list(zip(labels, counts)),
+        'web_count':     web_count,
+        'mobile_count':  mobile_count,
+        'total_tickets': total_tickets,
+    }
+    return render(request,'reports.html',context)
+
+
+def test_user(request):
+    add=User_Management.objects.all()
+    return render(request,'user_management/test_user.html',{'add':add})
+
+def test(request):
+    schools = Master_Data.objects.all().order_by('name')  
+    # group by category and count
+    qs = (
+        Create_Ticket.objects
+        .values('category')
+        .annotate(total=Count('id'))
+        .order_by('category')
+    )
+    # map DB values to display labels from choices
+    category_display = dict(Category_Choices)
+
+    labels = [category_display.get(row['category'], row['category']) for row in qs]
+    data = [row['total'] for row in qs]
+    counts = [row['total'] for row in qs]
+
+    web_count     = Create_Ticket.objects.filter(platform='web application').count()
+    mobile_count  = Create_Ticket.objects.filter(platform='mobile application').count()
+    total_tickets = web_count + mobile_count
+    context = {
+        'schools': schools,
+        'category_labels': mark_safe(json.dumps(labels)),
+        'category_data': mark_safe(json.dumps(data)),
+        'category_legend': list(zip(labels, counts)),
+        'web_count':     web_count,
+        'mobile_count':  mobile_count,
+        'total_tickets': total_tickets,
+    }
+    return render(request,'test.html',context)
+
+
+
+def reports_data(request):
+    school_id = request.GET.get('school')  # '' or None means All Schools
+
+    tickets = Create_Ticket.objects.all()
+    if school_id:
+        tickets = tickets.filter(school_id=school_id)
+
+    # Category distribution
+    qs = tickets.values('category').annotate(total=Count('id')).order_by('category')
+    category_display = dict(Category_Choices)
+
+    category_labels = [category_display.get(row['category'], row['category']) for row in qs]
+    category_data   = [row['total'] for row in qs]
+
+    # Platform distribution
+    web_count = tickets.filter(platform='web application').count()
+    mobile_count = tickets.filter(platform='mobile application').count()
+    total_tickets = web_count + mobile_count
+
+    # For the legend in bar chart
+    category_legend = list(zip(category_labels, category_data))
+
+    return JsonResponse({
+        'category_labels': category_labels,
+        'category_data': category_data,
+        'category_legend': category_legend,
+        'web_count': web_count,
+        'mobile_count': mobile_count,
+        'total_tickets': total_tickets,
+    })
+
+
+def testz(request):  
+    return render(request,'testz.html')
+
+
+

@@ -53,12 +53,6 @@ Impact_Choices=[
     ('high', 'High'),
 ]
 Urgency_Choices=Impact_Choices
-
-Priority_Choices=[
-    ('planning','Planning'),
-    ('moderate','Moderate'),
-    ('high','High'),
-]
 Platform_Choices=[
     ('web application','Web Application'),
     ('mobile application','Mobile Application'),
@@ -77,7 +71,7 @@ class Create_Ticket(models.Model):
     school_code=models.CharField(max_length=100,blank=True,null=True)
     urgency=models.CharField(max_length=100,choices=Urgency_Choices,default='low')
     created_at=models.DateTimeField(auto_now_add=True)
-    priority=models.CharField(max_length=100,choices=Priority_Choices,default='planning',null=True,blank=True)
+    priority = models.ForeignKey('Priority_Data', on_delete=models.SET_NULL, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     assignment_group = models.CharField(max_length=100,blank=True, null=True)
     created_by=models.CharField(max_length=100,null=True,blank=True)
@@ -157,6 +151,24 @@ class Master_Data(models.Model):
     code=models.CharField(max_length=100,null=True,blank=True)
     email=models.EmailField(max_length=100,null=True,blank=True)
     phone=models.CharField(validators=[phone_validator],max_length=10,null=True,blank=True)
+    def __str__(self):
+        return self.name
+    
+Unit_Choices=[
+    ('hours','Hours'),
+    ('days','Days'),
+    ('minutes','Minutes'),
+]
+Priority_Choices=[
+    ('low','Low'),
+    ('moderate','Moderate'),
+    ('high','High'),
+    ('critical','Critical'),
+]
+class Priority_Data(models.Model):
+    name=models.CharField(max_length=100,null=True,blank=True,choices=Priority_Choices)
+    time=models.IntegerField(null=True,blank=True)
+    unit=models.CharField(max_length=50,null=True,blank=True,choices=Unit_Choices)
     def __str__(self):
         return self.name
     
