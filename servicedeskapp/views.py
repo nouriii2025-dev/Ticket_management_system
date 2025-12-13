@@ -1200,21 +1200,12 @@ def overview_api_view(request):
     resolved = qs.filter(state='resolved').count()
     closed = qs.filter(state='closed').count()
 
-    breached = qs.filter(time_left__lte=timedelta(seconds=0)).count()
-    critical = qs.filter(time_left__gt=timedelta(seconds=0),
-                          time_left__lte=timedelta(hours=2)).count()
-    safe = qs.filter(time_left__gt=timedelta(hours=2)).count()
-
     return JsonResponse({
         "total": total,
         "open": open,
         "inProgress": in_progress,
         "resolved": resolved,
         "closed": closed,
-
-        "sla_breached": breached,
-        "sla_critical": critical,
-        "sla_safe": safe,
     })
 
 
