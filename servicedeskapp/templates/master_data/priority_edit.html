@@ -46,7 +46,6 @@
 
     <div class="main-content">
         <div class="content-area">
-            <form action="{% url 'priority_add' %}" method="post">
                 {% csrf_token %}
         <div class="create-user">
           {% if messages %}
@@ -57,28 +56,28 @@
             {% endfor %}
           {% endif %}
           <fieldset class="create-user-fieldset">
-            <legend>Add Details</legend>
+            <legend>Update Details</legend>
            <div class="form-row">
             <div class="form-field-group">
                 <label>Priority<span class="required">*</span></label>
                 <select name="name" required>
                     <option value="">Select priority</option>
-                    <option value="low">Low</option>
-                    <option value="moderate">Moderate</option>
-                    <option value="high">High</option>
-                    <option value="critical">Critical</option>
+                    <option value="low" {% if single_priority.name == 'low' %}selected{% endif %}>Low</option>
+                    <option value="moderate" {% if single_priority.name == 'moderate' %}selected{% endif %}>Moderate</option>
+                    <option value="high" {% if single_priority.name == 'high' %}selected{% endif %}>High</option>
+                    <option value="critical" {% if single_priority.name == 'critical' %}selected{% endif %}>Critical</option>
                 </select>
             </div>
             <div class="form-field-group">
                 <label for="time">Time<span class="required">*</span></label>
-                <input type="number" placeholder="Enter time" name="time" required>
+                <input type="number" placeholder="Enter time" name="time" value="{{ single_priority.time }}" required>
             </div>
             <div class="form-field-group">
                 <label>Unit<span class="required">*</span></label>
                 <select name="unit" required>
-                    <option value="minutes">Minutes</option>
-                    <option value="hours">Hours</option>
-                    <option value="days">Days</option>
+                    <option value="minutes" {% if single_priority.unit == 'minutes' %}selected{% endif %}>Minutes</option>
+                    <option value="hours" {% if single_priority.unit == 'hours' %}selected{% endif %}>Hours</option>
+                    <option value="days" {% if single_priority.unit == 'days' %}selected{% endif %}>Days</option>
                 </select>
             </div>
            </div>
@@ -88,11 +87,10 @@
           <div class="form-buttons">
             <a href="{% url 'priority_data' %}"><button type="button" class="back-btn">Back</button></a>
             <button type="reset" class="reset-btn">Reset</button>
-            <button type="submit" class="create-btn">Submit</button>
+            <a href="{% url 'priority_data' %}"><button type="submit" class="create-btn">Update</button></a>
           </div>
         </div>
         </div>
-        </form>
       </div>
     </div>
  </div>

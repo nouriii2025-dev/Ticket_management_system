@@ -71,19 +71,46 @@
     </div>
 
     <!-- Filters Row - Full width, below title -->
-    <!-- <div class="reports-filters">
+    <div class="reports-filters">
         <div class="filter-dropdown">
             <div class="filter-select-wrapper">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
 
-                <select id="school-select" name="school" class="filter-select">
+                <!-- <select id="school-select" name="school" class="filter-select">
                 <option value="">All Schools</option>
                 {% for s in schools %}
                     <option value="{{ s.id }}">{{ s.name }}</option>
                 {% endfor %}
-                </select>
+                </select> -->
+
+                <div class="school-dropdown" id="schoolDropdown">
+                    <div class="school-selected" id="schoolSelected">
+                        All Schools
+                    </div>
+
+                    <div class="school-menu" id="schoolMenu">
+                        <div class="school-search">
+                        <svg width="16" height="16" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
+                            <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        <input type="text" id="schoolSearch" placeholder="Search school">
+                        </div>
+
+                        <ul class="school-list" id="schoolList">
+                        <li data-value="">All Schools</li>
+                        {% for s in schools %}
+                            <li data-value="{{ s.id }}">{{ s.name }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- Hidden input for form / JS filtering -->
+                    <input type="hidden" name="school" id="schoolInput">
+                    </div>
+
 
                 <svg class="dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M19 9l-7 7-7-7"/>
@@ -105,11 +132,11 @@
                 <path d="M19 9l-7 7-7-7"/>
                 </svg>
 
-                <input type="date" id="date-input" class="date-input-hidden">
+                <input type="text" id="date-input" class="date-input-hidden">
             </div>
         </div>
 
-    </div> -->
+    </div>
 </div>
  
 <!-- ====================== MAIN CONTENT - REPORTS DASHBOARD ====================== -->
@@ -123,7 +150,7 @@
     <div class="chart-container">
         <canvas id="ticketCategoryChart"></canvas>
 
-        <div class="chart-legend">
+        <div class="chart-legend" id="categoryLegend">
             {% for label, count in category_legend %}
                 <div class="legend-item">
                 <!-- <span class="dot"></span>{{ label }}  -->
@@ -189,40 +216,49 @@
     </div>
 </div>
 
- 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+<script src="https://cdn.jsdelivr.net/npm/moment/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+
 <script>
-  const dateWrapper = document.getElementById('date-wrapper');
-  const dateInput = document.getElementById('date-input');
-  const dateDisplay = document.getElementById('date-display');
+  $(function () {
+    const $dateInput = $('#date-input');
 
-  dateWrapper.addEventListener('click', function () {
-    if (dateInput.showPicker) {
-      dateInput.showPicker();   // modern browsers
-    } else {
-      dateInput.focus();
-    }
-  });
+    $dateInput.daterangepicker({
+      autoUpdateInput: false,
+      opens: 'left',
+      locale: {
+        cancelLabel: 'Clear'
+      }
+    });
 
-  dateInput.addEventListener('change', function () {
-    if (!this.value) {
-      dateDisplay.textContent = 'Select date';
-      return;
-    }
-    const d = new Date(this.value);
-    const day = String(d.getDate()).padStart(2, '0');
-    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    const month = monthNames[d.getMonth()];
-    const year = d.getFullYear();
-    dateDisplay.textContent = `${day} ${month} ${year}`;
+    // CLICK wrapper → open calendar
+    document.getElementById('date-wrapper').addEventListener('click', function () {
+      $dateInput.trigger('click');
+    });
+
+    $dateInput.on('apply.daterangepicker', function (ev, picker) {
+      document.getElementById('date-display').textContent =
+        picker.startDate.format('DD MMM YYYY') +
+        ' - ' +
+        picker.endDate.format('DD MMM YYYY');
+     fetchReports(); // 🔥 update reports
+    });
+
+    $dateInput.on('cancel.daterangepicker', function () {
+      document.getElementById('date-display').textContent = 'Select date';
+    });
   });
 </script>
 
+
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script>
+<!-- <script>
 const ctx = document.getElementById('ticketCategoryChart').getContext('2d');
-
-// values from Django context (already JSON)
 const categoryLabels = JSON.parse('{{ category_labels|escapejs }}');
 const categoryData   = JSON.parse('{{ category_data|escapejs }}');
 
@@ -246,7 +282,31 @@ new Chart(ctx, {
         responsive: false
     }
 });
+</script> -->
+
+<script>
+const ctx = document.getElementById('ticketCategoryChart').getContext('2d');
+
+const categoryChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: JSON.parse('{{ category_labels|escapejs }}'),
+        datasets: [{
+            data: JSON.parse('{{ category_data|escapejs }}'),
+            backgroundColor: ['#e74c3c','#f39c12','#16a085',
+                              '#3498db','#8e44ad','#1abc9c'],
+            borderRadius: 6
+        }]
+    },
+    options: {
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
 </script>
+
 
 <script>
         // Data configuration
@@ -333,6 +393,111 @@ document.querySelectorAll(".platform-item").forEach(item => {
     });
 });
 </script>
+
+<script>
+  const schoolSelected = document.getElementById("schoolSelected");
+  const schoolMenu = document.getElementById("schoolMenu");
+  const schoolSearch = document.getElementById("schoolSearch");
+  const schoolItems = document.querySelectorAll("#schoolList li");
+  const schoolInput = document.getElementById("schoolInput");
+
+  schoolSelected.addEventListener("click", () => {
+    schoolMenu.classList.toggle("open");
+  });
+
+//   schoolItems.forEach(item => {
+//     item.addEventListener("click", () => {
+//       schoolSelected.textContent = item.textContent;
+//       schoolInput.value = item.dataset.value;
+//       schoolMenu.classList.remove("open");
+//     });
+//   });
+  schoolItems.forEach(item => {
+  item.addEventListener("click", () => {
+    schoolSelected.textContent = item.textContent;
+    schoolInput.value = item.textContent; // school NAME
+    schoolMenu.classList.remove("open");
+
+    fetchReports(); // 🔥 update reports
+  });
+});
+
+  schoolSearch.addEventListener("keyup", () => {
+    const value = schoolSearch.value.toLowerCase();
+    schoolItems.forEach(item => {
+      item.style.display = item.textContent.toLowerCase().includes(value)
+        ? "block"
+        : "none";
+    });
+  });
+
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".school-dropdown")) {
+      schoolMenu.classList.remove("open");
+    }
+  });
+</script>
+
+<script>
+function fetchReports() {
+    const school = document.getElementById("schoolInput").value;
+    const dateText = document.getElementById("date-display").textContent;
+
+    let startDate = '';
+    let endDate = '';
+
+    if (dateText !== 'Select date') {
+        const parts = dateText.split(' - ');
+        startDate = moment(parts[0], 'DD MMM YYYY').format('YYYY-MM-DD');
+        endDate   = moment(parts[1], 'DD MMM YYYY').format('YYYY-MM-DD');
+    }
+
+    $.ajax({
+        url: "{% url 'reports_data' %}",
+        data: {
+            school: school,
+            start_date: startDate,
+            end_date: endDate
+        },
+        success: function(data) {
+
+            // update bar chart
+            categoryChart.data.labels = data.category_labels;
+            categoryChart.data.datasets[0].data = data.category_data;
+            categoryChart.update();
+
+            // update platform numbers
+            document.querySelector(".platform-item[data-segment='web'] .platform-count").textContent = data.web_count;
+            document.querySelector(".platform-item[data-segment='mobile'] .platform-count").textContent = data.mobile_count;
+
+            // update donut center
+            document.getElementById("center-count-value").textContent = data.total_tickets;
+
+            // 🔄 Update category legend (right side)
+            const legendContainer = document.getElementById("categoryLegend");
+            legendContainer.innerHTML = ""; // clear old legend
+
+            data.category_labels.forEach((label, index) => {
+                const count = data.category_data[index];
+
+                const item = document.createElement("div");
+                item.className = "legend-item";
+
+                item.innerHTML = `
+                    <span class="dot dot-${index}"></span>
+                    ${label}
+                    <span class="count">${count}</span>
+                `;
+
+                legendContainer.appendChild(item);
+            });
+
+        }
+
+    });
+}
+</script>
+
 
 </body>
 </html>

@@ -21,14 +21,12 @@ urlpatterns = [
     path('new_group',views.new_group,name='new_group'),
     path('edit_group/<int:group_id>/',views.edit_group,name='edit_group'),
     path('delete_group<int:group_id>',views.delete_group,name='delete_group'),
-    # path('preview',views.preview,name='preview'),
 
     path('user_management',views.user_management,name='user_management'),
     path('create_user',views.create_user,name='create_user'),
     path('edit_user<int:user_id>',views.edit_user,name='edit_user'),
     path('delete_user<int:user_id>',views.delete_user,name='delete_user'),
 
-    path('parent_incident',views.parent_incident,name='parent_incident'),
     path('delete_tickets',views.delete_tickets,name='delete_tickets'),
 
     path('group_members',views.group_members,name='group_members'),
@@ -41,16 +39,22 @@ urlpatterns = [
     path('group_details',views.group_details,name='group_details'),
     path('priority_data',views.priority_data,name='priority_data'),
     path('priority_add',views.priority_add,name='priority_add'),
+    path('priority_edit<int:priority_id>',views.priority_edit,name='priority_edit'),
+    path('priority_delete<int:priority_id>',views.priority_delete,name='priority_delete'),
+    path('ticket_duration',views.ticket_duration,name='ticket_duration'),
     
     path('school_autofill',views.school_autofill,name='school_autofill'),
     path('test',views.test,name='test'),
     path('caller_details',views.caller_details,name='caller_details'),
-    # path('test_create/',views.test_create,name='test_create'),
     path('add-caller-details/', views.add_caller_details, name='add_caller_details'),
+    path('delete_caller<int:caller_id>',views.delete_caller,name='delete_caller'),
+
     path('overview', views.overview, name='overview'),
     path('overview_api_view',views.overview_api_view,name='overview_api_view'),
+    path('api/priority-tickets/', views.priority_tickets_api, name='priority_tickets_api'),
     path('reports', views.reports, name='reports'),
     path('reports_data', views.reports_data, name='reports_data'),
+    
     path('test_user', views.test_user, name='test_user'),
     path('testz', views.testz, name='testz'),
 

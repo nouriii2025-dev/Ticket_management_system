@@ -66,15 +66,22 @@
               <tr>
                 <th>Name</th>
                 <th>Time</th>
-                <th>Unit</th>               
+                <th>Unit</th> 
+                <th>Actions</th>              
               </tr>
             </thead>
             <tbody>
                 {% for p in priorities  %}
               <tr>
-                <td>{{ p.name }}</td>
+                <td>{{ p.get_name_display }}</td>
                 <td>{{ p.time }}</td>
-                <td>{{ p.unit }}</td>
+                <td>{{ p.get_unit_display }}</td>
+                <td class="actions">
+                  <a href="{% url 'priority_edit' p.id %}">
+                  <img src="https://img.icons8.com/ios-glyphs/18/edit.png" alt="Edit"></a>
+                  <a href="{% url 'priority_delete' p.id %}">
+                  <img src="https://img.icons8.com/ios-glyphs/18/trash.png" alt="Delete"></a>
+                </td>
               </tr>
               {% endfor %}
             </tbody>

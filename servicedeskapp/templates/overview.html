@@ -140,15 +140,6 @@
     </div>
 
 
-    <div class="metric-card progress">
-        <div class="metric-header">
-            <h3>In Progress</h3>
-        </div>
-        <p class="value" id="inprogress-tickets">0</p>
-        <span class="period">Total</span>
-        
-    </div>
-
     <div class="metric-card resolved">
         <div class="metric-header">
             <h3>Resolved</h3>
@@ -183,13 +174,86 @@
             </button>
         </div>
     </div>
+
+    <div class="metric-card progress">
+        <div class="metric-header">
+        <h3>In Progress</h3>
+        </div>
+        <p class="value" id="inprogress-tickets">0</p>
+        <span class="period">Total</span>       
+    </div>
+
 </section>
 
 <section class="chart-section">
     <div class="chart-container">
         <canvas id="ticketStatusChart"></canvas>
     </div>
+
+    <div class="priority-card-container">
+        <div class="priority-breakdown-card">
+            <h2 class="card-title">Priority Breakdown</h2>
+
+            <div class="priority-item critical" data-priority="critical">
+                <div class="priority-info">
+                    <span class="priority-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                    <span class="priority-label">Critical</span>
+                </div>
+                <div class="priority-value-container">
+                    <span class="priority-value" id="priority-critical-count">0</span>
+                    <span class="dropdown-arrow"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="priority-details">
+        <div class="priority-ticket-list"></div>
+    </div>
+            </div>
+
+            <div class="priority-item high" data-priority="high">
+                <div class="priority-info">
+                    <span class="priority-icon"><i class="fas fa-exclamation-circle"></i></span>
+                    <span class="priority-label">High</span>
+                </div>
+                <div class="priority-value-container">
+                    <span class="priority-value" id="priority-high-count">0</span>
+                    <span class="dropdown-arrow"><i class="fas fa-chevron-down"></i></span>
+                </div>
+             <div class="priority-details">
+        <div class="priority-ticket-list"></div>
+    </div>
+            </div>
+
+            <div class="priority-item moderate" data-priority="moderate">
+                <div class="priority-info">
+                    <span class="priority-icon"><i class="fas fa-clock"></i></span>
+                    <span class="priority-label">Moderate</span>
+                </div>
+                <div class="priority-value-container">
+                    <span class="priority-value" id="priority-moderate-count">0</span>
+                    <span class="dropdown-arrow"><i class="fas fa-chevron-down"></i></span>
+                </div>
+          <div class="priority-details">
+        <div class="priority-ticket-list"></div>
+    </div>
+            </div>
+
+            <div class="priority-item low" data-priority="low">
+                <div class="priority-info">
+                    <span class="priority-icon"><i class="fas fa-check-circle"></i></span>
+                    <span class="priority-label">Low</span>
+                </div>
+                <div class="priority-value-container">
+                    <span class="priority-value" id="priority-low-count">0</span>
+                    <span class="dropdown-arrow"><i class="fas fa-chevron-down"></i></span>
+                </div>
+             <div class="priority-details">
+        <div class="priority-ticket-list"></div>
+    </div>
+            </div>
+        </div>
+    </div>
 </section>
+
+
 </div>
 
   <script>
@@ -303,120 +367,9 @@ $(document).ready(function() {
 </script>
 
 <script>
-let currentFilter = { type: 'all' };
-
-function updateAllCards() {
-    let url = "{% url 'overview_api_view' %}?";
-
-    if (currentFilter.type === 'period') {
-        url += `period=${currentFilter.value}`;
-    } else if (currentFilter.type === 'month') {
-        url += `month=${currentFilter.value}`;
-    } else if (currentFilter.type === 'range') {
-        url += `start=${currentFilter.start}&end=${currentFilter.end}`;
-    } else {
-        url = "{% url 'overview_api_view' %}";  // no params = all time
-    }
-
-    fetch(url)
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById("total-tickets").textContent = data.total;
-            document.getElementById("open-tickets").textContent = data.open;
-            document.getElementById("inprogress-tickets").textContent = data.inProgress;
-            document.getElementById("resolved").textContent = data.resolved;
-        })
-        .catch(err => console.log("Fetch error:", err));
-}
-
-// === Today / Yesterday / This Week ===
-document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        currentFilter = { type: 'period', value: tab.dataset.period };
-        updateAllCards();
-    });
-});
-
-// === Month Select ===
-document.querySelectorAll('.month-select').forEach(select => {
-    select.addEventListener('change', function() {
-        const val = this.value.toLowerCase();
-        if (val && val !== 'select month') {
-            currentFilter = { type: 'month', value: val };
-            resetOtherFilters();
-        } else {
-            currentFilter = { type: 'all' };
-        }
-        updateAllCards();
-    });
-});
-
-// === Date Range Picker (FIXED!) ===
-$(document).ready(function() {
-    $('.date-range-btn').daterangepicker({
-        autoUpdateInput: false,
-        locale: {
-            format: 'DD/MM/YYYY'
-        }
-    });
-
-    $('.date-range-btn').on('apply.daterangepicker', function(ev, picker) {
-        const start = picker.startDate.format('YYYY-MM-DD');
-        const end = picker.endDate.format('YYYY-MM-DD');
-        $(this).find('.range-text').text(picker.startDate.format('DD/MM') + ' - ' + picker.endDate.format('DD/MM'));
-        $(this).addClass('active');
-
-        currentFilter = { type: 'range', start: start, end: end };
-        resetOtherFilters();
-        updateAllCards();
-    });
-
-    $('.date-range-btn').on('cancel.daterangepicker', function() {
-        $(this).find('.range-text').text('Date Range');
-        $(this).removeClass('active');
-        currentFilter = { type: 'all' };
-        updateAllCards();
-    });
-});
-
-function resetOtherFilters() {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    if (currentFilter.type !== 'month') {
-            document.querySelectorAll('.month-select').forEach(s => s.selectedIndex = 0);
-        }
-    document.querySelectorAll('.date-range-btn').forEach(btn => {
-        if (!btn.querySelector('.range-text').textContent.includes('-')) {
-            btn.querySelector('.range-text').textContent = 'Date Range';
-            btn.classList.remove('active');
-        }
-    });
-}
-
-// Click outside → reset
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.metric-card') && currentFilter.type !== 'all') {
-        currentFilter = { type: 'all' };
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.month-select').forEach(s => s.selectedIndex = 0);
-        document.querySelectorAll('.date-range-btn').forEach(btn => {
-            btn.querySelector('.range-text').textContent = 'Date Range';
-            btn.classList.remove('active');
-        });
-        updateAllCards();
-    }
-});
-
-// Initial load
-updateAllCards();
-setInterval(updateAllCards, 30000);
-</script>
-
-<!-- ====================== chart SCRIPT ====================== -->
-<script>
 let chartStatusFilter = null;
 let statusChart;
+let currentFilter = { type: 'all' };  // ← Keep this from the first script
 
 function updateAllCards() {
     let url = "{% url 'overview_api_view' %}?";
@@ -436,19 +389,26 @@ function updateAllCards() {
     fetch(url)
         .then(r => r.json())
         .then(data => {
-            // Update cards
-            document.getElementById("total-tickets").textContent       = data.total || 0;
-            document.getElementById("open-tickets").textContent         = data.open || 0;
-            document.getElementById("inprogress-tickets").textContent   = data.inProgress || 0;
-            document.getElementById("resolved").textContent            = data.resolved || 0;
-           
+            // Update metric cards
+            document.getElementById("total-tickets").textContent = data.total || 0;
+            document.getElementById("open-tickets").textContent = data.open || 0;
+            document.getElementById("inprogress-tickets").textContent = data.inProgress || 0;
+            document.getElementById("resolved").textContent = data.resolved || 0;
 
-            // Update chart with real numbers
+            // Update priority counts
+            if (data.priority) {
+                document.getElementById("priority-critical-count").textContent = data.priority.critical || 0;
+                document.getElementById("priority-high-count").textContent = data.priority.high || 0;
+                document.getElementById("priority-moderate-count").textContent = data.priority.moderate || 0;
+                document.getElementById("priority-low-count").textContent = data.priority.low || 0;
+            }
+
+            // Update chart
             const counts = [
                 data.open || 0,
                 data.inProgress || 0,
                 data.resolved || 0,
-                data.closed || 0          // ← now correct!
+                data.closed || 0
             ];
 
             if (statusChart) {
@@ -457,7 +417,8 @@ function updateAllCards() {
             } else {
                 createChart(counts);
             }
-        });
+        })
+        .catch(err => console.error("Fetch error:", err));
 }
 
 function createChart(counts) {
@@ -500,8 +461,122 @@ function createChart(counts) {
     });
 }
 
-// Init
-document.addEventListener('DOMContentLoaded', () => updateAllCards());
+// === Today / Yesterday / This Week Tabs ===
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentFilter = { type: 'period', value: tab.dataset.period };
+        resetOtherFilters();
+        updateAllCards();
+    });
+});
+
+// === Month Select ===
+document.querySelectorAll('.month-select').forEach(select => {
+    select.addEventListener('change', function() {
+        const val = this.value.toLowerCase();
+        if (val && val !== 'select month') {
+            currentFilter = { type: 'month', value: val };
+            resetOtherFilters();
+        } else {
+            currentFilter = { type: 'all' };
+        }
+        updateAllCards();
+    });
+});
+
+// === Date Range Picker ===
+$(document).ready(function() {
+    $('.date-range-btn').daterangepicker({
+        autoUpdateInput: false,
+        locale: { format: 'DD/MM/YYYY' }
+    });
+
+    $('.date-range-btn').on('apply.daterangepicker', function(ev, picker) {
+        const start = picker.startDate.format('YYYY-MM-DD');
+        const end = picker.endDate.format('YYYY-MM-DD');
+        $(this).find('.range-text').text(picker.startDate.format('DD/MM') + ' - ' + picker.endDate.format('DD/MM'));
+        $(this).addClass('active');
+
+        currentFilter = { type: 'range', start: start, end: end };
+        resetOtherFilters();
+        updateAllCards();
+    });
+
+    $('.date-range-btn').on('cancel.daterangepicker', function() {
+        $(this).find('.range-text').text('Date Range');
+        $(this).removeClass('active');
+        currentFilter = { type: 'all' };
+        updateAllCards();
+    });
+});
+
+function resetOtherFilters() {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    if (currentFilter.type !== 'month') {
+        document.querySelectorAll('.month-select').forEach(s => s.selectedIndex = 0);
+    }
+    document.querySelectorAll('.date-range-btn').forEach(btn => {
+        if (!btn.querySelector('.range-text').textContent.includes('-')) {
+            btn.querySelector('.range-text').textContent = 'Date Range';
+            btn.classList.remove('active');
+        }
+    });
+}
+
+// Click outside metric cards → reset filters
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.metric-card') && currentFilter.type !== 'all') {
+        currentFilter = { type: 'all' };
+        resetOtherFilters();
+        updateAllCards();
+    }
+});
+
+// Initial load + auto-refresh
+document.addEventListener('DOMContentLoaded', () => {
+    updateAllCards();
+    setInterval(updateAllCards, 30000);
+});
+</script>
+
+<script>
+document.querySelectorAll('.priority-item').forEach(item => {
+    item.addEventListener('click', function (e) {
+
+        // Prevent double loading
+        if (this.classList.contains('loaded')) {
+            this.classList.toggle('open');
+            return;
+        }
+
+        const priority = this.dataset.priority;
+        const container = this.querySelector('.priority-ticket-list');
+
+        fetch(`/api/priority-tickets/?priority=${priority}`)
+            .then(res => res.json())
+            .then(data => {
+
+                if (!data.tickets.length) {
+                    container.innerHTML = '<p style="padding:8px;">No tickets</p>';
+                } else {
+                    container.innerHTML = data.tickets.map(t => `
+                        <div class="ticket-row"
+                             onclick="event.stopPropagation(); window.location.href='/update${t.id}'">
+                            <div>
+                                <strong>${t.number || 'TKT-' + t.id}</strong>
+                                <div style="font-size:12px;color:#666">${t.short_description}</div>
+                            </div>
+                            <div style="font-size:12px">${t.caller}</div>
+                        </div>
+                    `).join('');
+                }
+
+                this.classList.add('loaded', 'open');
+            });
+    });
+});
 </script>
 
 </body>

@@ -698,3 +698,160 @@ body {
 }
 
 
+
+
+/* --- New Layout for Chart and Priority Card --- */
+.chart-and-priority-section {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.chart-container {
+    flex: 2; /* Chart takes 2/3 of the space */
+    padding: 20px;
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-small);
+}
+
+.priority-card-container {
+    flex: 1; /* Priority card takes 1/3 of the space */
+    min-width: 300px;
+}
+
+/* --- Priority Breakdown Card Styling --- */
+
+:root {
+    /* Assuming you have existing variables, or define these in your CSS */
+    --critical-color: #e8505b; /* Reddish */
+    --high-color: #ff9f1c;    /* Orangish */
+    --moderate-color: #f7b243;  /* Yellowish */
+    --low-color: #4aae91;     /* Greenish */
+    --gray-700: #4a5568; /* For titles/text */
+    --gray-400: #a0aec0; /* For arrows */
+    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --border-radius: 8px; /* Assuming this exists */
+    --white: #ffffff; /* Assuming this exists */
+}
+
+.priority-breakdown-card {
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+}
+
+.priority-breakdown-card .card-title {
+    font-size: 1.25em;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--gray-700);
+}
+
+.priority-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    cursor: pointer;
+    flex-wrap: wrap; /* Allows details to wrap underneath */
+    transition: background-color 0.2s;
+}
+
+.priority-item:hover {
+    background-color: #f7f7f9; /* Light hover effect */
+}
+
+.priority-info {
+    display: flex;
+    align-items: center;
+    font-size: 1.05em;
+}
+
+.priority-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+}
+
+.priority-icon i {
+    font-size: 1.4em;
+}
+
+.priority-label {
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+/* Priority Colors */
+.priority-item.critical .priority-icon,
+.priority-item.critical .priority-value { color: var(--critical-color); }
+
+.priority-item.high .priority-icon,
+.priority-item.high .priority-value { color: var(--high-color); }
+
+.priority-item.moderate .priority-icon,
+.priority-item.moderate .priority-value { color: var(--moderate-color); }
+
+.priority-item.low .priority-icon,
+.priority-item.low .priority-value { color: var(--low-color); }
+
+.priority-value-container {
+    display: flex;
+    align-items: center;
+}
+
+.priority-value {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-right: 15px;
+}
+
+.dropdown-arrow {
+    color: var(--gray-400);
+    transition: transform 0.3s;
+}
+
+/* JS-related class for rotation */
+.priority-item.open .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* Expansion Details */
+.priority-details {
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 0 0 45px; /* Indent to align with text */
+    margin-top: 5px;
+    transition: max-height 0.4s ease-out, padding 0.4s ease-out;
+    color: var(--gray-700);
+    font-size: 0.9em;
+}
+
+.priority-item.open .priority-details {
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 5px 0 5px 45px;
+}
+
+.ticket-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 10px;
+    margin-top: 6px;
+    border-radius: 6px;
+    background: #f9fafb;
+    cursor: pointer;
+}
+
+.ticket-row:hover {
+    background: #eef2ff;
+}
+
+
+
+

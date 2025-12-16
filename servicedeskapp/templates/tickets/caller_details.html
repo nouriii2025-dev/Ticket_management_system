@@ -67,7 +67,7 @@
                 <th>Phone</th>
                 <th>School name</th>
                 <th>School code</th>
-                <!-- <th>Actions</th> -->
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -79,6 +79,14 @@
                 <td>{{ caller.caller_phone }}</td>
                 <td>{{ caller.school_name }}</td>
                 <td>{{ caller.school_code }}</td>
+                <td class="actions">
+                  <a href="#">
+                  <img src="https://img.icons8.com/ios-glyphs/18/edit.png" alt="Edit"></a>
+                  <a href="{% url 'delete_caller' caller.id %}">
+                  <img src="https://img.icons8.com/ios-glyphs/18/trash.png" alt="Delete"></a>
+                  <a href="mailto:{{ caller.caller_email }}?subject=Regarding%20ticket%20raised%20for%20{{ caller.school_name }}&body=Dear {{ caller.caller_name}},%0D%0A%0D%0A Regards,%0D%0AIT%20Support%20Team%0D%0AEdship%20Technologies">
+                  <img src="https://img.icons8.com/ios-glyphs/18/new-post.png" alt="Email"></a>
+                </td>
               </tr>
               {% endfor %}
             </tbody>

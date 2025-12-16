@@ -714,3 +714,67 @@ body {
         text-align: center;
     }
 }
+
+
+/* ===== Custom School Dropdown ===== */
+.school-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.school-selected {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d2939;
+  cursor: pointer;
+}
+
+.school-menu {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+  display: none;
+  z-index: 1000;
+}
+
+.school-menu.open {
+  display: block;
+}
+
+.school-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.school-search input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 13.5px;
+}
+
+.school-list {
+  max-height: 220px;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+}
+
+.school-list li {
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.school-list li:hover {
+  background: #f2fafa;
+  color: var(--primary);
+}

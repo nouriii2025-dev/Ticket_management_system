@@ -3,8 +3,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Add details- Master Data</title>
-    <link rel="stylesheet" href="{% static 'create_user.css' %}">
+    <title>Master Data</title>
+    <link rel="stylesheet" href="{% static 'ticket_duration.css' %}">
 </head>
 <body>
 <div class="main-layout">
@@ -43,60 +43,59 @@
 </div>
 </div>
 
-
     <div class="main-content">
-        <div class="content-area">
-            <form action="{% url 'priority_add' %}" method="post">
-                {% csrf_token %}
-        <div class="create-user">
+        <form action="{% url 'ticket_duration' %}" method="post">
+            {% csrf_token %}
+        <div class="user-management">
+
           {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+              <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
                 {{ message }}
-              </div>
+              </div>              
             {% endfor %}
           {% endif %}
-          <fieldset class="create-user-fieldset">
-            <legend>Add Details</legend>
-           <div class="form-row">
-            <div class="form-field-group">
-                <label>Priority<span class="required">*</span></label>
-                <select name="name" required>
-                    <option value="">Select priority</option>
-                    <option value="low">Low</option>
-                    <option value="moderate">Moderate</option>
-                    <option value="high">High</option>
-                    <option value="critical">Critical</option>
-                </select>
-            </div>
-            <div class="form-field-group">
-                <label for="time">Time<span class="required">*</span></label>
-                <input type="number" placeholder="Enter time" name="time" required>
-            </div>
-            <div class="form-field-group">
-                <label>Unit<span class="required">*</span></label>
-                <select name="unit" required>
-                    <option value="minutes">Minutes</option>
-                    <option value="hours">Hours</option>
-                    <option value="days">Days</option>
-                </select>
-            </div>
-           </div>
-        
-      
-            </fieldset>
-          <div class="form-buttons">
-            <a href="{% url 'priority_data' %}"><button type="button" class="back-btn">Back</button></a>
-            <button type="reset" class="reset-btn">Reset</button>
-            <button type="submit" class="create-btn">Submit</button>
+          <div class="create-user-container">
+                <a href="#">
+              <button type="button" class="create-user">+ Add details</button></a>
           </div>
-        </div>
+           <fieldset class="user-fieldset">
+            <legend>Ticket Duration</legend>
+   
+          <table>
+            <thead>
+              <tr>
+                <th>Ticket No</th>
+                <th>Category</th>
+                <th>Modules</th>
+                <th>Opened time</th>
+                <th>Resolved time</th>
+                <th>Duration</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for duration in durations %}
+              <tr>
+                <td>{{ duration.ticket_number }}</td>
+                <td>{{ duration.category }}</td>
+                <td>{{ duration.ticket.sub_category }}</td>
+                <td>{{ duration.opened_time|date:"d M Y H:i" }}</td>
+                <td>{{ duration.resolved_time|date:"d M Y H:i" }}</td>
+                <td>{{ duration.formatted_duration }} </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" style="text-align:center;">No ticket duration data available</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+           </fieldset>
         </div>
         </form>
       </div>
     </div>
  </div>
-
  <script>
     document.addEventListener('DOMContentLoaded', function() {
     const profileBtn = document.querySelector('.profile-btn');

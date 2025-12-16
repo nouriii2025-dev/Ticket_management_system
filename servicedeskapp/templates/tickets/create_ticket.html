@@ -158,7 +158,7 @@
                     <select name="priority" required>
                         <option value="" disabled selected>Select Priority</option>
                         {% for p in priorities %}
-                            <option value="{{ p.id }}">{{ p.name }}</option>
+                            <option value="{{ p.id }}">{{ p.get_name_display }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -247,8 +247,7 @@
                             <label>Parent Incident</label>
                         </div>
                         <div class="form-group notes-input">
-                            <input type="text" name="parent_incident" placeholder="" value="{{ parent_incident|default:'' }}">
-                            <a href="{% url 'parent_incident' %}">🔍</a>
+                            <input type="text" name="parent_incident" placeholder="" >
             
                         </div>
                     </div>

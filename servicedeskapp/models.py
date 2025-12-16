@@ -170,7 +170,35 @@ class Priority_Data(models.Model):
     time=models.IntegerField(null=True,blank=True)
     unit=models.CharField(max_length=50,null=True,blank=True,choices=Unit_Choices)
     def __str__(self):
-        return self.name
+        return self.get_name_display()
+    
+class Ticket_Duration(models.Model):
+    ticket=models.OneToOneField(Create_Ticket,on_delete=models.CASCADE,related_name='duration')
+    ticket_number=models.CharField(max_length=100,null=True,blank=True)
+    category=models.CharField(max_length=100,null=True,blank=True)
+    opened_time=models.DateTimeField(null=True,blank=True)
+    resolved_time=models.DateTimeField(null=True,blank=True)
+    duration = models.DurationField(null=True, blank=True)
+    def __str__(self):
+        return self.ticket_number
+    def formatted_duration(self):
+        if not self.duration:
+            return "-"
+
+        total_seconds = int(self.duration.total_seconds())
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = (total_seconds % 60)
+
+        if hours and minutes:
+            return f"{hours} hour{'s' if hours > 1 else ''} {minutes} minute{'s' if minutes > 1 else ''}"
+        elif hours:
+            return f"{hours} hour{'s' if hours > 1 else ''}"
+        elif minutes:
+            return f"{minutes} minute{'s' if minutes > 1 else ''}"
+        else:
+            return f"{seconds} second{'s' if seconds > 1 else ''}"
+
     
 class Caller_Details(models.Model):
     caller_name=models.CharField(max_length=100,null=True,blank=True)
@@ -181,6 +209,4 @@ class Caller_Details(models.Model):
     school_code=models.CharField(max_length=100,null=True,blank=True)
     def __str__(self):
         return self.caller_name
-
-
 

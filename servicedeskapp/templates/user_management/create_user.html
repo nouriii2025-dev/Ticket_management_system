@@ -73,7 +73,7 @@
             </div>
              <div class="form-field-group">
                 <label for="phone">Phone<span class="required">*</span></label>
-                <input type="text" name="phone" pattern="\d{10}" maxlength="10" title="Enter a 10-digit phone number" required>
+                <input type="text" name="phone" placeholder="Enter number" pattern="\d{10}" maxlength="10" title="Enter a 10-digit phone number" required>
 
           </div>
             <div class="form-field-group">
@@ -95,6 +95,7 @@
             </div>
             </fieldset>
           <div class="form-buttons">
+            <a href="{% url 'user_management' %}"><button type="button" class="back-btn">Back</button></a>
             <button type="reset" class="reset-btn">Reset</button>
             <a href="{% url 'user_management' %}"><button type="submit" class="create-btn">Create</button></a>
           </div>

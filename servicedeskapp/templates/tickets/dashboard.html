@@ -24,6 +24,7 @@
         </a>
         <div class="topbar-dropdown-menu">
             <a href="{% url 'caller_details' %}" id="caller-details-link" class="dropdown-item">Caller Details</a>
+            <a href="?filter=resolved" class="dropdown-item">Resolved tickets</a>
         </div>
     </div>
 
@@ -76,6 +77,13 @@
            
           </header>
           <fieldset class="page-title-fieldset">
+            <legend>
+            {% if current_filter == 'resolved' %}
+                Resolved Tickets
+            {% else %}
+                Tickets
+            {% endif %}
+            </legend>
           <legend>Tickets</legend>
 
 <div class="ticket-toolbar-modern">
@@ -155,7 +163,7 @@
     <thead>
         <tr>
             <th></th>
-            <th data-col="number">Number <span class="col-menu">⋮</span></th>
+            <th data-col="number">Number </th>
             <th data-col="opened">Opened <span class="col-menu">⋮</span></th>
             <th data-col="created">Created by <span class="col-menu">⋮</span></th>
             <th data-col="desc">Short description <span class="col-menu">⋮</span></th>
@@ -220,8 +228,8 @@
                     {{ ticket.time_left }}
                 </span>
             </td>
-            <td>{{ ticket.state }}</td>
-            <td>{{ ticket.category }}</td>
+            <td>{{ ticket.get_state_display }}</td>
+            <td>{{ ticket.get_category_display }}</td>
             <td>{{ ticket.assignment_group }}</td>
             <td>{{ ticket.assigned_to }}</td>
             <td>{% localtime on %}{{ ticket.updated_at|date:"M. d, Y, P" }}{% endlocaltime %}</td>

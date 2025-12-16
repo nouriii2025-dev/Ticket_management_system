@@ -146,7 +146,6 @@ def parent_caller(request):
         if not name or not phone:
             return JsonResponse({'success': False, 'error': 'Name and phone required'})
 
-        # Save parent as caller in Master_Data (you already use this for schools)
         caller, created = Master_Data.objects.update_or_create(
             phone=phone,
             defaults={
@@ -166,7 +165,10 @@ def parent_caller(request):
 
 
 def dashboard(request):
+    filter_type = request.GET.get('filter')
     all_tickets = Create_Ticket.objects.all().order_by('-created_at')
+    if filter_type == 'resolved':
+        all_tickets = all_tickets.filter(state='resolved')
     for ticket in all_tickets: 
         caller=Caller_Details.objects.filter(caller_name=ticket.caller).first()
         ticket.caller_email = ticket.caller_details.caller_email if ticket.caller_details else None
@@ -265,6 +267,7 @@ def dashboard(request):
         'page_obj': page_obj,
         'current_username': request.session.get('username'),      
         'current_user_fullname': request.session.get('name', request.session.get('username')),
+        'current_filter': filter_type,
     }
     return render(request, 'tickets/dashboard.html', context)
 
@@ -288,7 +291,6 @@ def create_ticket(request):
     next_number = f'INC{next_num:07d}'
     
     group_members = []
-    parent_incident = request.GET.get('parent_incident', '')
     parent_caller = request.GET.get('caller', '')
     
     if request.method == 'POST':
@@ -312,7 +314,7 @@ def create_ticket(request):
         description = request.POST.get('description')
         additional_comments = request.POST.get('additional_comments')
         work_notes = request.POST.get('work_notes')
-        
+    
         # Generate ticket number (recalculate for accuracy)
         latest_ticket_number = Create_Ticket.objects.aggregate(max_number=Max('number'))['max_number']
         if latest_ticket_number:
@@ -344,7 +346,6 @@ def create_ticket(request):
                 'next_number': next_number,
                 'selected_group': selected_group,
                 'group_members': group_members,
-                'parent_incident': parent_incident,
                 'parent_caller': parent_caller,
                 'latest_caller': request.session.get('last_caller_name', ''),
                 'latest_school_name': school_name,  
@@ -364,7 +365,6 @@ def create_ticket(request):
                 'next_number': next_number,
                 'selected_group': assignment_group,
                 'group_members': group_members,
-                'parent_incident': parent_incident,
                 'parent_caller': parent_caller,
                 'latest_caller': request.session.get('last_caller_name', ''),
                 'priorities': priorities,
@@ -409,7 +409,13 @@ def create_ticket(request):
                 work_notes=work_notes,
                 number=number
             )
-        
+
+            Ticket_Duration.objects.create(
+                ticket=ticket,ticket_number=ticket.number,
+                category=ticket.category,opened_time=ticket.created_at,
+            )
+            
+
         # Send email notification
         if caller_details_obj and caller_details_obj.caller_email:
             caller_email = caller_details_obj.caller_email
@@ -457,13 +463,13 @@ def create_ticket(request):
         'next_number': next_number,
         'selected_group': selected_group,
         'group_members': group_members,
-        'parent_incident': parent_incident,
         'parent_caller': parent_caller,
         'latest_caller': latest_caller,
         'latest_school_name': latest_school_name,
         'latest_school_code': latest_school_code,
         'priorities': priorities,
     }
+ 
     return render(request, 'tickets/create_ticket.html', context)
 
 def update_ticket(request, ticket_id):
@@ -483,6 +489,7 @@ def update_ticket(request, ticket_id):
         except Assignment_Group.DoesNotExist:
             group_members = []
     if request.method == 'POST':
+        old_state = single_ticket.state
         old_values={
             'category': single_ticket.category,
             'channel': single_ticket.channel,
@@ -563,10 +570,52 @@ def update_ticket(request, ticket_id):
                     field_name=change['field_name'],
                     old_value=change['old_value'],
                     new_value=change['new_value']
-                )   
-        if action == "resolve":
-            single_ticket.resolved_date = timezone.now()
+                )  
+        # if action == "resolve":
+        #     single_ticket.resolved_date = timezone.now()
+        #     single_ticket.save()
+        #     resolved_minute=single_ticket.resolved_date.minute
+        #     resolved_hour=single_ticket.resolved_date.hour
+        #     resolved_hour_to_minutes=resolved_hour*60
+        #     resolved_total_minutes=resolved_hour_to_minutes+resolved_minute
 
+        #     created_minute=single_ticket.created_at.minute
+        #     created_hour=single_ticket.created_at.hour
+        #     created_hour_to_minutes=created_hour*60
+        #     created_total_minutes=created_hour_to_minutes+created_minute
+
+        #     duration= resolved_total_minutes - created_total_minutes
+        #     if resolved_total_minutes or created_total_minutes >= 60:
+        #         hours=duration//60
+        #         minutes=duration%60
+        #         total_duration=f"{hours} hours {minutes} minutes"
+        #     else:
+        #         total_duration=f"{duration} minutes"
+        #     Ticket_Duration.objects.filter(ticket=single_ticket).update(
+        #         resolved_time=single_ticket.resolved_date,
+        #         duration=duration,  
+        #     )
+        if action == "resolve":
+            single_ticket.state = "resolved"
+            single_ticket.resolved_by = request.session.get('username')
+            single_ticket.resolved_date = timezone.now()
+            single_ticket.save()
+
+            # ✅ CORRECT duration calculation
+            duration_value = single_ticket.resolved_date - single_ticket.created_at
+
+            # ✅ Update Ticket_Duration properly
+            Ticket_Duration.objects.update_or_create(
+                ticket=single_ticket,
+                defaults={
+                    'ticket_number': single_ticket.number,
+                    'category': single_ticket.category,
+                    'opened_time': single_ticket.created_at,
+                    'resolved_time': single_ticket.resolved_date,
+                    'duration': duration_value
+                }
+            )
+                      
             caller = (Caller_Details.objects.filter(caller_name=single_ticket.caller).order_by('-id').first())
 
             if caller:
@@ -810,30 +859,6 @@ def delete_user(request,user_id):
 
 
 
-def parent_incident(request):
-    all_tickets = Create_Ticket.objects.all().order_by('-created_at')
-    fields_to_serialize = (
-        'number',
-        'short_description',
-        'assigned_to',
-        'assignment_group',
-    )
-    serialized_tickets = serialize('json', all_tickets, fields=fields_to_serialize)
-    temp_list = json.loads(serialized_tickets)
-    processed_tickets = []
-    for item in temp_list:
-        ticket_data = item['fields']
-        ticket_data['id'] = item['pk'] 
-        processed_tickets.append(ticket_data)
-    tickets_json = json.dumps(processed_tickets)
-    context = {
-        'tickets': all_tickets, 
-        'ticket_count': all_tickets.count(),
-        'tickets_json': tickets_json, 
-    }
-    return render(request,'parent_incident.html',context)
-
-
 #----------------------------------MASTER DATA---------------------------------------------------
 
 @admin_required
@@ -921,6 +946,31 @@ def priority_add(request):
         return redirect('priority_data')
     return render(request,'master_data/priority_add.html')
 
+def priority_edit(request,priority_id):
+    single_priority=get_object_or_404(Priority_Data,id=priority_id)
+    if request.method=='POST':
+        single_priority.name=request.POST.get('name')
+        single_priority.time=request.POST.get('time')
+        single_priority.unit=request.POST.get('unit')
+        single_priority.save()
+        messages.success(request,'Priority Updated')
+        return redirect('priority_data')
+    context={
+        'single_priority':single_priority
+    }
+    return render(request,'master_data/priority_edit.html',context)
+
+def priority_delete(request,priority_id):
+    priority=get_object_or_404(Priority_Data,id=priority_id)
+    priority.delete()
+    return redirect('priority_data')
+
+def ticket_duration(request):
+    durations = Ticket_Duration.objects.select_related('ticket').order_by('-opened_time')
+    context = {
+        'durations': durations
+    }
+    return render(request,'master_data/ticket_duration.html',context)
 
 
 
@@ -954,7 +1004,7 @@ def test_create(request):
     next_number = f'INC{next_num:07d}'
     
     group_members = []
-    parent_incident = request.GET.get('parent_incident', '')
+
     parent_caller = request.GET.get('caller', '')
     
     if request.method == 'POST':
@@ -1010,7 +1060,6 @@ def test_create(request):
                 'next_number': next_number,
                 'selected_group': selected_group,
                 'group_members': group_members,
-                'parent_incident': parent_incident,
                 'parent_caller': parent_caller,
                 'latest_caller': request.session.get('last_caller_name', ''),
                 'latest_school_name': school_name,  
@@ -1028,7 +1077,6 @@ def test_create(request):
                 'next_number': next_number,
                 'selected_group': assignment_group,
                 'group_members': group_members,
-                'parent_incident': parent_incident,
                 'parent_caller': parent_caller,
                 'latest_caller': request.session.get('last_caller_name', ''),
             })
@@ -1119,7 +1167,6 @@ def test_create(request):
             'next_number': next_number,
             'selected_group': selected_group,
             'group_members': group_members,
-            'parent_incident': parent_incident,
             'parent_caller': parent_caller,
             'latest_caller': request.session.get('last_caller_name', ''),  # Autofill caller
             'latest_school_name': request.session.get('last_school_name', ''),
@@ -1129,10 +1176,10 @@ def test_create(request):
     return render(request, 'test_create.html', context)
 
 
+#------------------------CALLER DETAILS------------------------------------------
 def caller_details(request):
     callers=Caller_Details.objects.all()
     return render(request,'tickets/caller_details.html',{'callers':callers})   
-
 
 def add_caller_details(request):
     if request.method == 'POST':
@@ -1152,7 +1199,12 @@ def add_caller_details(request):
             request.session['last_school_code'] = request.POST['school_code']
     return redirect(reverse('create') + '?from_caller=1')    
 
+def delete_caller(request,caller_id):
+    caller=get_object_or_404(Caller_Details,id=caller_id)
+    caller.delete()
+    return redirect('caller_details')
 
+#------------------------OVERVIEW AND REPORTS------------------------------------------
 def overview(request):
     return render(request,'overview.html')
 
@@ -1200,14 +1252,49 @@ def overview_api_view(request):
     resolved = qs.filter(state='resolved').count()
     closed = qs.filter(state='closed').count()
 
+    critical = qs.filter(priority__name='critical').count()
+    high = qs.filter(priority__name='high').count()
+    moderate = qs.filter(priority__name='moderate').count()
+    low = qs.filter(priority__name='low').count()
+
     return JsonResponse({
         "total": total,
         "open": open,
         "inProgress": in_progress,
         "resolved": resolved,
         "closed": closed,
+
+        "priority": {
+            "critical": critical,
+            "high": high,
+            "moderate": moderate,
+            "low": low
+        }
+      
     })
 
+
+def priority_tickets_api(request):
+    priority = request.GET.get('priority')
+
+    qs = Create_Ticket.objects.select_related('priority')
+
+    if priority:
+        qs = qs.filter(priority__name__iexact=priority)
+
+    qs = qs.order_by('-created_at')  # limit for UI
+  
+    tickets = []
+    for t in qs:
+        tickets.append({
+            'id': t.id,
+            'number': t.number,
+            'short_description': t.short_description,
+            'caller': t.caller or '-',
+            'state': t.state,
+        })
+
+    return JsonResponse({'tickets': tickets})
 
 def reports(request):
     schools=Master_Data.objects.all().order_by('name')  
@@ -1231,6 +1318,70 @@ def reports(request):
         'total_tickets': total_tickets,
     }
     return render(request,'reports.html',context)
+
+# def reports_data(request):
+#     school_id = request.GET.get('school') 
+#     tickets = Create_Ticket.objects.all()
+#     if school_id:
+#         tickets = tickets.filter(school_id=school_id)
+
+#     qs = tickets.values('category').annotate(total=Count('id')).order_by('category')
+#     category_display = dict(Category_Choices)
+
+#     category_labels = [category_display.get(row['category'], row['category']) for row in qs]
+#     category_data   = [row['total'] for row in qs]
+
+#     web_count = tickets.filter(platform='web application').count()
+#     mobile_count = tickets.filter(platform='mobile application').count()
+#     total_tickets = web_count + mobile_count
+
+#     category_legend = list(zip(category_labels, category_data))
+
+#     return JsonResponse({
+#         'category_labels': category_labels,
+#         'category_data': category_data,
+#         'category_legend': category_legend,
+#         'web_count': web_count,
+#         'mobile_count': mobile_count,
+#         'total_tickets': total_tickets,
+#     })
+
+
+
+def reports_data(request):
+    school = request.GET.get('school')   # school name (string)
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    tickets = Create_Ticket.objects.all()
+
+    # filter by school
+    if school:
+        tickets = tickets.filter(school_name=school)
+
+    # filter by date
+    if start_date and end_date:
+        tickets = tickets.filter(
+            created_at__date__range=[start_date, end_date]
+        )
+
+    qs = tickets.values('category').annotate(total=Count('id')).order_by('category')
+
+    category_display = dict(Category_Choices)
+    category_labels = [category_display.get(row['category']) for row in qs]
+    category_data = [row['total'] for row in qs]
+
+    web_count = tickets.filter(platform='web application').count()
+    mobile_count = tickets.filter(platform='mobile application').count()
+
+    return JsonResponse({
+        'category_labels': category_labels,
+        'category_data': category_data,
+        'web_count': web_count,
+        'mobile_count': mobile_count,
+        'total_tickets': web_count + mobile_count,
+    })
+
 
 
 def test_user(request):
@@ -1267,38 +1418,6 @@ def test(request):
     }
     return render(request,'test.html',context)
 
-
-
-def reports_data(request):
-    school_id = request.GET.get('school')  # '' or None means All Schools
-
-    tickets = Create_Ticket.objects.all()
-    if school_id:
-        tickets = tickets.filter(school_id=school_id)
-
-    # Category distribution
-    qs = tickets.values('category').annotate(total=Count('id')).order_by('category')
-    category_display = dict(Category_Choices)
-
-    category_labels = [category_display.get(row['category'], row['category']) for row in qs]
-    category_data   = [row['total'] for row in qs]
-
-    # Platform distribution
-    web_count = tickets.filter(platform='web application').count()
-    mobile_count = tickets.filter(platform='mobile application').count()
-    total_tickets = web_count + mobile_count
-
-    # For the legend in bar chart
-    category_legend = list(zip(category_labels, category_data))
-
-    return JsonResponse({
-        'category_labels': category_labels,
-        'category_data': category_data,
-        'category_legend': category_legend,
-        'web_count': web_count,
-        'mobile_count': mobile_count,
-        'total_tickets': total_tickets,
-    })
 
 
 def testz(request):  

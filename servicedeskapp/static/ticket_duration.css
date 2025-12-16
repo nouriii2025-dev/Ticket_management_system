@@ -57,232 +57,167 @@ body {
     gap: 12px;
     font-size: 14px;
 }
-.logout-btn {
-        width: 40px;
-        height: 40px;
-        background: rgba(255,255,255,0.15);
-        border: none;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.2s;
-    }
-
-    .logout-btn:hover {
-        background: rgba(255,255,255,0.3);
-    }
-
-    .logout-btn::before {
-        content: url('https://img.icons8.com/ios-glyphs/20/ffffff/exit.png');
-    }
 
 
-/* Main Content */
 .main-content {
     flex: 1;
-    padding: 30px;
+    padding: 0px 0px 0px 10px;
     background-color: #f4f7fa;
-}
-
-.content-area {
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-/* Create User Form Card */
-.create-user {
-    background: white;
-    padding: 30px 40px;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    margin-top: 20px;
-}
-
-.create-user h2 {
-    margin-bottom: 28px;
-    font-size: 22px;
-    color: #2c3e50;
-    font-weight: 600;
-}
-
-.required {
-        color: red;
-        margin-left: 3px;
-        font-weight: bold;
-    }
-
-/* Form Row & Grid */
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.form-row + .form-row {
-    grid-template-columns: 1fr 1fr;
-    margin-bottom: 30px;
-}
-
-/* Form Field Group */
-.form-field-group {
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
 }
 
-.form-field-group label {
-    margin-bottom: 8px;
-    font-size: 14px;
-    color: #34495e;
-    font-weight: 500;
+
+.user-management {
+  background: #fff;
+  padding: 20px;
+  border-radius: 15px;
+  width: 97%;
 }
 
-/* Input & Select Base */
-.form-field-group input,
-.form-field-group select {
-    padding: 12px 14px;
-    font-size: 14px;
-    border: 1px solid #dfe6ec;
-    border-radius: 8px;
-    background-color: #f9fbfc;
-    transition: all 0.2s ease;
-    color: #2c3e50;
-}
-
-.form-field-group input::placeholder {
-    color: #a0b0bc;
-    font-style: italic;
-}
-
-.form-field-group input:focus,
-.form-field-group select:focus {
-    outline: none;
-    border-color: #0d7a9e;
-    background-color: #ffffff;
-    box-shadow: 0 0 0 3px rgba(13, 122, 158, 0.15);
-}
-
-/* Select Styling */
-.form-field-group select {
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236c7a8a'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 12px;
-    cursor: pointer;
-}
-
-.form-field-group select option {
-    color: #2c3e50;
-}
-
-/* Buttons */
-.form-buttons {
-    display: flex;
+.create-user {
+    background: #00a0a0;
+    color: #fff;
     justify-content: flex-end;
-    gap: 12px;
-    margin-top: 30px; /* Slightly more space above buttons */
-    align-items: center;
-}
-
-.reset-btn,
-.create-btn,
-.back-btn {
-    min-width: 110px;           /* SAME WIDTH */
-    height: 44px;               /* SAME HEIGHT */
-    padding: 0 20px;            /* Horizontal padding only */
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.3s ease;
     border: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+    border-radius: 7px;
+    padding: 8px 22px;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: 0 2px 5px rgba(53, 71, 125, 0.07);
+    transition: background 0.2s;
 }
 
-.back-btn {
-    background-color: transparent;
-    color: #00a0a0;
-    border: 2px solid #00a0a0;
+.create-user:hover {
+    background: #017c7c;
 }
 
-.back-btn:hover {
-    background-color: #e6f4f8;
-    transform: translateY(-1px);
-}
-
-/* Reset Button */
-.reset-btn {
-    background-color: transparent;
-    color: #00a0a0;
-    border: 2px solid #00a0a0;
-}
-
-.reset-btn:hover {
-    background-color: #e6f4f8;
-    transform: translateY(-1px);
-}
-
-/* Create Button */
-.create-btn {
-    background-color: #00a0a0;
+.btn.create-user {
+    background-color: #009688;
     color: white;
-    border: 2px solid #00a0a0;
-    box-shadow: 0 2px 6px rgba(13, 122, 158, 0.3);
+    border: none;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
-.create-btn:hover {
-    background-color: #017c7c;
-    border-color: #0a6b8a;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(13, 122, 158, 0.4);
-}
-/* Responsive */
-@media (max-width: 992px) {
-    .form-row,
-    .form-row + .form-row {
-        grid-template-columns: 1fr;
-    }
+.btn.create-user:hover {
+    background-color: #00796b;
 }
 
-@media (max-width: 768px) {
-    .main-layout {
-        flex-direction: column;
-    }
-    .sidebar {
-        width: 100%;
-        padding: 15px;
-    }
-    .main-content {
-        padding: 20px;
-    }
-    .create-user {
-        padding: 20px;
-    }
+.create-user-container {
+    display: flex;
+    justify-content: flex-end; 
+    margin-bottom: 15px;       
 }
 
-.create-user-fieldset {
-    border: 2px solid #159b9b;     /* main border color */
-    border-radius: 10px;           /* smooth corners */
-    padding: 25px 30px;            /* space inside */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #d6ece9;
+  text-align: left;
+}
+
+th, td {
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+}
+
+.role {
+  padding: 4px 12px;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 13px;
+}
+
+.role.admin {
+  background: #009b9b;
+}
+
+.role.user {
+  background: #999;
+}
+
+.actions img {
+  margin-right: 10px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.actions img:hover {
+  opacity: 1;
+}
+
+.user-fieldset {
+    border: 2px solid #159b9b;   
+    border-radius: 10px;          
+    padding: 25px 30px;            
     margin-top: 20px;
-    background-color: #ffffff;     /* white background */
+    background-color: #ffffff;     
 }
 
-.create-user-fieldset legend {
+.user-fieldset legend {
     font-size: 20px;
     font-weight: 600;
-    color: #159b9b;               /* theme color for title */
-    padding: 0 15px;              /* spacing around text */
+    color: #159b9b;               
+    padding: 0 15px;              
 }
 
+.button-card-group {
+  display: flex;
+  gap: 32px;
+  justify-content: flex-start;
+  margin-top: 18px;
+}
 
+.card-btn {
+  background:#159b9b;
+  border-radius: 16px;
+  box-shadow: 0 3px 18px rgba(21, 155, 155, 0.06);
+  padding: 24px 38px;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: box-shadow 0.2s, transform 0.2s;
+  min-width: 200px;
+  cursor: pointer;
+  border: none;
+}
 
+.card-btn:hover {
+  box-shadow: 0 8px 24px rgba(21, 155, 155, 0.16);
+  transform: translateY(-3px) scale(1.03);
+}
+
+.card-btn-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.card-btn-icon {
+  width: 34px;
+  height: 34px;
+  filter: grayscale(0%);
+}
+.card-btn span {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
 
 
 /* ====================== TOP BAR DROPDOWN STYLES (Final Fix) ====================== */
@@ -372,7 +307,6 @@ body {
 }
 
 
-
 /* ====================== profile icon ====================== */
 .profile-dropdown {
     position: relative;
@@ -450,3 +384,5 @@ body {
 .profile-menu-item:hover {
     background-color: #0d8383 !important;
 }
+
+
