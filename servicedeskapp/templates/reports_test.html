@@ -23,8 +23,8 @@
         </div>
         {% if request.session.role == 'admin' %}
             <a href="{% url 'user_management' %}">User Management</a>
-            <a href="{% url 'master_data' %}"  class="active">Master Data</a>
-            <a href="{% url 'reports' %}">Reports</a>
+            <a href="{% url 'master_data' %}">Master Data</a>
+            <a href="{% url 'reports' %}"   class="active">Reports</a>
         {% endif %}
     </nav>
     <div class="topbar-user">
@@ -78,13 +78,6 @@
                 <path d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
 
-                <!-- <select id="school-select" name="school" class="filter-select">
-                <option value="">All Schools</option>
-                {% for s in schools %}
-                    <option value="{{ s.id }}">{{ s.name }}</option>
-                {% endfor %}
-                </select> -->
-
                 <div class="school-dropdown" id="schoolDropdown">
                     <div class="school-selected" id="schoolSelected">
                         All Schools
@@ -107,7 +100,6 @@
                         </ul>
                     </div>
 
-                    <!-- Hidden input for form / JS filtering -->
                     <input type="hidden" name="school" id="schoolInput">
                     </div>
 
@@ -117,8 +109,6 @@
                 </svg>
             </div>
         </div>
-
-
 
         <div class="filter-dropdown">
             <div class="filter-date-wrapper" id="date-wrapper">
@@ -141,8 +131,16 @@
  
 <!-- ====================== MAIN CONTENT - REPORTS DASHBOARD ====================== -->
 
-    <div class="dashboard-grid">
+<div class="dashboard-grid">
+      <div class="report-card">
+    <h2 class="report-card-title">Ticket Duration by Issue Type</h2>
+    <p>Average resolution time and ticket count per issue category</p>
 
+    <div class="chart-container ticket-duration-wrapper" style="height: 400px; width: 100%;">
+      <canvas id="ticketDurationChart"></canvas>
+    </div>
+  </div>
+    
     <div class="report-card">
     <h2 class="report-card-title">Category Classification</h2>
     <p>Issue distribution by category type</p>
@@ -257,32 +255,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- <script>
-const ctx = document.getElementById('ticketCategoryChart').getContext('2d');
-const categoryLabels = JSON.parse('{{ category_labels|escapejs }}');
-const categoryData   = JSON.parse('{{ category_data|escapejs }}');
-
-new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: categoryLabels,
-        datasets: [{
-            data: categoryData,
-            backgroundColor: ['#e74c3c','#f39c12','#16a085',
-                              '#3498db','#8e44ad','#1abc9c'],
-            borderRadius: 6
-        }]
-    },
-    options: {
-        plugins: { legend: { display: false } },
-        scales: {
-            x: { grid: { display: false } },
-            y: { beginAtZero: true }
-        },
-        responsive: false
-    }
-});
-</script> -->
 
 <script>
 const ctx = document.getElementById('ticketCategoryChart').getContext('2d');
@@ -306,14 +278,107 @@ const categoryChart = new Chart(ctx, {
     }
 });
 </script>
+<script>
+// Ticket Duration chart (dual axis)
+const ticketDurationCtx = document.getElementById('ticketDurationChart').getContext('2d');
+
+const ticketDurationChart = new Chart(ticketDurationCtx, {
+  type: 'bar',
+  data: {
+    labels: [],      // will be set by fetchReports
+    datasets: [
+      {
+        label: 'Avg Duration (hours)',
+        data: [],
+        backgroundColor: '#14b8a6',  // teal
+        borderRadius: 4,
+        yAxisID: 'yDuration',
+        barPercentage: 0.8,
+        categoryPercentage: 0.6
+      },
+      {
+        label: 'Ticket Count',
+        data: [],
+        backgroundColor: '#f59e0b',  // orange
+        borderRadius: 4,
+        yAxisID: 'yTickets',
+        barPercentage: 0.8,
+        categoryPercentage: 0.6
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+    mode: 'nearest',  // nearest bar
+    intersect: false
+},
+    layout: {
+      padding: { top: 10, right: 20, bottom: 10, left: 10 }
+    },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          boxWidth: 14,
+          boxHeight: 14
+        }
+      },
+      tooltip: {
+        enabled: true,
+        mode: 'index',
+        intersect: false,
+        callbacks: {
+          title: (items) => items[0].label,
+          label: (ctx) => {
+            const dsLabel = ctx.dataset.label || '';
+            if (dsLabel.includes('Duration')) {
+              return `${dsLabel} : ${ctx.parsed.y} hours`;
+            }
+            if (dsLabel.includes('Ticket Count')) {
+              return `${dsLabel} : ${ctx.parsed.y}`;
+            }
+            return `${dsLabel} : ${ctx.parsed.y}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { display: false }
+      },
+      yDuration: {
+        position: 'left',
+        title: {
+          display: true,
+          text: 'Avg Duration (hours)'
+        },
+        grid: {
+          drawBorder: false
+        }
+      },
+      yTickets: {
+        position: 'right',
+        title: {
+          display: true,
+          text: 'Ticket Count'
+        },
+        grid: {
+          drawBorder: false,
+          drawOnChartArea: false
+        }
+      }
+    }
+  }
+});
+</script>
+
 
 
 <script>
         // Data configuration
-        const DATA = {
-            web: { label: "Web", count: 342, percent: 61.1 },
-            mobile: { label: "Mobile", count: 218, percent: 38.9 }
-        };
+
 
         const donut = document.getElementById("platform-donut");
         const items = document.querySelectorAll(".platform-item");
@@ -405,13 +470,6 @@ document.querySelectorAll(".platform-item").forEach(item => {
     schoolMenu.classList.toggle("open");
   });
 
-//   schoolItems.forEach(item => {
-//     item.addEventListener("click", () => {
-//       schoolSelected.textContent = item.textContent;
-//       schoolInput.value = item.dataset.value;
-//       schoolMenu.classList.remove("open");
-//     });
-//   });
   schoolItems.forEach(item => {
   item.addEventListener("click", () => {
     schoolSelected.textContent = item.textContent;
@@ -453,7 +511,7 @@ function fetchReports() {
     }
 
     $.ajax({
-        url: "{% url 'reports_data' %}",
+        url: "{% url 'reports_data_test' %}",
         data: {
             school: school,
             start_date: startDate,
@@ -461,43 +519,50 @@ function fetchReports() {
         },
         success: function(data) {
 
-            // update bar chart
-            categoryChart.data.labels = data.category_labels;
-            categoryChart.data.datasets[0].data = data.category_data;
-            categoryChart.update();
+    // update category bar chart
+    categoryChart.data.labels = data.category_labels;
+    categoryChart.data.datasets[0].data = data.category_data;
+    categoryChart.update();
 
-            // update platform numbers
-            document.querySelector(".platform-item[data-segment='web'] .platform-count").textContent = data.web_count;
-            document.querySelector(".platform-item[data-segment='mobile'] .platform-count").textContent = data.mobile_count;
+    // ✅ update ticket duration chart (new)
+    ticketDurationChart.data.labels = data.duration_labels;
+    ticketDurationChart.data.datasets[0].data = data.duration_avg_hours;   // Avg Duration
+    ticketDurationChart.data.datasets[1].data = data.duration_ticket_count; // Ticket Count
+    ticketDurationChart.update();
 
-            // update donut center
-            document.getElementById("center-count-value").textContent = data.total_tickets;
+    // update platform numbers
+    document.querySelector(".platform-item[data-segment='web'] .platform-count").textContent = data.web_count;
+    document.querySelector(".platform-item[data-segment='mobile'] .platform-count").textContent = data.mobile_count;
 
-            // 🔄 Update category legend (right side)
-            const legendContainer = document.getElementById("categoryLegend");
-            legendContainer.innerHTML = ""; // clear old legend
+    // update donut center
+    document.getElementById("center-count-value").textContent = data.total_tickets;
 
-            data.category_labels.forEach((label, index) => {
-                const count = data.category_data[index];
+    // 🔄 Update category legend (right side)
+    const legendContainer = document.getElementById("categoryLegend");
+    legendContainer.innerHTML = "";
 
-                const item = document.createElement("div");
-                item.className = "legend-item";
-
-                item.innerHTML = `
-                    <span class="dot dot-${index}"></span>
-                    ${label}
-                    <span class="count">${count}</span>
-                `;
-
-                legendContainer.appendChild(item);
-            });
-
-        }
+    data.category_labels.forEach((label, index) => {
+        const count = data.category_data[index];
+        const item = document.createElement("div");
+        item.className = "legend-item";
+        item.innerHTML = `
+            <span class="dot dot-${index}"></span>
+            ${label}
+            <span class="count">${count}</span>
+        `;
+        legendContainer.appendChild(item);
+    });
+}
 
     });
 }
 </script>
 
+<script>
+window.addEventListener('load', () => {
+    fetchReports();
+});
+</script>
 
 </body>
 </html>

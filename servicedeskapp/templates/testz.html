@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ticket Duration by Issue Type</title>
+  <style>
+    /* styles.css */
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #f5f7fa;
+}
+
+.report-wrapper {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 24px 28px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+.report-title {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.report-subtitle {
+  margin: 0 0 24px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.chart-container {
+  position: relative;
+  height: 360px;
+}
+
+/* Tooltip font to match card style */
+.chartjs-tooltip {
+  font-family: inherit;
+  font-size: 13px;
+}
+
+  </style>
+</head>
+<body>
+  <div class="report-wrapper">
+    <h2 class="report-title">Ticket Duration by Issue Type</h2>
+    <p class="report-subtitle">
+      Average resolution time and ticket count per issue category
+    </p>
+
+    <div class="chart-container">
+      <canvas id="ticketChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script>
+    // script.js
+
+const ctx = document.getElementById('ticketChart');
+
+const labels = [
+  'Database',
+  'Hardware',
+  'Inquiry/Help',
+  'Network',
+  'Other',
+  'Software'
+];
+
+// Example values that visually match your screenshot
+const avgDuration = [4.2, 6.8, 2.1, 5.5, 3.2, 4.8];  // hours
+const ticketCount = [6, 7, 5, 12, 3, 9];             // count
+
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [
+      {
+        label: 'Avg Duration (hours)',
+        data: avgDuration,
+        backgroundColor: '#14b8a6',   // teal
+        borderRadius: 4,
+        yAxisID: 'yDuration',
+        barPercentage: 0.5,
+        categoryPercentage: 0.6
+      },
+      {
+        label: 'Ticket Count',
+        data: ticketCount,
+        backgroundColor: '#f59e0b',   // orange
+        borderRadius: 4,
+        yAxisID: 'yTickets',
+        barPercentage: 0.5,
+        categoryPercentage: 0.6
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: {
+      padding: { top: 10, right: 20, bottom: 10, left: 10 }
+    },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          boxWidth: 14,
+          boxHeight: 14,
+          usePointStyle: false
+        }
+      },
+      tooltip: {
+        enabled: true,
+        mode: 'index',
+        intersect: false,
+        usePointStyle: true,
+        callbacks: {
+          title: (items) => items[0].label,
+          label: (ctx) => {
+            const dsLabel = ctx.dataset.label || '';
+            // choose unit text based on dataset
+            if (dsLabel.includes('Duration')) {
+              return `${dsLabel} : ${ctx.parsed.y} hours`;
+            }
+            if (dsLabel.includes('Ticket Count')) {
+              return `${dsLabel} : ${ctx.parsed.y}`;
+            }
+            return `${dsLabel} : ${ctx.parsed.y}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: {
+          font: { size: 12 }
+        }
+      },
+      yDuration: {
+        position: 'left',
+        title: {
+          display: true,
+          text: 'Avg Duration (hours)'
+        },
+        grid: {
+          drawBorder: false,
+          color: '#e5e7eb'
+        }
+      },
+      yTickets: {
+        position: 'right',
+        title: {
+          display: true,
+          text: 'Ticket Count'
+        },
+        grid: {
+          drawBorder: false,
+          drawOnChartArea: false
+        }
+      }
+    }
+  }
+});
+
+  </script>
+</body>
+</html>

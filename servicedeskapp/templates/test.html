@@ -1,314 +1,192 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reports</title>
-    <link rel="stylesheet" href="{% static 'test.css' %}" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Duration Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .chart-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 600px;
+            max-width: 95%;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .chart-subtitle {
+            font-size: 13px;
+            color: #718096;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #ticketChart {
+            height: 300px !important;
+        }
+
+        .bottom-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding: 0 10px;
+        }
+
+        .label-item {
+            text-align: center;
+            background-color: #f7fafc;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 12px;
+            color: #4a5568;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            margin: 0 4px;
+        }
+
+        .label-item span:last-child {
+            display: block;
+            font-weight: bold;
+            margin-top: 4px;
+            color: #2d3748;
+        }
+    </style>
 </head>
 <body>
-   <div class="topbar">
-    <div class="topbar-brand">Reports</div>
-    <nav class="topbar-nav">
-        <a href="{% url 'overview' %}">Overview</a>
-        <div class="topbar-dropdown-container">
-        <a href="{% url 'dashboard' %}" class="topbar-dropdown-toggle">
-            Tickets <span class="dropdown-arrow">▼</span>
-        </a>
-        <div class="topbar-dropdown-menu">
-            <a href="{% url 'caller_details' %}" id="caller-details-link" class="dropdown-item">Caller Details</a>
-        </div>
-        </div>
-        {% if request.session.role == 'admin' %}
-            <a href="{% url 'user_management' %}">User Management</a>
-            <a href="{% url 'master_data' %}">Master Data</a>
-        {% endif %}
-        <a href="{% url 'reports' %}" class="active">Reports</a>
-    </nav>
-    <div class="topbar-user">
-        <span>Welcome, {{ request.session.name|default:request.session.username }}</span>
-    <div class="profile-dropdown">
-        <button class="profile-btn" title="User Menu">
-            <svg class="profile-icon" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-            </svg>
-        </button>
-        <div class="profile-menu">
-            <a href="{% url 'reset' %}" class="profile-menu-item">Reset Password</a>
-            <a href="{% url 'logout' %}" class="profile-menu-item">Logout</a>
-        </div>
-    </div>
-</div>
-</div>
-
-
-<div class="reports-header">
-    <div class="reports-header-top">
-        <div class="reports-header-text">
-            <h1 class="reports-title">Reports & Analytics</h1>
-            <p class="reports-subtitle">Key reports and insights for support tasks</p>
-        </div>
-
-        <!-- Generate PDF & Export Data - Top Right -->
-        <div class="reports-actions">
-            <button class="btn btn-outline">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 10v6m-3-3h6m6 6H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2z"/>
-                </svg>
-                Generate PDF
-            </button>
-            <button class="btn btn-primary">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-                    <polyline points="16 6 12 2 8 6"/>
-                    <line x1="12" y1="2" x2="12" y2="15"/>
-                </svg>
-                Export Data
-            </button>
-        </div>
-    </div>
-
-    <!-- Filters Row - Full width, below title -->
-    <div class="reports-filters">
-        <div class="filter-dropdown">
-            <div class="filter-select-wrapper">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 6h16M4 12h16M4 18h16"/>
-                </svg>
-
-                <select id="school-select" name="school" class="filter-select">
-                <option value="">All Schools</option>
-                {% for s in schools %}
-                    <option value="{{ s.id }}">{{ s.name }}</option>
-                {% endfor %}
-                </select>
-
-                <svg class="dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M19 9l-7 7-7-7"/>
-                </svg>
-            </div>
-        </div>
-
-
-
-        <div class="filter-dropdown">
-            <div class="filter-date-wrapper" id="date-wrapper">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 8h18M8 4v4M16 4v4M5 8v12h14V8"/>
-                </svg>
-
-                <span id="date-display" class="date-display">Select date</span>
-
-                <svg class="dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M19 9l-7 7-7-7"/>
-                </svg>
-
-                <input type="date" id="date-input" class="date-input-hidden">
-            </div>
-        </div>
-
-    </div>
-</div>
- 
-<!-- ====================== MAIN CONTENT - REPORTS DASHBOARD ====================== -->
-
-    <div class="dashboard-grid">
-
-    <div class="report-card">
-    <h2 class="report-card-title">Category Classification</h2>
-    <p>Issue distribution by category type</p>
-
     <div class="chart-container">
-        <canvas id="ticketCategoryChart"></canvas>
+        <h2 class="chart-title">Ticket Duration by Issue Type</h2>
+        <p class="chart-subtitle">Average resolution time and ticket count per issue category</p>
+        <canvas id="ticketChart"></canvas>
 
-        <div class="chart-legend">
-            {% for label, count in category_legend %}
-                <div class="legend-item">
-                <!-- <span class="dot"></span>{{ label }}  -->
-                <span class="dot dot-{{ forloop.counter0 }}"></span>{{ label }}
-                <span class="count">{{ count }}</span>
-                </div>
-            {% endfor %}
-        
+        <div class="bottom-labels">
+            <div class="label-item"><span>Database</span><span>4.2h</span></div>
+            <div class="label-item"><span>Hardware</span><span>6.8h</span></div>
+            <div class="label-item"><span>Inquiry/Help</span><span>2.1h</span></div>
+            <div class="label-item"><span>Network</span><span>5.5h</span></div>
+            <div class="label-item"><span>Other</span><span>3.2h</span></div>
+            <div class="label-item"><span>Software</span><span>4.8h</span></div>
         </div>
     </div>
-    </div>
 
-    <div class="platform-card">
-    <div>
-        <h2 class="title">Platform Distribution</h2>
-        <p class="subtitle">Tickets by platform source</p>
-    </div>
+    <script>
+        const ctx = document.getElementById('ticketChart').getContext('2d');
 
-    <div class="platform-content">
-        <!-- Donut on the left -->
-        <div class="donut-wrapper">
-            <div class="donut" id="platform-donut"></div>
-            <div class="donut-center-text">
-                <div class="center-count" id="center-count-value">560</div>
-                <div class="center-label">{{ total_tickets }}</div>
-            </div>
-        </div>
+        const categories = ['Database', 'Hardware', 'Inquiry/Help', 'Network', 'Other', 'Software'];
+        const durations = [4.2, 6.8, 2.1, 5.5, 3.2, 4.8];
+        const counts = [5, 6, 4, 14, 3, 9];
 
-        <!-- List on the right -->
-        <div class="platform-list">
-            <div class="platform-item" data-segment="web">
-                <div class="platform-left">
-                    <div class="platform-icon web"><div class="icon-desktop"></div></div>
-                    <div>
-                        <div class="platform-text-main">Web</div>
-                        <div class="platform-text-sub">Application</div>
-                    </div>
-                </div>
-                <div class="platform-right">
-                    <div class="platform-count">{{ web_count }}</div>
-                    <div class="platform-progress"><div class="platform-progress-bar web"></div></div>
-                   
-                </div>
-            </div>
-
-            <div class="platform-item" data-segment="mobile">
-                <div class="platform-left">
-                    <div class="platform-icon mobile"><div class="icon-mobile"></div></div>
-                    <div>
-                        <div class="platform-text-main">Mobile</div>
-                        <div class="platform-text-sub">Application</div>
-                    </div>
-                </div>
-                <div class="platform-right">
-                    <div class="platform-count">{{ mobile_count }}</div>
-                    <div class="platform-progress"><div class="platform-progress-bar mobile"></div></div>
-                    
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-// Global chart instances so we can destroy them later
-let categoryChart = null;
-let donutAnimationTimeout = null;
-
-// Elements
-const schoolSelect = document.getElementById('school-select');
-const centerCount = document.getElementById('center-count-value');
-const centerLabel = document.querySelector('.donut-center-text .center-label');
-const platformItems = document.querySelectorAll('.platform-item');
-const donut = document.getElementById('platform-donut');
-
-// Colors matching your current bar chart
-const COLORS = ['#e74c3c', '#f39c12', '#16a085', '#3498db', '#8e44ad', '#1abc9c'];
-
-// Fetch and update all charts
-function updateReports(schoolId = '') {
-    const url = schoolId 
-        ? `/reports_data?school=${schoolId}` 
-        : `/reports_data`;
-
-    fetch(url)
-        .then(res => res.json())
-        .then(data => {
-            // === Update Bar Chart ===
-            const ctx = document.getElementById('ticketCategoryChart').getContext('2d');
-            
-            if (categoryChart) categoryChart.destroy();
-
-            categoryChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.category_labels,
-                    datasets: [{
-                        data: data.category_data,
-                        backgroundColor: COLORS,
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { beginAtZero: true }
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: categories,
+                datasets: [
+                    {
+                        label: 'Avg Duration (hours)',
+                        data: durations,
+                        backgroundColor: '#14b8a6',
+                        yAxisID: 'y-duration',
+                        barPercentage: 0.9,
+                        categoryPercentage: 1.0
                     },
-                    responsive: true,
-                    maintainAspectRatio: false
+                    {
+                        label: 'Ticket Count',
+                        data: counts,
+                        backgroundColor: '#fb923c',
+                        yAxisID: 'y-count',
+                        barPercentage: 0.9,
+                        categoryPercentage: 1.0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                scales: {
+                    'y-duration': {
+                        type: 'linear',
+                        position: 'left',
+                        beginAtZero: true,
+                        max: 8,
+                        grid: { display: true, color: '#e2e8f0' },
+                        ticks: { color: '#718096', stepSize: 2 }
+                    },
+                    'y-count': {
+                        type: 'linear',
+                        position: 'right',
+                        beginAtZero: true,
+                        max: 16,
+                        grid: { drawOnChartArea: false },
+                        ticks: { color: '#718096', stepSize: 4 }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#718096', font: { size: 11 } }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'rectRounded',
+                            padding: 15,
+                            font: { size: 12 },
+                            color: '#4a5568'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#ffffff',
+                        titleColor: '#4a5568',
+                        bodyColor: '#4a5568',
+                        borderColor: '#e2e8f0',
+                        borderWidth: 1,
+                        cornerRadius: 6,
+                        padding: 12,
+                        displayColors: false, // Hide the colored boxes in tooltip
+                        callbacks: {
+                            // Show category name as title
+                            title: function(tooltipItems) {
+                                return tooltipItems[0].label;
+                            },
+                            // Show both values once, regardless of which bar is hovered
+                            label: function() {
+                                return ''; // We don't use the default label
+                            },
+                            // Custom lines for the tooltip body
+                            afterTitle: function(tooltipItems) {
+                                const index = tooltipItems[0].dataIndex;
+                                return [
+                                    'Avg Duration: ' + durations[index] + ' hours',
+                                    'Ticket Count: ' + counts[index]
+                                ];
+                            }
+                        }
+                    }
                 }
-            });
-
-            // === Update Legend Counts ===
-            const legendContainer = document.querySelector('.chart-legend');
-            legendContainer.innerHTML = '';
-            data.category_legend.forEach(([label, count], i) => {
-                const item = document.createElement('div');
-                item.className = 'legend-item';
-                item.innerHTML = `
-                    <span class="dot dot-${i}"></span>${label}
-                    <span class="count">${count}</span>
-                `;
-                legendContainer.appendChild(item);
-            });
-
-            // === Update Donut & Platform List ===
-            const webPercent = data.total_tickets ? (data.web_count / data.total_tickets * 360).toFixed(1) : 0;
-            const mobilePercent = 360 - webPercent;
-
-            // Update donut gradient
-            donut.style.background = `conic-gradient(
-                #3498db 0deg ${webPercent}deg,
-                #9b59b6 ${webPercent}deg 360deg
-            )`;
-
-            // Trigger re-animation
-            donut.classList.remove('animate', 'final');
-            clearTimeout(donutAnimationTimeout);
-            donutAnimationTimeout = setTimeout(() => {
-                donut.classList.add('animate');
-                setTimeout(() => {
-                    donut.classList.add('final');
-                    donut.classList.remove('animate');
-                }, 1200);
-            }, 100);
-
-            // Update counts in list
-            document.querySelector('[data-segment="web"] .platform-count').textContent = data.web_count;
-            document.querySelector('[data-segment="mobile"] .platform-count').textContent = data.mobile_count;
-
-            // Update center text (default)
-            centerCount.textContent = data.total_tickets;
-            centerLabel.textContent = 'Total Tickets';
-
-            // Update hover behavior with new counts
-            platformItems.forEach(item => {
-                const segment = item.dataset.segment;
-                const count = segment === 'web' ? data.web_count : data.mobile_count;
-                const name = segment === 'web' ? 'Web' : 'Mobile';
-
-                item.onmouseenter = () => {
-                    centerCount.textContent = count;
-                    centerLabel.textContent = name + ' Tickets';
-                };
-                item.onmouseleave = () => {
-                    centerCount.textContent = data.total_tickets;
-                    centerLabel.textContent = 'Total Tickets';
-                };
-            });
-        })
-        .catch(err => console.error('Error loading reports data:', err));
-}
-
-// Initial load
-updateReports();
-
-// Listen to school change
-schoolSelect.addEventListener('change', function() {
-    updateReports(this.value || '');  // '' = All Schools
-});
-</script>
-
+            }
+        });
+    </script>
 </body>
 </html>

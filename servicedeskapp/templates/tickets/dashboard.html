@@ -24,22 +24,17 @@
         </a>
         <div class="topbar-dropdown-menu">
             <a href="{% url 'caller_details' %}" id="caller-details-link" class="dropdown-item">Caller Details</a>
-            <a href="?filter=resolved" class="dropdown-item">Resolved tickets</a>
+
         </div>
     </div>
 
         {% if request.session.role == 'admin' %}
             <a href="{% url 'user_management' %}">User Management</a>
             <a href="{% url 'master_data' %}">Master Data</a>
+            <a href="{% url 'reports' %}">Reports</a>
         {% endif %}
-        <a href="{% url 'reports' %}">Reports</a>
     </nav>
-    <!-- <div class="topbar-user">
-        <span>Welcome, {{ request.session.name|default:request.session.username }}</span>
-        <a href="{% url 'logout' %}">
-                <button class="logout-btn" title="Logout"></button>
-            </a>
-    </div> -->
+ 
     <div class="topbar-user">
         <span>Welcome, {{ request.session.name|default:request.session.username }}</span>
     <div class="profile-dropdown">
@@ -77,13 +72,7 @@
            
           </header>
           <fieldset class="page-title-fieldset">
-            <legend>
-            {% if current_filter == 'resolved' %}
-                Resolved Tickets
-            {% else %}
-                Tickets
-            {% endif %}
-            </legend>
+       
           <legend>Tickets</legend>
 
 <div class="ticket-toolbar-modern">
@@ -505,26 +494,26 @@ syncSelectAll();
         // === APPLY FILTER: Active, Closed, etc. ===
         if (currentFilter === "active") {
             filteredRows = allDataRows.filter(row => {
-                const state = row.cells[9]?.textContent.trim(); 
+                const state = row.cells[10]?.textContent.trim(); 
                 return !['Closed', 'Resolved', 'Canceled'].includes(state);
             });
         } else if (currentFilter === "active-unassigned") {
             filteredRows = allDataRows.filter(row => {
-                const state = row.cells[9]?.textContent.trim();
-                const assignedTo = row.cells[12]?.textContent.trim();
+                const state = row.cells[10]?.textContent.trim();
+                const assignedTo = row.cells[13]?.textContent.trim();
                 return !['Closed', 'Resolved', 'Canceled'].includes(state) && 
                        (!assignedTo || assignedTo === '' || assignedTo === 'None');
             });
         } else if (currentFilter === "assigned-to-me") {
             filteredRows = allDataRows.filter(row => {
-                const assignedTo = row.cells[12]?.textContent.trim(); 
+                const assignedTo = row.cells[13]?.textContent.trim(); 
              
                 return assignedTo === currentUsername || assignedTo === currentUserFullName;
             });
         } 
         else if (currentFilter === "closed") {
             filteredRows = allDataRows.filter(row => {
-            const state = row.cells[9]?.textContent.trim().toLowerCase(); 
+            const state = row.cells[10]?.textContent.trim().toLowerCase(); 
             return ['closed','canceled'].includes(state); 
         });
         }

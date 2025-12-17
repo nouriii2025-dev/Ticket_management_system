@@ -8,6 +8,9 @@
       --gray-600: #4b5563;
       --gray-800: #1f2937;
       --gray-900: #111827;
+      --in-progress-color: #10b981;
+      --overdue-color: #f43f5e;
+      --critical-color: #d97706;
     }
 
 
@@ -721,6 +724,7 @@ body {
 }
 
 /* --- Priority Breakdown Card Styling --- */
+/* --- Priority Breakdown Card Styling --- */
 
 :root {
     /* Assuming you have existing variables, or define these in your CSS */
@@ -852,6 +856,58 @@ body {
     background: #eef2ff;
 }
 
+/* Progress Breakdown Styles */
+.progress-breakdown {
+    display: flex;
+    flex-direction: column;
+}
 
+.progress-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    flex-wrap: wrap;
+    transition: background-color 0.2s;
+}
 
+.progress-item:hover {
+    background-color: #f7f7f9;
+}
 
+.progress-info {
+    display: flex;
+    align-items: center;
+    font-size: 1.05em;
+}
+
+.progress-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+}
+
+.progress-icon i {
+    font-size: 1.4em;
+}
+
+.progress-label {
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+.progress-value {
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+/* Progress Item Colors */
+.progress-item.in-progress .progress-icon,
+.progress-item.in-progress .progress-value { color: var(--in-progress-color); }
+
+.progress-item.overdue .progress-icon,
+.progress-item.overdue .progress-value { color: var(--overdue-color); }
+
+.progress-item.critical .progress-icon,
+.progress-item.critical .progress-value { color: var(--critical-color); }

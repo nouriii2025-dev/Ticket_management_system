@@ -42,6 +42,7 @@ urlpatterns = [
     path('priority_edit<int:priority_id>',views.priority_edit,name='priority_edit'),
     path('priority_delete<int:priority_id>',views.priority_delete,name='priority_delete'),
     path('ticket_duration',views.ticket_duration,name='ticket_duration'),
+    path('delete_duration<int:duration_id>',views.delete_duration,name='delete_duration'),
     
     path('school_autofill',views.school_autofill,name='school_autofill'),
     path('test',views.test,name='test'),
@@ -57,8 +58,8 @@ urlpatterns = [
     
     path('test_user', views.test_user, name='test_user'),
     path('testz', views.testz, name='testz'),
-
-
+    path('reports_test', views.reports_test, name='reports_test'),
+    path('reports_data_test', views.reports_data_test, name='reports_data_test'),
 
     #rest api
     path('auth/signup/', apiviews.sign_up_api, name='api_signup'),

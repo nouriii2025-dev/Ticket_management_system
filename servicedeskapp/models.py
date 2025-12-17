@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 from django.utils import timezone
 from django.core.validators import RegexValidator
+from datetime import timedelta
 
 class Sign_up(models.Model):
     name = models.CharField(max_length=200, null=True)
@@ -32,7 +33,7 @@ Channel_Choices=[
     ('walk-in','Walk-in'),
     ('other', 'Other'),
 ]
-Sub_category_Choices=[
+Modules_Choices=[
     ('anti-virus','Anti-virus'),
     ('email','Email'),
     ('internal application','Internal application'),
@@ -61,7 +62,7 @@ Platform_Choices=[
 class Create_Ticket(models.Model):
     category=models.CharField(max_length=100,choices=Category_Choices,blank=True,null=True)
     channel=models.CharField(max_length=100,choices=Channel_Choices,blank=True,default='email',null=True)
-    sub_category=models.CharField(max_length=100,blank=True,null=True,choices=Sub_category_Choices)
+    modules=models.CharField(max_length=100,blank=True,null=True,choices=Modules_Choices)
     state=models.CharField(max_length=100,choices=State_Choices,null=True,blank=True,default='')
     caller=models.CharField(max_length=100,blank=True,null=True)
     platform=models.CharField(max_length=100,choices=Platform_Choices,blank=True,null=True)
@@ -81,9 +82,35 @@ class Create_Ticket(models.Model):
     description = models.TextField(blank=True,null=True)
     additional_comments = models.TextField(blank=True,null=True)
     work_notes = models.TextField(blank=True,null=True)
+    parent_incident = models.CharField(max_length=100,blank=True,null=True)
+    problem=models.CharField(max_length=100,blank=True,null=True)
+    change_request=models.CharField(max_length=100,blank=True,null=True)
+    caused_by_change=models.CharField(max_length=100,blank=True,null=True)
+    resolved_by=models.CharField(max_length=100,blank=True,null=True)
+    resolution_notes=models.TextField(blank=True,null=True)
     caller_details = models.ForeignKey('Caller_Details',on_delete=models.SET_NULL,null=True,blank=True,related_name='tickets')
+    due_at = models.DateTimeField(null=True, blank=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
     def __str__(self):
         return f" {self.number}: {self.short_description}"
+    def save(self, *args, **kwargs):
+        sla = None
+        if self.priority and self.priority.time is not None:
+            if self.priority.unit == 'hours':
+                sla = timedelta(hours=self.priority.time)
+            elif self.priority.unit == 'days':
+                sla = timedelta(days=self.priority.time)
+            elif self.priority.unit == 'minutes':
+                sla = timedelta(minutes=self.priority.time)
+
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+
+        # Only calculate due_at AFTER created_at exists
+        if sla and self.created_at:
+            self.due_at = self.created_at + sla
+            # Update only this field
+            super().save(update_fields=['due_at'])
     
 #group creation
 class Assignment_Group(models.Model):
@@ -176,6 +203,7 @@ class Ticket_Duration(models.Model):
     ticket=models.OneToOneField(Create_Ticket,on_delete=models.CASCADE,related_name='duration')
     ticket_number=models.CharField(max_length=100,null=True,blank=True)
     category=models.CharField(max_length=100,null=True,blank=True)
+    modules=models.CharField(max_length=100,null=True,blank=True)
     opened_time=models.DateTimeField(null=True,blank=True)
     resolved_time=models.DateTimeField(null=True,blank=True)
     duration = models.DurationField(null=True, blank=True)

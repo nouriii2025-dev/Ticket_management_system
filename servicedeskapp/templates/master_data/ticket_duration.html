@@ -23,8 +23,8 @@
         {% if request.session.role == 'admin' %}
             <a href="{% url 'user_management' %}">User Management</a>
             <a href="{% url 'master_data' %}"  class="active">Master Data</a>
+            <a href="{% url 'reports' %}">Reports</a>
         {% endif %}
-        <a href="{% url 'reports' %}">Reports</a>
     </nav>
      <div class="topbar-user">
         <span>Welcome, {{ request.session.name|default:request.session.username }}</span>
@@ -55,10 +55,7 @@
               </div>              
             {% endfor %}
           {% endif %}
-          <div class="create-user-container">
-                <a href="#">
-              <button type="button" class="create-user">+ Add details</button></a>
-          </div>
+      
            <fieldset class="user-fieldset">
             <legend>Ticket Duration</legend>
    
@@ -71,6 +68,7 @@
                 <th>Opened time</th>
                 <th>Resolved time</th>
                 <th>Duration</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -78,10 +76,12 @@
               <tr>
                 <td>{{ duration.ticket_number }}</td>
                 <td>{{ duration.category }}</td>
-                <td>{{ duration.ticket.sub_category }}</td>
+                <td>{{ duration.ticket.modules }}</td>
                 <td>{{ duration.opened_time|date:"d M Y H:i" }}</td>
                 <td>{{ duration.resolved_time|date:"d M Y H:i" }}</td>
                 <td>{{ duration.formatted_duration }} </td>
+                <td><a href="{% url 'delete_duration' duration.id %}">
+                  <img src="https://img.icons8.com/ios-glyphs/18/trash.png" alt="Delete"></a></td>
               </tr>
               {% empty %}
               <tr>

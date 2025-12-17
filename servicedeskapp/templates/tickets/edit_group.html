@@ -23,8 +23,8 @@
         {% if request.session.role == 'admin' %}
             <a href="{% url 'user_management' %}">User Management</a>
             <a href="{% url 'master_data' %}">Master Data</a>
+            <a href="{% url 'reports' %}">Reports</a>
         {% endif %}
-        <a href="{% url 'reports' %}">Reports</a>
     </nav>
      <div class="topbar-user">
         <span>Welcome, {{ request.session.name|default:request.session.username }}</span>
@@ -89,21 +89,13 @@
               </form>
             </div>
             <button type="button" class="search-btn">Search</button>
-            <a href="{% url 'group_members' %}?source_page=edit_group&group_id={{ group.id }}">
-              <button type="button" class="new-btn">+ New Member</button></a>
+            <button type="submit" name="add_member" class="new-btn">
+              + New Member
+            </button>
+            <input type="hidden" name="source_page" value="edit_group">
+
             </div>
 
-          <!-- <ul class="member-list">
-            {% for member in members %}
-            <li>
-                <div class="member-list">
-                    <span>{{ member.name }}</span>
-                    <input type="hidden" name="members[]" value="{{ member.name }}">
-                </div>
-                <button type="button" class="delete-btn">&#128465;</button>
-            </li>
-            {% endfor %}
-          </ul> -->
           <ul class="member-list">
             {% for member in members %}
             <li class="member-item">

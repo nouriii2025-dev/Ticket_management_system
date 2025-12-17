@@ -34,8 +34,8 @@
         {% if request.session.role == 'admin' %}
             <a href="{% url 'user_management' %}">User Management</a>
             <a href="{% url 'master_data' %}">Master Data</a>
+            <a href="{% url 'reports' %}">Reports</a>
         {% endif %}
-        <a href="{% url 'reports' %}">Reports</a>
     </nav>
     <div class="topbar-user">
         <span>Welcome, {{ request.session.name|default:request.session.username }}</span>
@@ -175,12 +175,34 @@
         </div>
     </div>
 
+ 
     <div class="metric-card progress">
-        <div class="metric-header">
-        <h3>In Progress</h3>
+        <!-- <div class="metric-header">
+            <h3>In Progress</h3>
+        </div> -->
+        <div class="progress-breakdown">
+            <div class="progress-item in-progress">
+                <div class="progress-info">
+                    <span class="progress-icon"><i class="fas fa-play-circle"></i></span>
+                    <span class="progress-label">In Progress</span>
+                </div>
+                <span class="progress-value" id="inprogress-tickets">0</span>
+            </div>
+            <div class="progress-item overdue">
+                <div class="progress-info">
+                    <span class="progress-icon"><i class="fas fa-clock"></i></span>
+                    <span class="progress-label">Overdue</span>
+                </div>
+                <span class="progress-value" id="overdue-tickets">0</span>
+            </div>
+            <div class="progress-item critical">
+                <div class="progress-info">
+                    <span class="progress-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                    <span class="progress-label">Critical</span>
+                </div>
+                <span class="progress-value" id="critical">0</span>
+            </div>
         </div>
-        <p class="value" id="inprogress-tickets">0</p>
-        <span class="period">Total</span>       
     </div>
 
 </section>
@@ -394,6 +416,8 @@ function updateAllCards() {
             document.getElementById("open-tickets").textContent = data.open || 0;
             document.getElementById("inprogress-tickets").textContent = data.inProgress || 0;
             document.getElementById("resolved").textContent = data.resolved || 0;
+            document.getElementById("overdue-tickets").textContent = data.overdue || 0;
+            document.getElementById("critical").textContent = data.priority.critical || 0;
 
             // Update priority counts
             if (data.priority) {

@@ -26,8 +26,8 @@
         {% if request.session.role == 'admin' %}
             <a href="{% url 'user_management' %}"  class="active">User Management</a>
             <a href="{% url 'master_data' %}">Master Data</a>
+            <a href="{% url 'reports' %}">Reports</a>
         {% endif %}
-        <a href="{% url 'reports' %}">Reports</a>
     </nav>
     <div class="topbar-user">
         <span>Welcome, {{ request.session.name|default:request.session.username }}</span>
