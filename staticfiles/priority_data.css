@@ -57,27 +57,6 @@ body {
     gap: 12px;
     font-size: 14px;
 }
-.logout-btn {
-        width: 40px;
-        height: 40px;
-        background: rgba(255,255,255,0.15);
-        border: none;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.2s;
-    }
-
-    .logout-btn:hover {
-        background: rgba(255,255,255,0.3);
-    }
-
-    .logout-btn::before {
-        content: url('https://img.icons8.com/ios-glyphs/20/ffffff/exit.png');
-    }
-
 
 
 /* ====================== TOP BAR DROPDOWN STYLES (Final Fix) ====================== */
@@ -247,6 +226,123 @@ body {
 }
 
 
+.main-content {
+    flex: 1;
+    padding: 0px 0px 0px 10px;
+    background-color: #f4f7fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+
+.user-management {
+  background: #fff;
+  padding: 20px;
+  border-radius: 15px;
+  width: 97%;
+}
+
+.create-user {
+    background: #00a0a0;
+    color: #fff;
+    justify-content: flex-end;
+    border: none;
+    border-radius: 7px;
+    padding: 8px 22px;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: 0 2px 5px rgba(53, 71, 125, 0.07);
+    transition: background 0.2s;
+}
+
+.create-user:hover {
+    background: #017c7c;
+}
+
+.btn.create-user {
+    background-color: #009688;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn.create-user:hover {
+    background-color: #00796b;
+}
+
+.create-user-container {
+    display: flex;
+    justify-content: flex-end; 
+    margin-bottom: 15px;       
+}
+
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #d6ece9;
+  text-align: left;
+}
+
+th, td {
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+}
+
+.role {
+  padding: 4px 12px;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 13px;
+}
+
+.role.admin {
+  background: #009b9b;
+}
+
+.role.user {
+  background: #999;
+}
+
+.actions img {
+  margin-right: 10px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.actions img:hover {
+  opacity: 1;
+}
+
+.user-fieldset {
+    border: 2px solid #159b9b;   
+    border-radius: 10px;          
+    padding: 25px 30px;            
+    margin-top: 20px;
+    background-color: #ffffff;     
+}
+
+.user-fieldset legend {
+    font-size: 20px;
+    font-weight: 600;
+    color: #159b9b;               
+    padding: 0 15px;              
+}
+
+
 .alert {
     padding: 12px 15px;
     border-radius: 6px;
@@ -281,4 +377,3 @@ body {
     color: #055160;
     border-left: 5px solid #0dcaf0;
 }
-
