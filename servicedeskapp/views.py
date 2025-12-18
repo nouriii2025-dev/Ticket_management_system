@@ -69,7 +69,7 @@ def login(request):
                 request.session['role']=exist_user.role
                 request.session['name']=exist_user.name
                 request.session.modified=True
-                return redirect('dashboard')
+                return redirect('overview')
             else:
                 messages.error(request, "Invalid password")
                 return redirect('login')
