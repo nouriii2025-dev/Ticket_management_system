@@ -168,6 +168,7 @@ def dashboard(request):
     all_tickets = Create_Ticket.objects.all().order_by('-created_at')
     if filter_type == 'resolved':
         all_tickets = all_tickets.filter(state='resolved')
+    
     for ticket in all_tickets: 
         caller=Caller_Details.objects.filter(caller_name=ticket.caller).first()
         ticket.caller_email = ticket.caller_details.caller_email if ticket.caller_details else None
@@ -410,7 +411,8 @@ def create_ticket(request):
                 f"Dear {caller_name},\n\n"
                 f"A new ticket has been created for your school {school_name}.\n\n"
                 f"Ticket Number: {number}\n"
-                f"Short Description: {short_description}\n\n"
+                f"Short Description: {short_description}\n"
+                f"Additional Comments: {additional_comments}\n\n"
                 f"Our team is actively looking into the issue and will keep you updated.\n"
                 f"If you need any further assistance, kindly reach out to our support team.\n\n"
                 f"Regards,\n"
@@ -550,7 +552,8 @@ def update_ticket(request, ticket_id):
         fields_to_check=['category', 'channel', 'modules', 'state', 'caller','platform', 'impact', 
             'school_name', 'urgency', 'school_code', 'priority', 'assignment_group', 
              'assigned_to', 'short_description', 'description', 
-            'additional_comments', 'work_notes','parent_incident','problem','change_request','caused_by_change']
+            'additional_comments', 'work_notes','parent_incident','problem','change_request','caused_by_change',
+            'resolved_by','resolution_code','resolved_at','resolution_notes']
         
         changed_fields=False
         field_changes=[]
@@ -1014,8 +1017,13 @@ def school_autofill(request):
 
 #------------------------CALLER DETAILS------------------------------------------
 def caller_details(request):
+    schools=Master_Data.objects.all()
     callers=Caller_Details.objects.all()
-    return render(request,'tickets/caller_details.html',{'callers':callers})   
+    context={
+        'callers':callers,
+        'schools':schools
+        }
+    return render(request,'tickets/caller_details.html',context)   
 
 def add_caller_details(request):
     if request.method == 'POST':
@@ -1196,128 +1204,8 @@ def reports_data(request):
 
 
 
-def test_user(request):
-    add=User_Management.objects.all()
-    return render(request,'user_management/test_user.html',{'add':add})
 
-def test(request):  
-    return render(request,'test.html')
-
-def testz(request):  
-    return render(request,'testz.html')
-
-
-
-def reports_test(request):
-    schools=Master_Data.objects.all().order_by('name')  
-    qs=(Create_Ticket.objects.values('category').annotate(total=Count('id')).order_by('category'))
-    category_display = dict(Category_Choices)
-    labels=[category_display.get(row['category'], row['category']) for row in qs]
-    data=[row['total'] for row in qs]
-    counts=[row['total'] for row in qs]
-
-    web_count= Create_Ticket.objects.filter(platform='web application').count()
-    mobile_count=Create_Ticket.objects.filter(platform='mobile application').count()
-    total_tickets=web_count + mobile_count
-
-
-    context = {
-        'schools': schools,
-        'category_labels': mark_safe(json.dumps(labels)),
-        'category_data': mark_safe(json.dumps(data)),
-        'category_legend': list(zip(labels, counts)),
-        'web_count':     web_count,
-        'mobile_count':  mobile_count,
-        'total_tickets': total_tickets,
-    }
-    return render(request,'reports_test.html',context)
-
-
-def reports_data_test(request):
-    school = request.GET.get('school')
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
-
-    tickets = Create_Ticket.objects.all()
-
-    if school:
-        tickets = tickets.filter(school_name=school)
-
-    if start_date and end_date:
-        tickets = tickets.filter(created_at__date__range=[start_date, end_date])
-
-    # ==== category data (existing) ====
-    qs = tickets.values('category').annotate(total=Count('id')).order_by('category')
-
-    category_display = dict(Category_Choices)
-    category_labels = [category_display.get(row['category'], row['category']) for row in qs]
-    category_data = [row['total'] for row in qs]
-
-    web_count = tickets.filter(platform='web application').count()
-    mobile_count = tickets.filter(platform='mobile application').count()
-
-    # ==== duration data  ====
-    total_counts = {
-    row['category']: row['total']
-    for row in tickets.values('category').annotate(total=Count('id'))
-}
-#     duration_expr = ExpressionWrapper(
-#     F('resolved_at') - F('created_at'),
-#     output_field=DurationField()
-# )
-
-#     dur_qs = (
-#         tickets
-#         .exclude(resolved_at__isnull=True)
-#         .annotate(calc_duration=duration_expr)  
-#         .values('category')
-#         .annotate(
-#             ticket_count=Count('id'),
-#             avg_duration=Avg('calc_duration')     
-#         )
-#         .order_by('category')
-#     )
-
-    duration_expr = ExpressionWrapper(
-    F('resolved_at') - F('created_at'),
-    output_field=DurationField()
-    )
-
-    dur_qs = (
-        tickets
-        .filter(resolved_at__isnull=False)
-        .annotate(calc_duration=duration_expr)
-        .values('category')
-        .annotate(avg_duration=Avg('calc_duration'))
-        .order_by('category')
-    )
-
-    duration_labels = []
-    duration_avg_hours = []
-    duration_ticket_count = []
-
-    for row in dur_qs:
-        category = row['category']
-        label = category_display.get(category, category)
-
-        duration_labels.append(label)
-
-        # avg duration
-        td = row['avg_duration']
-        hours = td.total_seconds() / 3600 if td else 0
-        duration_avg_hours.append(round(hours, 1))
-
-        # ✅ ticket count = TOTAL tickets
-        duration_ticket_count.append(total_counts.get(category, 0))
-
-    return JsonResponse({
-        'category_labels': category_labels,
-        'category_data': category_data,
-        'web_count': web_count,
-        'mobile_count': mobile_count,
-        'total_tickets': web_count + mobile_count,
-
-        'duration_labels': duration_labels,
-        'duration_avg_hours': duration_avg_hours,
-        'duration_ticket_count': duration_ticket_count,
-    })
+def category_table(request):
+    return redirect(request,'master_data/category_table.html')
+def modules_table(request):
+    return redirect(request,'master_data/modules_table.html')

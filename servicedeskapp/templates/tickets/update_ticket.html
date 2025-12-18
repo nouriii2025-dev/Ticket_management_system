@@ -43,13 +43,13 @@
 </div>
 </div>
     <div class="main-content">
-            {% if messages %}
+           {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                <div class="alert {{ message.tags }}">
                 {{ message }}
-              </div>
+                </div>
             {% endfor %}
-          {% endif %}
+            {% endif %}
           <form class="incident-form" action="{% url 'update' ticket_id=tickets.id %}" method="post">
             {% csrf_token %}
           <div class="action-buttons-top">
@@ -131,12 +131,19 @@
                     </select>
                 </div>
                   <div class="form-group">
-                    <label>Subcategory</label>
+                    <label>Modules</label>
                     <select name="modules">
-                        <option value="">Select sub-category</option>
-                        <option value="anti-virus" {% if tickets.modules == 'anti-virus' %}selected{% endif %}>Anti-virus</option>
-                        <option value="email" {% if tickets.modules == 'email' %}selected{% endif %}>Email</option>
-                        <option value="internal application" {% if tickets.modules == 'internal application' %}selected{% endif %}>Internal Application</option>
+                        <option value="">Select modules</option>
+                        <option value="hrms" {% if tickets.modules == 'hrms' %}selected{% endif %}>HRMS</option>
+                        <option value="admin" {% if tickets.modules == 'admin' %}selected{% endif %}>Admin</option>
+                        <option value="fee" {% if tickets.modules == 'fee' %}selected{% endif %}>Fee</option>
+                        <option value="teacher" {% if tickets.modules == 'teacher' %}selected{% endif %}>Teacher</option>
+                        <option value="transport" {% if tickets.modules == 'transport' %}selected{% endif %}>Transport</option>
+                        <option value="library" {% if tickets.modules == 'library' %}selected{% endif %}>Library</option>
+                        <option value="asset management" {% if tickets.modules == 'asset management' %}selected{% endif %}>Asset Management</option>
+                        <option value="application tracker" {% if tickets.modules == 'application tracker' %}selected{% endif %}>Application Tracker</option>
+                        <option value="store" {% if tickets.modules == 'store' %}selected{% endif %}>Store</option>
+                        <option value="visitor management" {% if tickets.modules == 'visitor management' %}selected{% endif %}>Visitor Management</option>
                         <option value="other" {% if tickets.modules == 'other' %}selected{% endif %}>Other</option>
                     </select>
                 </div>
@@ -157,7 +164,7 @@
                     <select name="priority" required>
                         {% for p in priorities %}
                             <option value="{{ p.id }}" {% if tickets.priority.id == p.id %}selected{% endif %}>
-                                {{ p.name }}
+                                {{ p.get_name_display }}
                             </option>
                         {% endfor %}
                     </select>
@@ -308,16 +315,24 @@
                     </div>
                     <div class="notes-row">
                         <div class="form-group notes-label">
-                            <label>Resolution Code</label>
+                            <label>Resolution code</label>
                         </div>
-                        <div class="form-group notes-input">
+                         <div class="form-group notes-input">
                             <select name="resolution_code">
                                 <option>-- None --</option>
-                                <option>Fixed</option>
-                                <option>Won't Fix</option>
-                                <option>Duplicate</option>
+                                <option value="duplicate">Duplicate</option>
+                                <option value="known error">Known error</option>
+                                <option value="no resolution provided">No resolution provided</option>
+                                <option value="resolved by caller">Resolved by caller</option>
+                                <option value="resolved by change">Resolved by change</option>
+                                <option value="resolved by problem">Resolved by problem</option>
+                                <option value="resolved by request">Resolved by request</option>
+                                <option value="solution provided">Solution provided</option>
+                                <option value="workaround provided">Workaround provided</option>
+                                <option value="user error">User error</option>
                             </select>
                         </div>
+                        
                     </div>
                     <div class="notes-row">
                         <div class="form-group notes-label">
@@ -472,7 +487,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 </script>
-
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 4000);
+</script>
 
 </body>
 </html>

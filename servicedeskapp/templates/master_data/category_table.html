@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Master Data</title>
-     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'ticket_duration.css' %}">
+    <link rel="stylesheet" href="{% static 'school_details.css' %}">
 </head>
 <body>
 <div class="main-layout">
@@ -46,66 +46,50 @@
 </div>
 
     <div class="main-content">
-        <form action="{% url 'ticket_duration' %}" method="post">
+        <form action="{% url 'category_table' %}" method="post">
             {% csrf_token %}
         <div class="user-management">
 
-         {% if messages %}
+          {% if messages %}
             {% for message in messages %}
                 <div class="alert {{ message.tags }}">
                 {{ message }}
                 </div>
             {% endfor %}
             {% endif %}
-          
-            <div class="filters">
-            <div class="search-box">
+      
+          <div class="create-user-container">
+                <a href="{% url 'school_add' %}">
+              <button type="button" class="create-user">+ Add details</button></a>
+          </div>
+           <div class="search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Search by ticket,category,modules...">
+                <input type="text" id="searchInput" placeholder="Search by school name, code...">
             </div>
-            <select id="categoryFilter" class="filter-select">
-                <option value="">All Category</option>
-                <option value="inquiry/help">Inquiry/Help</option>
-                <option value="software">Software</option>
-                <option value="hardware">Hardware</option>
-                <option value="network">Network</option>
-                <option value="database">Database</option>
-                <option value="other">Other</option>
-            </select>
-        </div>
+          
            <fieldset class="user-fieldset">
-            <legend>Ticket Duration</legend>
+            <legend>Category List</legend>
    
-          <table id="durationTable">
+          <table id="categoryTable">
             <thead>
               <tr>
-                <th>Ticket No</th>
-                <th>Category</th>
-                <th>Modules</th>
-                <th>Opened time</th>
-                <th>Resolved time</th>
-                <th>Duration</th>
+                <th>Name</th>
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {% for duration in durations %}
+            <!-- <tbody>
+                {% for datas in data %}
               <tr>
-                <td>{{ duration.ticket_number }}</td>
-                <td>{{ duration.category }}</td>
-                <td>{{ duration.ticket.modules }}</td>
-                <td>{{ duration.opened_time|date:"d M Y H:i" }}</td>
-                <td>{{ duration.resolved_time|date:"d M Y H:i" }}</td>
-                <td>{{ duration.formatted_duration }} </td>
-                <td><a href="{% url 'delete_duration' duration.id %}">
-                  <img src="https://img.icons8.com/ios-glyphs/18/trash.png" alt="Delete"></a></td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="6" style="text-align:center;">No ticket duration data available</td>
+                <td>{{ datas.name }}</td>
+                <td class="actions">
+                  <a href="#">
+                  <img src="https://img.icons8.com/ios-glyphs/18/edit.png" alt="Edit"></a>
+                  <a href="#">
+                  <img src="https://img.icons8.com/ios-glyphs/18/trash.png" alt="Delete"></a>
+                </td>
               </tr>
               {% endfor %}
-            </tbody>
+            </tbody> -->
           </table>
            </fieldset>
         </div>
@@ -114,36 +98,24 @@
     </div>
  </div>
 
+ 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const table = document.getElementById('categoryTable');
+            const rows = table ? table.querySelectorAll('tbody tr') : [];
 
-    const searchInput = document.getElementById('searchInput');
-    const categoryFilter = document.getElementById('categoryFilter'); 
-    const table = document.getElementById('durationTable');
-    const rows = table.querySelectorAll('tbody tr');
+            searchInput.addEventListener('input', function() {
+            const query = searchInput.value.trim().toLowerCase();
 
-    function filterTable() {
-        const searchValue = searchInput.value.toLowerCase().trim();
-        const selectedCategory = categoryFilter.value.toLowerCase();
-
-        rows.forEach(row => {
-            const rowText = row.textContent.toLowerCase();
-            const rowCategory = row.children[1].textContent.toLowerCase(); 
-           
-
-            const matchSearch = rowText.includes(searchValue);
-            const matchCategory = !selectedCategory || rowCategory === selectedCategory;
-
-            row.style.display = (matchSearch && matchCategory) ? '' : 'none';
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
         });
-    }
-
-    searchInput.addEventListener('input', filterTable);
-    categoryFilter.addEventListener('change', filterTable);
-
-});
+      });
+       
 </script>
-
 
  <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -161,8 +133,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
-
 </script>
+
 <script>
   setTimeout(() => {
     document.querySelectorAll('.alert').forEach(el => el.remove());

@@ -207,7 +207,7 @@
 
 </section>
 
-<section class="chart-section">
+<!-- <section class="chart-section">
     <div class="chart-container">
         <canvas id="ticketStatusChart"></canvas>
     </div>
@@ -270,6 +270,83 @@
              <div class="priority-details">
         <div class="priority-ticket-list"></div>
     </div>
+            </div>
+        </div>
+    </div>
+</section> -->
+<section class="charts-grid">
+    <!-- Ticket Status Pie Chart Card -->
+    <div class="chart-card">
+        <h2 class="card-title">Ticket Status Breakdown</h2>
+        <div class="chart-container">
+            <canvas id="ticketStatusChart"></canvas>
+        </div>
+        <div class="chart-legend">
+            <div class="legend-item"><span class="legend-color open"></span> Open</div>
+            <div class="legend-item"><span class="legend-color progress"></span> In Progress</div>
+            <div class="legend-item"><span class="legend-color resolved"></span> Resolved</div>
+            <div class="legend-item"><span class="legend-color closed"></span> Closed</div>
+        </div>
+    </div>
+
+    <!-- Priority Breakdown Card -->
+    <div class="chart-card">
+        <h2 class="card-title">Priority Breakdown</h2>
+        <div class="priority-breakdown-card">
+            <div class="priority-item critical" data-priority="critical">
+                <div class="priority-info">
+                    <span class="priority-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                    <span class="priority-label">Critical</span>
+                </div>
+                <div class="priority-value-container">
+                    <span class="priority-value" id="priority-critical-count">0</span>
+                    <span class="dropdown-arrow"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="priority-details">
+                    <div class="priority-ticket-list"></div>
+                </div>
+            </div>
+
+            <div class="priority-item high" data-priority="high">
+                <div class="priority-info">
+                    <span class="priority-icon"><i class="fas fa-exclamation-circle"></i></span>
+                    <span class="priority-label">High</span>
+                </div>
+                <div class="priority-value-container">
+                    <span class="priority-value" id="priority-high-count">0</span>
+                    <span class="dropdown-arrow"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="priority-details">
+                    <div class="priority-ticket-list"></div>
+                </div>
+            </div>
+
+            <div class="priority-item moderate" data-priority="moderate">
+                <div class="priority-info">
+                    <span class="priority-icon"><i class="fas fa-clock"></i></span>
+                    <span class="priority-label">Moderate</span>
+                </div>
+                <div class="priority-value-container">
+                    <span class="priority-value" id="priority-moderate-count">0</span>
+                    <span class="dropdown-arrow"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="priority-details">
+                    <div class="priority-ticket-list"></div>
+                </div>
+            </div>
+
+            <div class="priority-item low" data-priority="low">
+                <div class="priority-info">
+                    <span class="priority-icon"><i class="fas fa-check-circle"></i></span>
+                    <span class="priority-label">Low</span>
+                </div>
+                <div class="priority-value-container">
+                    <span class="priority-value" id="priority-low-count">0</span>
+                    <span class="dropdown-arrow"><i class="fas fa-chevron-down"></i></span>
+                </div>
+                <div class="priority-details">
+                    <div class="priority-ticket-list"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -601,6 +678,11 @@ document.querySelectorAll('.priority-item').forEach(item => {
             });
     });
 });
+</script>
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 4000);
 </script>
 
 </body>

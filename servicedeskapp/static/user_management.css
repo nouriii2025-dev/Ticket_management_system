@@ -79,11 +79,6 @@ body {
 }
 
 
-/* Content Area */
-.content-area {
-  margin-top: 10px;
-  margin-left: 10px;
-}
 
 /* User Management Table */
 .user-management {
@@ -132,62 +127,133 @@ body {
     margin-bottom: 15px;       /* adds some space below */
 }
 
-
-table {
-  width: 100%;
-  border-collapse: collapse;
+.filters {
+    display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;
+    align-items: center;
 }
 
-thead {
-  background: #d6ece9;
-  text-align: left;
+.search-box {
+    position: relative; 
+    flex: 1; 
+    min-width: 280px;
+}
+.search-box input {
+    width: 100%; 
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #159b9b; 
+    border-radius: 50px;
+    font-size: 1rem; 
+    transition: var(--transition);
+}
+.search-box input:focus {
+    outline: none; border-color: 
+    var(--primary); 
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.1);
+}
+.search-box i {
+    position: absolute; 
+    left: 0.8rem; top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-600);
 }
 
-th, td {
-  padding: 10px 12px;
-  font-size: 14px;
-  color: #333;
-  border-bottom: 1px solid #eee;
+
+/* ====================== FILTER DROPDOWN (Role Filter) - BEAUTIFUL REDESIGN ====================== */
+.filter-select {
+    padding: 0.75rem 2.4rem 0.75rem 1rem;   /* Extra right padding for arrow */
+    border: 1px solid #159b9b;
+    border-radius: 50px;
+    background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23159b9b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat;
+    background-position: right 14px center;
+    background-size: 16px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #159b9b;
+    cursor: pointer;
+    appearance: none;                     /* Removes default arrow */
+    transition: all 0.25s ease;
+    min-width: 160px;
+    box-shadow: 0 2px 8px rgba(21, 155, 155, 0.1);
 }
 
-.role {
-  padding: 4px 12px;
-  border-radius: 12px;
-  color: #fff;
-  font-size: 13px;
+
+
+.filter-select:focus {
+    outline: none;
+    border-color: #0d8383;
+    background-color: #f0fdfc;
 }
 
-.role.admin {
-  background: #009b9b;
+/* Optional: Style the options (some browsers support it) */
+.filter-select option {
+    padding: 10px;
+    background: white;
+    color: #333;
 }
 
-.role.user {
-  background: #999;
+.filter-select:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(21, 155, 155, 0.25) !important;
 }
 
-.actions img {
-  margin-right: 10px;
-  cursor: pointer;
-  opacity: 0.8;
+
+
+
+
+.table-container {
+    background: white; border-radius: var(--border-radius);
+    overflow: hidden; box-shadow: var(--shadow-md);
+    border: 1px solid var(--gray-200);
 }
 
-.actions img:hover {
-  opacity: 1;
+table { width: 100%; border-collapse: collapse; }
+th {
+    background: var(--gray-100); padding: 1rem 1.25rem;
+    text-align: left; font-weight: 600; color: var(--gray-800);
+    font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--gray-300); cursor: pointer;
+    user-select: none;
+}
+th.sortable:hover { background: var(--gray-200); }
+th::after { content: " ↕"; opacity: 0.3; font-size: 0.8em; }
+th.asc::after, th.desc::after { opacity: 1; font-weight: bold; }
+
+td { padding: 1rem 1.25rem; border-bottom: 1px solid var(--gray-200); }
+tr:hover { background-color: #f0fdf4; }
+
+.role-badge {
+    padding: 0.35rem 0.75rem; border-radius: 50px;
+    font-size: 0.8rem; font-weight: 600; text-transform: capitalize;
+}
+.role-admin { background: #fee2e2; color: #991b1b; }
+.role-user { background: #ecfdf5; color: #166534; }
+
+.actions { display: flex; gap: 0.75rem; }
+.action-btn {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--transition); background: transparent;
+    border: none; cursor: pointer;
+}
+.edit-btn { color: #6366f1; background: #eef2ff; }
+.edit-btn:hover { background: #e0e7ff; transform: scale(1.1); }
+.delete-btn { color: var(--danger); background: #fee2e2; }
+.delete-btn:hover { background: #fecaca; transform: scale(1.1); }
+
+.no-data {
+    text-align: center; padding: 4rem 2rem; color: var(--gray-600);
 }
 
-.user-fieldset {
-    border: 2px solid #159b9b;     /* main border color */
-    border-radius: 10px;           /* smooth corners */
-    padding: 25px 30px;            /* space inside */
-    margin-top: 20px;
-    background-color: #ffffff;     /* white background */
-}
-
-.user-fieldset legend {
-    font-size: 20px;
-    font-weight: 600;
-    color: #159b9b;               /* theme color for title */
-    padding: 0 15px;              /* spacing around text */
+@media (max-width: 768px) {
+    .main-content { padding: 1rem; }
+    .page-header, .filters { flex-direction: column; align-items: stretch; }
+    .search-box { min-width: 100%; }
+    table, thead, tbody, th, td, tr { display: block; width: 100%; }
+    th { display: none; }
+    tr { margin-bottom: 1rem; border: 1px solid var(--gray-200); border-radius: 10px; padding: 1rem; }
+    td { display: flex; justify-content: space-between; padding: 0.5rem 0; border: none; }
+    td::before { content: attr(data-label); font-weight: 600; color: var(--gray-600); }
+    .actions { justify-content: flex-end; }
 }
 
 /* ====================== TOP BAR DROPDOWN STYLES ====================== */
@@ -356,4 +422,53 @@ th, td {
     background-color: #0d8383 !important;
 }
 
+.user-fieldset {
+    border: 2px solid #159b9b;     /* main border color */
+    border-radius: 10px;           /* smooth corners */
+    padding: 25px 30px;            /* space inside */
+    margin-top: 20px;
+    background-color: #ffffff;     /* white background */
+}
 
+.user-fieldset legend {
+    font-size: 20px;
+    font-weight: 600;
+    color: #159b9b;               /* theme color for title */
+    padding: 0 15px;              /* spacing around text */
+}
+
+
+.alert {
+    padding: 12px 15px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+/* SUCCESS */
+.alert.success {
+    background-color: #d4f4dd;
+    color: #0f5132;
+    border-left: 5px solid #198754;
+}
+
+/* ERROR */
+.alert.error {
+    background-color: #f8d7da;
+    color: #842029;
+    border-left: 5px solid #dc3545;
+}
+
+/* WARNING */
+.alert.warning {
+    background-color: #fff3cd;
+    color: #664d03;
+    border-left: 5px solid #ffc107;
+}
+
+/* INFO */
+.alert.info {
+    background-color: #cff4fc;
+    color: #055160;
+    border-left: 5px solid #0dcaf0;
+}

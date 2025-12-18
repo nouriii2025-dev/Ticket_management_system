@@ -34,11 +34,17 @@ Channel_Choices=[
     ('other', 'Other'),
 ]
 Modules_Choices=[
-    ('anti-virus','Anti-virus'),
-    ('email','Email'),
-    ('internal application','Internal application'),
-    ('other','Other'),
-
+    ('hrms','HRMS'),
+    ('admin','Admin'),
+    ('fee','Fee'),
+    ('teacher','Teacher'),
+    ('transport','Transport'),
+    ('library','Library'),
+    ('asset management','Asset Management'),
+    ('application tracker','Application Tracker'),
+    ('store','Store'),
+    ('visitor management','Visitor Management'),
+    ('other', 'Other'),
 ]
 State_Choices=[
     ('new','New'),
@@ -57,6 +63,18 @@ Urgency_Choices=Impact_Choices
 Platform_Choices=[
     ('web application','Web Application'),
     ('mobile application','Mobile Application'),
+]
+Resolution_Code_Choices=[
+    ('duplicate','Duplicate'),
+    ('known error','Known error'),
+    ('no resolution provided','No resolution provided'),
+    ('resolved by caller','Resolved by caller'),
+    ('resolved by change','Resolved by change'),
+    ('resolved by problem','Resolved by problem'),
+    ('resolved by request','Resolved by request'),
+    ('solution provided','Solution Provided'),
+    ('workaround provided','Workaround provided'),
+    ('user error','User error'),
 ]
 
 class Create_Ticket(models.Model):
@@ -87,6 +105,7 @@ class Create_Ticket(models.Model):
     change_request=models.CharField(max_length=100,blank=True,null=True)
     caused_by_change=models.CharField(max_length=100,blank=True,null=True)
     resolved_by=models.CharField(max_length=100,blank=True,null=True)
+    resolution_code=models.CharField(max_length=100,choices=Resolution_Code_Choices,default='duplicate')
     resolution_notes=models.TextField(blank=True,null=True)
     caller_details = models.ForeignKey('Caller_Details',on_delete=models.SET_NULL,null=True,blank=True,related_name='tickets')
     due_at = models.DateTimeField(null=True, blank=True)
@@ -226,6 +245,7 @@ class Ticket_Duration(models.Model):
             return f"{minutes} minute{'s' if minutes > 1 else ''}"
         else:
             return f"{seconds} second{'s' if seconds > 1 else ''}"
+        
 
     
 class Caller_Details(models.Model):

@@ -54,13 +54,21 @@
 </div>
     <div class="main-content">
       <div class="content-area">    
-            {% if messages %}
+            <!-- {% if messages %}
             {% for message in messages %}
               <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
                 {{ message }}
               </div>
             {% endfor %}
-          {% endif %}
+          {% endif %} -->
+          {% if messages %}
+            {% for message in messages %}
+                <div class="alert {{ message.tags }}">
+                {{ message }}
+                </div>
+            {% endfor %}
+            {% endif %}
+
         <form method="POST" action="{% url 'delete_tickets' %}" onsubmit="return confirm('Are you sure you want to delete the selected tickets?');">
         {% csrf_token %}
         <div class="search-and-table-container">
@@ -758,6 +766,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 4000);
+</script>
+
 
 </body>
 </html>

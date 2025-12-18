@@ -48,11 +48,11 @@
      <div class="content-area">
            {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                <div class="alert {{ message.tags }}">
                 {{ message }}
-              </div>
+                </div>
             {% endfor %}
-          {% endif %}
+            {% endif %}
         <div class="group-header">
        {% if request.session.role == 'admin' %}
       <a href="{% url 'new_group' %}"><button class="new-group">+ New Group</button></a>
@@ -128,6 +128,10 @@ function searchGroups() {
 });
 
 </script>
-
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 4000);
+</script>
 </body>
 </html>

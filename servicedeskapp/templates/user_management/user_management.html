@@ -3,12 +3,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Incident - New Record</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'user_management.css' %}">
 </head>
 <body>
 
-  <div class="topbar">
+<div class="topbar">
     <div class="topbar-brand">User Management</div>
     <nav class="topbar-nav">
         <a href="{% url 'overview' %}">Overview</a>
@@ -43,49 +46,74 @@
 </div>
 </div>
 
-    <div class="main-content">
+<div class="main-content">
       <div class="content-area">
         <form action="{% url 'user_management' %}" method="post">
             {% csrf_token %}
         <div class="user-management">
           {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                <div class="alert {{ message.tags }}">
                 {{ message }}
-              </div>              
+                </div>
             {% endfor %}
-          {% endif %}
+            {% endif %}
           <div class="create-user-container">
             <a href="{% url 'create_user' %}">
               <button type="button" class="create-user">+ Create User</button></a>
           </div>
-          <fieldset class="user-fieldset">
+
+        <div class="filters">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search by name, username, email or phone...">
+            </div>
+            <select id="roleFilter" class="filter-select">
+                <option value="">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="user">User</option>
+            </select>
+        </div>
+
+            <fieldset class="user-fieldset">
           <legend>User Details</legend>
-   
-          <table>
+                {% if add %}
+          <table id="usersTable">
             <thead>
-              <tr>
-                <th>Name</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Role</th>
-                <th>Created</th>
-                <th>Last Login</th>
+            <tr>
+                <th class="sortable" data-sort="name">Name</th>
+                <th class="sortable" data-sort="username">Username</th>
+                <th class="sortable" data-sort="email">Email</th>
+                <th class="sortable" data-sort="phone">Phone</th>
+                <th class="sortable" data-sort="role">Role</th>
+                <th class="sortable" data-sort="created">Created</th>
+                <th class="sortable" data-sort="lastlogin">Last Login</th>
                 <th>Actions</th>
-              </tr>
+            </tr>
             </thead>
             <tbody>
                 {% for user in add %}
               <tr>
-                <td>{{ user.name }}</td>
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.phone }}</td>
-                <td>{{ user.get_role_display }}</td>
-                <td>{{ user.created_at }}</td>
-                <td>{{ user.last_login }}</td>
-                <td class="actions">
+                <td data-label="Name">{{ user.name }}</td>
+                <td data-label="Username">{{ user.username }}</td>
+                <td data-label="Email">{{ user.email }}</td>
+                <td data-label="Phone">{{ user.phone }}</td>
+                <td data-label="Role">
+                            <span class="role-badge {% if user.role == 'admin' %}role-admin{% else %}role-user{% endif %}">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td data-label="Created" data-sort-value="{{ user.created_at|date:'U' }}">
+                            {{ user.created_at|date:"M d, Y, g:i a" }}
+                        </td>
+                        <td data-label="Last Login" data-sort-value="{% if user.last_login %}{{ user.last_login|date:'U' }}{% else %}0{% endif %}">
+                            {% if user.last_login %}
+                                {{ user.last_login|date:"M d, Y, g:i a" }}
+                            {% else %}
+                                <span style="color:#9ca3af; font-style:italic;">Never</span>
+                            {% endif %}
+                        </td>
+                <td data-label="Actions" class="actions">
                   <a href="{% url 'edit_user' user.id %}">
                   <img src="https://img.icons8.com/ios-glyphs/18/edit.png" alt="Edit"></a>
                   <a href="{% url 'delete_user' user.id %}">
@@ -95,11 +123,85 @@
               {% endfor %}
             </tbody>
           </table>
+            {% else %}
+                <p>No users found.</p>
+            {% endif %}
            </fieldset>
         </div>
         </form>
-      </div>
     </div>
+</div>
+
+<script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const roleFilter = document.getElementById('roleFilter');
+            const table = document.getElementById('usersTable');
+            const rows = table ? table.querySelectorAll('tbody tr') : [];
+            const resultsCount = document.getElementById('resultsCount');
+
+            // Live Search + Filter
+            function filterTable() {
+                const query = searchInput.value.toLowerCase().trim();
+                const role = roleFilter.value;
+
+                let visible = 0;
+
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    const rowRole = row.querySelector('.role-badge').textContent.trim();
+
+                    const matchesSearch = text.includes(query);
+                    const matchesRole = !role || rowRole === role;
+
+                    if (matchesSearch && matchesRole) {
+                        row.style.display = '';
+                        visible++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                resultsCount.textContent = `Showing ${visible} of ${rows.length} users`;
+            }
+
+            searchInput.addEventListener('input', filterTable);
+            roleFilter.addEventListener('change', filterTable);
+
+            // Initial count
+            if (resultsCount) resultsCount.textContent = `Showing all ${rows.length} users`;
+
+            // Sorting
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.addEventListener('click', () => {
+                    const key = th.getAttribute('data-sort');
+                    const isAsc = th.classList.contains('asc');
+                    const rowsArray = Array.from(table.querySelectorAll('tbody tr'));
+
+                    rowsArray.sort((a, b) => {
+                        let aVal = a.querySelector(`[data-sort-value]`).dataset.sortValue || a.children[Array.from(th.parentNode.children).indexOf(th)].textContent.trim();
+                        let bVal = b.querySelector(`[data-sort-value]`).dataset.sortValue || b.children[Array.from(th.parentNode.children).indexOf(th)].textContent.trim();
+
+                        if (!isNaN(aVal) && !isNaN(bVal)) {
+                            aVal = parseInt(aVal); bVal = parseInt(bVal);
+                        }
+
+                        return (aVal > bVal ? 1 : -1) * (isAsc ? -1 : 1);
+                    });
+
+                    // Clear previous sort indicators
+                    document.querySelectorAll('th').forEach(h => {
+                        h.classList.remove('asc', 'desc');
+                    });
+
+                    th.classList.add(isAsc ? 'desc' : 'asc');
+
+                    // Re-append sorted rows
+                    rowsArray.forEach(row => table.querySelector('tbody').appendChild(row));
+                });
+            });
+        });
+</script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
     const profileBtn = document.querySelector('.profile-btn');
@@ -117,6 +219,10 @@
     }
 });
 </script>
-
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 4000);
+</script>
 </body>
 </html>

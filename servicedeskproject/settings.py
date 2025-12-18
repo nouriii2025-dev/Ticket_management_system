@@ -24,10 +24,10 @@ SECRET_KEY = 'django-insecure-uzfpk7j67f)k643*&2#ujvjhfv*pky_apjh&1ih3(en$)fhoep
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-DEBUG = False
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-# DEBUG = True
-# STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+# DEBUG = False
+# STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+DEBUG = True
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 ALLOWED_HOSTS = ['tickets.edship.in', 'localhost', '127.0.0.1']
 

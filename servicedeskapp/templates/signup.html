@@ -11,13 +11,13 @@
 
     <form action="{% url 'signup' %}" method="post">
         {% csrf_token %}
-        {% if messages %}
+         {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                <div class="alert {{ message.tags }}">
                 {{ message }}
-              </div>
+                </div>
             {% endfor %}
-          {% endif %}
+            {% endif %}
     <h1>Sign Up</h1>
     <label for="name">Name</label>
     <input type="text" placeholder="Enter your name" name="name">
@@ -37,5 +37,12 @@
     <button type="submit">Sign Up</button>
     Already have an accound?<a href="{% url 'login' %}"> Login now</a>
     </form>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 4000);
+</script>
+
 </body>
 </html>

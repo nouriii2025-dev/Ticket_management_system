@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Master Data</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'school_details.css' %}">
 </head>
 <body>
@@ -50,19 +52,25 @@
 
           {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                <div class="alert {{ message.tags }}">
                 {{ message }}
-              </div>              
+                </div>
             {% endfor %}
-          {% endif %}
+            {% endif %}
+      
           <div class="create-user-container">
                 <a href="{% url 'school_add' %}">
               <button type="button" class="create-user">+ Add details</button></a>
           </div>
+           <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search by school name, code...">
+            </div>
+          
            <fieldset class="user-fieldset">
             <legend>School Details</legend>
    
-          <table>
+          <table id="schoolTable">
             <thead>
               <tr>
                 <th>Name</th>
@@ -97,6 +105,26 @@
       </div>
     </div>
  </div>
+
+ 
+<script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const table = document.getElementById('schoolTable');
+            const rows = table ? table.querySelectorAll('tbody tr') : [];
+
+            searchInput.addEventListener('input', function() {
+            const query = searchInput.value.trim().toLowerCase();
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+      });
+       
+</script>
+
  <script>
     document.addEventListener('DOMContentLoaded', function() {
     const profileBtn = document.querySelector('.profile-btn');
@@ -114,6 +142,11 @@
     }
 });
 
+</script>
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 4000);
 </script>
 </body>
 </html>

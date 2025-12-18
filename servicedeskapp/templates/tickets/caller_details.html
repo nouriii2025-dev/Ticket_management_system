@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Caller details</title>
-    <link rel="stylesheet" href="{% static 'school_details.css' %}">
+     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'caller_details.css' %}">
 </head>
 <body>
 <div class="main-layout">
@@ -50,15 +52,27 @@
 
           {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                <div class="alert {{ message.tags }}">
                 {{ message }}
-              </div>              
+                </div>
             {% endfor %}
-          {% endif %}
+            {% endif %}
+           <div class="filters">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search by name,role,school...">
+            </div>
+            <select id="schoolFilter" class="filter-select">
+                <option value="">All Schools</option>
+                {% for school in schools %}
+                <option value="{{ school.name|lower }}">{{ school.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
            <fieldset class="user-fieldset">
             <legend>Caller Details</legend>
    
-          <table>
+          <table id="callerTable">
             <thead>
               <tr>
                 <th>Name</th>
@@ -98,6 +112,36 @@
     </div>
  </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const searchInput = document.getElementById('searchInput');
+    const schoolFilter = document.getElementById('schoolFilter'); 
+    const table = document.getElementById('callerTable');
+    const rows = table.querySelectorAll('tbody tr');
+
+    function filterTable() {
+        const searchValue = searchInput.value.toLowerCase().trim();
+        const selectedSchool = schoolFilter.value.toLowerCase();
+
+        rows.forEach(row => {
+            const rowText = row.textContent.toLowerCase();
+            const rowSchool = row.children[4].textContent.toLowerCase(); 
+         
+
+            const matchSearch = rowText.includes(searchValue);
+            const matchSchool = !selectedSchool || rowSchool === selectedSchool;
+
+            row.style.display = (matchSearch && matchSchool) ? '' : 'none';
+        });
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    schoolFilter.addEventListener('change', filterTable);
+
+});
+</script>
+
  <script>
     document.addEventListener('DOMContentLoaded', function() {
     const profileBtn = document.querySelector('.profile-btn');
@@ -115,6 +159,11 @@
     }
 });
 
+</script>
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 4000);
 </script>
 </body>
 </html>

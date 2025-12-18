@@ -50,11 +50,11 @@
 
           {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#aef3ae; color:#077f17; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                <div class="alert {{ message.tags }}">
                 {{ message }}
-              </div>              
+                </div>
             {% endfor %}
-          {% endif %}
+            {% endif %}
           <div class="create-user-container">
                 <a href="{% url 'priority_add' %}">
               <button type="button" class="create-user">+ Add details</button></a>
@@ -109,7 +109,13 @@
         });
     }
 });
-
 </script>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 4000);
+</script>
+
 </body>
 </html>

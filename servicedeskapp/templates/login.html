@@ -12,11 +12,11 @@
         {% csrf_token %}
         {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                <div class="alert {{ message.tags }}">
                 {{ message }}
-              </div>
+                </div>
             {% endfor %}
-          {% endif %}
+            {% endif %}
     <h1>Login</h1>
     <label for="email">Username</label>
     <input type="text" placeholder="enter username" name="username">
@@ -28,5 +28,12 @@
     Don't have an accound?<a href="{% url 'signup' %}"> Register now</a>
 
     </form>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 4000);
+</script>
+
 </body>
 </html>

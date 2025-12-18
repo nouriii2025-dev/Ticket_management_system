@@ -10,13 +10,13 @@
 <body>
     <form action="{% url 'reset' %}" method="post">
         {% csrf_token %}
-    {% if messages %}
-    {% for message in messages %}
-        <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
-        {{ message }}
-        </div>
-    {% endfor %}
-    {% endif %}
+     {% if messages %}
+            {% for message in messages %}
+                <div class="alert {{ message.tags }}">
+                {{ message }}
+                </div>
+            {% endfor %}
+            {% endif %}
     <h1>Reset Password</h1>
     <label for="email">Email</label>
     <input type="email" placeholder="Enter your email id" name="email">
@@ -24,5 +24,12 @@
     <button type="submit">Send Reset Link</button>
 
     </form>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 4000);
+</script>
+
 </body>
 </html>

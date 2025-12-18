@@ -51,11 +51,11 @@
         <div class="create-user">
           {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                <div class="alert {{ message.tags }}">
                 {{ message }}
-              </div>
+                </div>
             {% endfor %}
-          {% endif %}
+            {% endif %}
           <fieldset class="create-user-fieldset">
             <legend>Add Details</legend>
            <div class="form-row">
@@ -108,6 +108,11 @@
     }
 });
 
+</script>
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 4000);
 </script>
 </body>
 </html>

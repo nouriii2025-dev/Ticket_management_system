@@ -67,6 +67,16 @@
         <span>Ticket Duration Data</span>
       </div>
     </a>
+    <a href="{% url 'category_table' %}" class="card-btn">
+      <div class="card-btn-content">
+        <span>Category List</span>
+      </div>
+    </a>
+    <a href="{% url 'modules_table' %}" class="card-btn">
+      <div class="card-btn-content">
+        <span>Modules List</span>
+      </div>
+    </a>
   </div>
 </div>
  </div>
@@ -89,5 +99,12 @@
 });
 
 </script>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 4000);
+</script>
+
 </body>
 </html>

@@ -43,9 +43,11 @@ urlpatterns = [
     path('priority_delete<int:priority_id>',views.priority_delete,name='priority_delete'),
     path('ticket_duration',views.ticket_duration,name='ticket_duration'),
     path('delete_duration<int:duration_id>',views.delete_duration,name='delete_duration'),
+    path('category_table',views.category_table,name='category_table'),
+    path('modules_table',views.modules_table,name='modules_table'),
     
     path('school_autofill',views.school_autofill,name='school_autofill'),
-    path('test',views.test,name='test'),
+
     path('caller_details',views.caller_details,name='caller_details'),
     path('add-caller-details/', views.add_caller_details, name='add_caller_details'),
     path('delete_caller<int:caller_id>',views.delete_caller,name='delete_caller'),
@@ -55,11 +57,7 @@ urlpatterns = [
     path('api/priority-tickets/', views.priority_tickets_api, name='priority_tickets_api'),
     path('reports', views.reports, name='reports'),
     path('reports_data', views.reports_data, name='reports_data'),
-    
-    path('test_user', views.test_user, name='test_user'),
-    path('testz', views.testz, name='testz'),
-    path('reports_test', views.reports_test, name='reports_test'),
-    path('reports_data_test', views.reports_data_test, name='reports_data_test'),
+
 
     #rest api
     path('auth/signup/', apiviews.sign_up_api, name='api_signup'),

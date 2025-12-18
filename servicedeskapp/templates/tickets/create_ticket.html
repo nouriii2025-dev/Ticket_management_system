@@ -43,13 +43,13 @@
 </div>
 </div>
     <div class="main-content">
-             {% if messages %}
+            {% if messages %}
             {% for message in messages %}
-              <div style="background-color:#ffcccc; color:#f05454; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:500;">
+                <div class="alert {{ message.tags }}">
                 {{ message }}
-              </div>
+                </div>
             {% endfor %}
-          {% endif %}
+            {% endif %}
             <form class="incident-form" action="{% url 'create' %}" method="post">
             {% csrf_token %}
            <div class="action-buttons-top">
@@ -136,9 +136,16 @@
                     <label>Modules</label>
                     <select name="modules">
                         <option value="">Select modules</option>
-                        <option value="anti-virus">Anti-virus</option>
-                        <option value="email">Email</option>
-                        <option value="internal application">Internal Application</option>
+                        <option value="hrms">HRMS</option>
+                        <option value="admin">Admin</option>
+                        <option value="fee">Fee</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="transport">Transport</option>
+                        <option value="library">Library</option>
+                        <option value="asset management">Asset Management</option>
+                        <option value="application tracker">Application Tracker</option>
+                        <option value="store">Store</option>
+                        <option value="visitor management">Visitor Management</option>
                         <option value="other">Other</option>
                     </select>
                 </div>
@@ -300,9 +307,16 @@
                         <div class="form-group notes-input">
                             <select name="resolution_code">
                                 <option>-- None --</option>
-                                <option>Fixed</option>
-                                <option>Won't Fix</option>
-                                <option>Duplicate</option>
+                                <option value="duplicate">Duplicate</option>
+                                <option value="known error">Known error</option>
+                                <option value="no resolution provided">No resolution provided</option>
+                                <option value="resolved by caller">Resolved by caller</option>
+                                <option value="resolved by change">Resolved by change</option>
+                                <option value="resolved by problem">Resolved by problem</option>
+                                <option value="resolved by request">Resolved by request</option>
+                                <option value="solution provided">Solution provided</option>
+                                <option value="workaround provided">Workaround provided</option>
+                                <option value="user error">User error</option>
                             </select>
                         </div>
                     </div>
@@ -575,6 +589,10 @@ window.onload = function () {
 });
 
 </script>
-
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+  }, 4000);
+</script>
 </body>
 </html>
