@@ -93,6 +93,7 @@
             <option>Number</option>
             <option>Opened</option>
             <option>Created by</option>
+            <option>Platform</option>
             <option>Short description</option>
             <option>Caller</option>
             <option>School name</option>
@@ -163,6 +164,7 @@
             <th data-col="number">Number </th>
             <th data-col="opened">Opened <span class="col-menu">⋮</span></th>
             <th data-col="created">Created by <span class="col-menu">⋮</span></th>
+            <th data-col="platform">Platform<span class="col-menu">⋮</span></th>
             <th data-col="desc">Short description <span class="col-menu">⋮</span></th>
             <th data-col="caller">Caller <span class="col-menu">⋮</span></th>
             <th data-col="school_name">School name <span class="col-menu">⋮</span></th>
@@ -183,6 +185,7 @@
             <td><input type="text" data-col="number" placeholder="Search"></td>
             <td><input type="text" data-col="opened" placeholder="Search"></td>
             <td><input type="text" data-col="created" placeholder="Search"></td>
+            <td><input type="text" data-col="platform" placeholder="Search"></td>
             <td><input type="text" data-col="desc" placeholder="Search"></td>
             <td><input type="text" data-col="caller" placeholder="Search"></td>
             <td><input type="text" data-col="school_name" placeholder="Search"></td>
@@ -205,14 +208,13 @@
             <td><a href="{% url 'update' ticket_id=ticket.id %}">{{ ticket.number }}</a></td>
             <td>{% localtime on %}{{ ticket.created_at|date:"M. d, Y, P" }}{% endlocaltime %}</td>
             <td>{{ ticket.created_by }}</td>
+            <td>{{ ticket.platform }}</td>
             <td>{{ ticket.short_description }}</td>
             <td>{{ ticket.caller }}</td>
             <td>{{ ticket.school_name }}</td>
             <td>{{ ticket.school_code }}</td>
             <td>{{ ticket.priority }}</td>
-            <!-- <td class="{% if ticket.time_left == 'Overdue' %}overdue{% else %}{% if ticket.time_left != 'No SLA' %}sla-ok{% endif %}{% endif %}">
-                {{ ticket.time_left }}
-            </td>  -->
+       
             <td class="time-left-cell">
                 <span class="time-badge badge-{{ ticket.time_left_badge_class }}">
                     {% if ticket.time_left == 'Overdue' %}
@@ -502,26 +504,26 @@ syncSelectAll();
         // === APPLY FILTER: Active, Closed, etc. ===
         if (currentFilter === "active") {
             filteredRows = allDataRows.filter(row => {
-                const state = row.cells[10]?.textContent.trim(); 
+                const state = row.cells[11]?.textContent.trim(); 
                 return !['Closed', 'Resolved', 'Canceled'].includes(state);
             });
         } else if (currentFilter === "active-unassigned") {
             filteredRows = allDataRows.filter(row => {
-                const state = row.cells[10]?.textContent.trim();
-                const assignedTo = row.cells[13]?.textContent.trim();
+                const state = row.cells[11]?.textContent.trim();
+                const assignedTo = row.cells[14]?.textContent.trim();
                 return !['Closed', 'Resolved', 'Canceled'].includes(state) && 
                        (!assignedTo || assignedTo === '' || assignedTo === 'None');
             });
         } else if (currentFilter === "assigned-to-me") {
             filteredRows = allDataRows.filter(row => {
-                const assignedTo = row.cells[13]?.textContent.trim(); 
+                const assignedTo = row.cells[14]?.textContent.trim(); 
              
                 return assignedTo === currentUsername || assignedTo === currentUserFullName;
             });
         } 
         else if (currentFilter === "closed") {
             filteredRows = allDataRows.filter(row => {
-            const state = row.cells[10]?.textContent.trim().toLowerCase(); 
+            const state = row.cells[11]?.textContent.trim().toLowerCase(); 
             return ['closed','canceled'].includes(state); 
         });
         }
@@ -703,6 +705,7 @@ syncSelectAll();
             if (group === "Short description") colKey = "desc"; 
             if (group === "State") colKey = "state";
             if (group === "Priority") colKey = "priority";
+            if (group === "Platform") colKey = "platform";
 
             if (colKey) groupByColumn(colKey);
         });

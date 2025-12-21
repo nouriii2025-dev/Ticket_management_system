@@ -65,6 +65,8 @@ def login(request):
         try:
             exist_user = User_Management.objects.get(username=username)
             if check_password(password,exist_user.password):
+                exist_user.last_login = timezone.now()
+                exist_user.save(update_fields=['last_login'])
                 request.session['username']=exist_user.username
                 request.session['role']=exist_user.role
                 request.session['name']=exist_user.name

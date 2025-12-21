@@ -47,7 +47,7 @@
 
     <div class="main-content">
         <div class="content-area">
-                {% csrf_token %}
+            <form method="post"></form>
         <div class="create-user">
          {% if messages %}
             {% for message in messages %}
@@ -56,6 +56,8 @@
                 </div>
             {% endfor %}
             {% endif %}
+            <form method="post">
+                {% csrf_token %}
           <fieldset class="create-user-fieldset">
             <legend>Update Details</legend>
            <div class="form-row">
@@ -88,8 +90,9 @@
           <div class="form-buttons">
             <a href="{% url 'priority_data' %}"><button type="button" class="back-btn">Back</button></a>
             <button type="reset" class="reset-btn">Reset</button>
-            <a href="{% url 'priority_data' %}"><button type="submit" class="create-btn">Update</button></a>
+            <button type="submit" class="create-btn">Update</button>
           </div>
+            </form>
         </div>
         </div>
       </div>
