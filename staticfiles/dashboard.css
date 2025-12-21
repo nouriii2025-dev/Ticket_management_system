@@ -433,19 +433,20 @@ hr {
 #incidentsTable th:nth-child(2), td:nth-child(2)   { width: 105px; }  /* Number */
 #incidentsTable th:nth-child(3), td:nth-child(3)   { width: 115px; }  /* Opened */
 #incidentsTable th:nth-child(4), td:nth-child(4)   { width: 110px; }   /* Created by */
-#incidentsTable th:nth-child(5), td:nth-child(5)   { width: 150px; }  /* Short description */
-#incidentsTable th:nth-child(6), td:nth-child(6)   { width: 120px; }   /* Caller */
-#incidentsTable th:nth-child(7), td:nth-child(7)   { width: 120px; }  /* School name */
-#incidentsTable th:nth-child(8), td:nth-child(8)   { width: 120px; }   /* School code */
-#incidentsTable th:nth-child(9), td:nth-child(9)   { width: 100px; }   /* Priority */
-#incidentsTable th:nth-child(10), td:nth-child(10)   { width:150px; }   /* Time Left */
-#incidentsTable th:nth-child(11), td:nth-child(11) { width: 75px; }   /* State */
-#incidentsTable th:nth-child(12), td:nth-child(12) { width: 100px; }   /* Category */
-#incidentsTable th:nth-child(13), td:nth-child(13) { width: 160px; }  /* Assignment group */
-#incidentsTable th:nth-child(14), td:nth-child(14) { width: 120px; }   /* Assigned to */
-#incidentsTable th:nth-child(15), td:nth-child(15) { width: 115px; }  /* Updated */
-#incidentsTable th:nth-child(16), td:nth-child(16) { width: 130px; }   /* Updated by */
-#incidentsTable th:nth-child(17), td:nth-child(17) { width: 70px; text-align: center; } /* Actions */
+#incidentsTable th:nth-child(5), td:nth-child(5)   { width: 110px; }   /* Platform */
+#incidentsTable th:nth-child(6), td:nth-child(6)   { width: 150px; }  /* Short description */
+#incidentsTable th:nth-child(7), td:nth-child(7)   { width: 120px; }   /* Caller */
+#incidentsTable th:nth-child(8), td:nth-child(8)   { width: 120px; }  /* School name */
+#incidentsTable th:nth-child(9), td:nth-child(9)   { width: 120px; }   /* School code */
+#incidentsTable th:nth-child(10), td:nth-child(10)   { width: 100px; }   /* Priority */
+#incidentsTable th:nth-child(11), td:nth-child(11)   { width:150px; }   /* Time Left */
+#incidentsTable th:nth-child(12), td:nth-child(12) { width: 75px; }   /* State */
+#incidentsTable th:nth-child(13), td:nth-child(13) { width: 100px; }   /* Category */
+#incidentsTable th:nth-child(14), td:nth-child(14) { width: 160px; }  /* Assignment group */
+#incidentsTable th:nth-child(15), td:nth-child(15) { width: 120px; }   /* Assigned to */
+#incidentsTable th:nth-child(16), td:nth-child(16) { width: 115px; }  /* Updated */
+#incidentsTable th:nth-child(17), td:nth-child(17) { width: 130px; }   /* Updated by */
+#incidentsTable th:nth-child(18), td:nth-child(18) { width: 70px; text-align: center; } /* Actions */
 
 /* Remove the big padding we added before */
 .search-and-table-container {
