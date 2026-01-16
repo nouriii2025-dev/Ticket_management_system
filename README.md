@@ -83,6 +83,5 @@ Internal issue tracking for teams
 Helpdesk management solutions
 
 Author
-Aslaha Jabbar
-ECE Graduate | Quality Engineer | Django Developer
-Interested in Web Development, Automation Testing, and Scalable Systems
+Fathima Nourin
+ECE Graduate | Django Developer Intern
